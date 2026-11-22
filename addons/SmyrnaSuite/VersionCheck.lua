@@ -10,16 +10,18 @@ local ownSuite,ownDB
 local function Public(value) return not issecretvalue or not issecretvalue(value) end
 local function Parse(value)
     if not Public(value) or type(value)~="string" or #value>17 then return end
-    local a,b,c=value:match("^(%d+)%.(%d+)%.(%d+)$")
-    a,b,c=tonumber(a),tonumber(b),tonumber(c)
-    if a and a<=9999 and b<=9999 and c<=9999 then return a,b,c end
+    local a,b,c,d=value:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")
+    if not a then a,b,c=value:match("^(%d+)%.(%d+)%.(%d+)$");d="0" end
+    a,b,c,d=tonumber(a),tonumber(b),tonumber(c),tonumber(d)
+    if a and a<=9999 and b<=9999 and c<=9999 and d<=9999 then return a,b,c,d end
 end
 function Check.Newer(candidate,current)
-    local a,b,c=Parse(candidate);local x,y,z=Parse(current)
+    local a,b,c,d=Parse(candidate);local x,y,z,w=Parse(current)
     if not a or not x then return false end
     if a~=x then return a>x end
     if b~=y then return b>y end
-    return c>z
+    if c~=z then return c>z end
+    return d>w
 end
 local function Metadata(name)
     local fn=(C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata

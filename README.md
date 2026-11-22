@@ -1,6 +1,6 @@
 # Smyrna Lightweight Addon Suite
 
-Current private build: **0.9.32**. Gear hover offers Dungeon, Quest (!) and AH circles with scrollable top-ten lists. Storage/reference optimizations and character-specific filters are covered in [release notes](docs/RELEASE-0.9.32.md), [storage contracts](docs/STORAGE.md) and `reports/OPTIMIZATION-0.9.32.json`. Earlier release sections describe their respective baselines.
+Current private build: **0.9.33**. Hold **Ctrl+Shift while hovering character gear** for Dungeon, Quest (!) and AH circles with scrollable top-ten lists. Ctrl+left-click opens details. [Compatibility hotfix notes](docs/RELEASE-0.9.33.md) cover automatic profile detection and stalled scans. Storage optimizations are covered in [0.9.32 notes](docs/RELEASE-0.9.32.md), [storage contracts](docs/STORAGE.md) and `reports/OPTIMIZATION-0.9.32.json`. Earlier sections describe their respective baselines.
 
 ## 0.9.31 private test build
 

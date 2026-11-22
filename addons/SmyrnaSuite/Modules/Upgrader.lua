@@ -13,18 +13,36 @@ local classNames={[1]='Warrior',[2]='Paladin',[3]='Hunter',[4]='Rogue',[5]='Prie
 local specs={[1]={'Arms','Fury','Protection'},[2]={'Holy','Protection','Retribution'},[3]={'Beast Mastery','Marksmanship','Survival'},[4]={'Assassination','Combat','Subtlety'},[5]={'Discipline','Holy','Shadow'},[7]={'Elemental','Enhancement','Restoration'},[8]={'Arcane','Fire','Frost'},[9]={'Affliction','Demonology','Destruction'},[11]={'Balance','Feral damage','Feral tank','Restoration'}}
 local slots={Head=1,Neck=2,Shoulder=3,Chest=5,Waist=6,Legs=7,Feet=8,Wrist=9,Hands=10,Finger0=11,Finger1=12,Trinket0=13,Trinket1=14,Back=15,MainHand=16,SecondaryHand=17,Ranged=18}
 local results,serial,busy={},0,nil
+local hoverOwner,hoverSlot
 local function Safe(value) return not (issecretvalue and issecretvalue(value)) end
 local function Number(value) return Safe(value) and type(value)=='number' and value==value end
-function U.Invalidate() results={};serial=serial+1;busy=nil;if U.HideSources then U.HideSources() end end
+function U.Invalidate() results={};serial=serial+1;busy=nil;if U.HideSources then U.HideSources() end;if U.RenderStatus then U.RenderStatus('Character data changed. Ctrl + left-click the slot again to refresh.') end end
+function U.ActivationDown() return IsControlKeyDown and IsControlKeyDown() and IsShiftKeyDown and IsShiftKeyDown() end
 function U.Profile()
- local _,_,class=UnitClass('player');if not Number(class) then return end
- local spec=tonumber(cfg.profile:match('^local:(%d+)$'))
- if not spec and GetTalentTabInfo then
+ local _,_,class=UnitClass('player');if not Number(class) then return nil,'Your class is not available yet.' end
+ local spec=type(cfg.profile)=='string' and tonumber(cfg.profile:match('^local:(%d+)$'))
+ if not spec then
   local best,points,tied=nil,0,false
-  for i=1,3 do local _,_,p=GetTalentTabInfo(i);if Number(p) then if p>points then best,points,tied=i,p,false elseif p==points and p>0 then tied=true end end end
-  if not tied then spec=best;if class==11 and spec==3 then spec=4 end end
+  for i=1,3 do
+   local p
+   if C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo then
+    local values={pcall(C_SpecializationInfo.GetSpecializationInfo,i)}
+    if values[1] then p=values[8] end -- seventh native return: pointsSpent
+   elseif GetTalentTabInfo then
+    local values={pcall(GetTalentTabInfo,i)}
+    if values[1] then p=type(values[2])=='number' and values[6] or values[4] end
+   end
+   if Number(p) then if p>points then best,points,tied=i,p,false elseif p==points and p>0 then tied=true end end
+  end
+  if not tied then
+   spec=best
+   if not spec then
+    local api=C_SpecializationInfo and C_SpecializationInfo.GetSpecialization or GetSpecialization
+    if api then local ok,p=pcall(api);if ok and Number(p) and p>0 then spec=p end end
+   end
+   if class==11 and spec==3 then spec=4 end -- third Classic talent tree: Restoration
+  end
  end
- if not spec and GetSpecialization then local p=GetSpecialization();if Number(p) and p>0 then spec=p end end
  local weights=spec and S.PrivatePawn.Scales[class..':'..spec]
  if not weights then return nil,'Choose your profile in Upgrader settings.' end
  return {engine='Standalone Pawn '..S.PrivatePawn.Version,key=class..':'..spec,label=(classNames[class] or 'Class')..' / '..((specs[class] or {})[spec] or tostring(spec)),weights=weights,class=class}
@@ -86,18 +104,20 @@ local function Append(tip,state)
  tip:Show()
 end
 local function Notice(tip,text) tip:AddLine('Upgrader: '..text,.6,.8,1,true);tip:Show() end
-function U.Hover(owner,slot,hoveredID,tooltip)
- if S.IsLootInteraction and S.IsLootInteraction(owner) then return end
- if not cfg.enabled then return end
+local function Scan(owner,slot,hoveredID,tooltip)
+ if S.IsLootInteraction and S.IsLootInteraction(owner) then return nil,'Close the loot window before checking upgrades.' end
+ if not cfg.enabled then return nil,'Upgrader is disabled in Suite settings.' end
  local tip=tooltip or GameTooltip
- if not G.Ensure() then Notice(tip,'Enable Equipment DB; first load is deferred during combat.');return end
- local profile,reason=U.Profile();if not profile then Notice(tip,reason);return end
+ local function Stop(message) Notice(tip,message);return nil,message end
+ if not G.Ensure() then return Stop('Enable Smyrna Equipment DB in AddOns and Suite settings. First load must be outside combat.') end
+ local profile,reason=U.Profile();if not profile then return Stop(reason) end
  local link=hoveredID and ('item:'..hoveredID) or GetInventoryItemLink('player',slot);local id=ItemID(link);local row=id and G.Get(id,true)
+ if U.DetailRequest and (slot~=U.DetailRequest.slot or id~=U.DetailRequest.id) then return nil,'Close the current upgrade details before hovering another item.' end
  if not link then tip:SetOwner(owner,'ANCHOR_RIGHT');tip:SetText('Empty equipment slot') end
- if id and not row then Notice(tip,'Equipped item is not in the reference DB yet.');return end
- local level=UnitLevel('player');if not Number(level) then return end
+ if id and not row then return Stop('This item is not in the equipment reference DB yet.') end
+ local level=UnitLevel('player');if not Number(level) then return Stop('Your level is not available yet.') end
  local currentScore=id and U.Score(row,profile,link) or 0
- if not Number(currentScore) then Notice(tip,'Equipped item score is not available yet.');return end
+ if not Number(currentScore) then return Stop('This item cannot be scored with the selected profile.') end
  local context=G.Context(profile.class,level,cfg.allArmor)
  local signature={Fingerprint(profile),context.key,tostring(slot),tostring(id),tostring(currentScore),tostring(cfg.classic)}
  for i=1,18 do signature[#signature+1]=GetInventoryItemLink('player',i) or '' end
@@ -108,13 +128,13 @@ function U.Hover(owner,slot,hoveredID,tooltip)
  local ids=G.Candidates(slot,level,profile.class,context);local index=1;local best={};local ranked={};local rankedAH={};local groups={Dungeon={},Quest={},Other={}};local pending=0
  local other=(slot==11 and 12) or (slot==12 and 11) or (slot==13 and 14) or (slot==14 and 13)
  local otherID=other and ItemID(GetInventoryItemLink('player',other))
- if slot==17 then local main=G.Get(ItemID(GetInventoryItemLink('player',16)));if main and main.inv==17 then Notice(tip,'Two-hand loadout occupies the off hand.');busy=nil;return end end
+ if slot==17 then local main=G.Get(ItemID(GetInventoryItemLink('player',16)));if main and main.inv==17 then busy=nil;return Stop('Your two-handed weapon occupies the off-hand slot.') end end
  Notice(tip,'Checking upgradesâ€¦')
  local function Finish()
   busy=nil
   results[slot]={key=key,profile=profile,context=context,rows=best,ranked=ranked,rankedAH=rankedAH,groups=groups,pending=pending,slot=slot,baseID=id,baseName=row and row.name or 'Empty slot'}
   U.LastResult=results[slot];if U.RenderDetails then U.RenderDetails(results[slot]) end
-  if not hoveredID and U.ShowSources and tip:IsShown() and tip:GetOwner()==owner then U.ShowSources(owner,slot,results[slot]) end
+  if not hoveredID and U.ShowSources and ((hoverOwner==owner and hoverSlot==slot) or (tip:IsShown() and tip:GetOwner()==owner)) then U.ShowSources(owner,slot,results[slot]) end
   if tip:IsShown() and tip:GetOwner()==owner then
    tip:ClearLines();tip:SetOwner(owner,'ANCHOR_RIGHT')
    U.Refreshing=true
@@ -123,6 +143,7 @@ function U.Hover(owner,slot,hoveredID,tooltip)
    Append(tip,results[slot])
   end
  end
+ local Schedule
  local function Batch()
   if token~=serial then return end
   if not hoveredID and CharacterFrame and not CharacterFrame:IsShown() and not (U.Details and U.Details:IsShown()) then busy=nil;return end
@@ -153,16 +174,30 @@ function U.Hover(owner,slot,hoveredID,tooltip)
      end
    end
   end
-  C_Timer.After(.01,Batch)
+  C_Timer.After(.01,Schedule)
  end
- C_Timer.After(0,Batch)
+ Schedule=function()
+  local ok,err=pcall(Batch)
+  if not ok and token==serial then
+   busy=nil;serial=serial+1;U.LastError=tostring(err)
+   if U.RenderStatus then U.RenderStatus('Upgrade scan stopped: '..U.LastError,slot,id) end
+   Notice(tip,'Upgrade scan stopped. Open ranked upgrades for the error details.')
+  end
+ end
+ C_Timer.After(0,Schedule)
+ return true
+end
+function U.Hover(owner,slot,id,tooltip)
+ local ok,result,reason=pcall(Scan,owner,slot,id,tooltip)
+ if not ok then busy=nil;serial=serial+1;U.LastError=tostring(result);reason='Upgrade scan stopped: '..U.LastError;result=nil;Notice(tooltip or GameTooltip,reason) end
+ return result,reason
 end
 local function HookSlots()
  for label,slot in pairs(slots) do
   local b=_G['Character'..label..'Slot']
   if b and not b.smyrnaUpgrader then
-   b.smyrnaUpgrader=true;b:HookScript('OnEnter',function(self) U.Hover(self,slot) end)
-   b:HookScript('OnLeave',function() if U.HideSourcesSoon then U.HideSourcesSoon() end end)
+   b.smyrnaUpgrader=true;b:HookScript('OnEnter',function(self) hoverOwner,hoverSlot=self,slot;if U.ActivationDown() then U.Hover(self,slot) end end)
+   b:HookScript('OnLeave',function(self) if hoverOwner==self then hoverOwner,hoverSlot=nil,nil end;if U.HideSourcesSoon then U.HideSourcesSoon() end end)
    b:HookScript('OnMouseUp',function(self,button) if button=='LeftButton' and IsControlKeyDown() then U.OpenDetails(slot,nil,self) end end)
   end
  end
@@ -174,9 +209,9 @@ function U.Open()
   panel.SuiteCloseButton=S.CloseButton(panel)
   local title=panel:CreateFontString(nil,'OVERLAY','GameFontNormalLarge');title:SetPoint('TOPLEFT',20,-20);title:SetText('Upgrader')
   local help=panel:CreateFontString(nil,'OVERLAY','GameFontHighlight');help:SetPoint('TOPLEFT',20,-55);help:SetWidth(655);help:SetJustifyH('LEFT')
-  help:SetText('Press C and hover equipped gear. Find a next upgrade from a dungeon, quest, crafting, world source or BoE/AH reference.\n\nNo Pawn dependency. Embedded scoring uses the private Pawn snapshot and reference base stats. Select the profile you want; no spec is inferred from your spell usage.\n\nPercentages are stat-score changes, not DPS or healing predictions. Weapon recommendations keep the same one-hand/two-hand configuration.')
+  help:SetText('Press C, then hold Ctrl + Shift while hovering equipped gear to show Dungeon, Quest and AH circles. Ctrl + left-click opens ranked details.\n\nNo Pawn dependency. Select the profile you want; automatic selection reads talent points, never spell usage.\n\nPercentages are stat-score changes, not DPS or healing predictions. Weapons keep the same one-hand/two-hand configuration.')
   local enabled=CreateFrame('CheckButton',nil,panel,'UICheckButtonTemplate');enabled:SetPoint('TOPLEFT',18,-210);enabled:SetChecked(cfg.enabled)
-  local label=enabled:CreateFontString(nil,'OVERLAY','GameFontHighlight');label:SetPoint('LEFT',enabled,'RIGHT',0,0);label:SetText('Show upgrades on character-slot hover')
+  local label=enabled:CreateFontString(nil,'OVERLAY','GameFontHighlight');label:SetPoint('LEFT',enabled,'RIGHT',0,0);label:SetText('Enable Ctrl + Shift gear-hover upgrades')
   enabled:SetScript('OnClick',function(self) cfg.enabled=not not self:GetChecked();U.Invalidate() end)
   local classic=CreateFrame('CheckButton',nil,panel,'UICheckButtonTemplate');classic:SetPoint('TOPLEFT',18,-242);classic:SetChecked(cfg.classic)
   local ct=classic:CreateFontString(nil,'OVERLAY','GameFontHighlight');ct:SetPoint('LEFT',classic,'RIGHT',0,0);ct:SetText('Include labelled Classic source / estimated item references')
@@ -196,12 +231,18 @@ function U.Open()
    cfg.profile=choices[index%#choices+1].key;U.Invalidate();Refresh()
   end)
   panel:SetScript('OnShow',Refresh)
-  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Hover the Dungeon, Quest (!) or AH circle for a scrollable list of upgrades.\nEquipment DB is optional; source coverage, quest access and special effects are incomplete.')
+  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Ctrl + Shift reveals the circles; hover a circle for a scrollable list.\nEquipment DB is optional; source coverage, quest access and special effects are incomplete.')
  end
  panel:Show();return panel
 end
-local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE');pcall(driver.RegisterEvent,driver,'SKILL_LINES_CHANGED');pcall(driver.RegisterEvent,driver,'SPELLS_CHANGED')
-driver:SetScript('OnEvent',function(_,event) if event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then HookSlots() else U.Invalidate() end end)
+local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('MODIFIER_STATE_CHANGED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE');pcall(driver.RegisterEvent,driver,'SKILL_LINES_CHANGED');pcall(driver.RegisterEvent,driver,'SPELLS_CHANGED')
+driver:SetScript('OnEvent',function(_,event)
+ if event=='MODIFIER_STATE_CHANGED' then
+  if hoverOwner and U.ActivationDown() then U.Hover(hoverOwner,hoverSlot) end
+ elseif event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then HookSlots()
+ else U.Invalidate() end
+end)
+U.Driver=driver
 SLASH_SMYRNAUPGRADER1='/su';SlashCmdList.SMYRNAUPGRADER=function() U.Open() end
 
 S.Loaded[name]=true
@@ -209,10 +250,10 @@ S.Loaded[name]=true
 local invToSlot={[1]=1,[2]=2,[3]=3,[5]=5,[6]=6,[7]=7,[8]=8,[9]=9,[10]=10,[11]=11,[12]=13,[13]=16,[14]=17,[15]=18,[16]=15,[17]=16,[20]=5,[21]=16,[22]=17,[23]=17,[25]=18,[26]=18,[28]=18}
 function U.ItemTooltip(tip)
  if S.IsLootInteraction and S.IsLootInteraction(tip.GetOwner and tip:GetOwner()) then return end
- if U.Refreshing or not cfg.enabled or (tip~=GameTooltip and tip~=ItemRefTooltip) then return end
+ if U.Refreshing or not cfg.enabled or not U.ActivationDown() or (tip~=GameTooltip and tip~=ItemRefTooltip) then return end
  local owner=tip:GetOwner();if not owner or owner.smyrnaUpgradeRow then return end
  local name=owner.GetName and owner:GetName()
- if name and name:match('^Character.*Slot$') then return end
+ if owner.smyrnaUpgrader or (name and name:match('^Character.*Slot$')) then return end
  local _,link=tip:GetItem();local id=ItemID(link);if not id then return end
  local instant=C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
  local inv;if instant then local _,_,_,value=instant(id);inv=value end
@@ -232,6 +273,9 @@ if hooksecurefunc then
  hooksecurefunc('HandleModifiedItemClick',function(link)
   if S.IsLootInteraction and S.IsLootInteraction() then return end
   if not cfg.enabled or not IsControlKeyDown() or (IsShiftKeyDown and IsShiftKeyDown()) then return end
+  local owner=GameTooltip and GameTooltip:GetOwner()
+  -- Character-slot hooks know which of the paired ring/trinket slots was clicked.
+  if owner and owner.smyrnaUpgrader then return end
   local id=ItemID(link);if not id or not G.Ensure() then return end
   local row=G.Get(id);local slot=row and invToSlot[row.inv]
   if slot then U.OpenDetails(slot,id,(GameTooltip and GameTooltip:GetOwner()) or UIParent) end

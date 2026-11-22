@@ -74,11 +74,55 @@ if #list>0 then assert(u.DetailRows[1].candidate==list[1]) end
     def test_hovered_bag_item_is_comparison_baseline(self):
         self.l.execute('''
 local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','BagItem')
+IsShiftKeyDown=function() return true end
 GameTooltip:SetOwner(owner);GameTooltip.item='item:2870'
 u.ItemTooltip(GameTooltip);RunTimers()
 assert(u.LastResult.baseID==2870)
 local value=u.Score(Suite.Equipment.Get(2870),u.LastResult.profile)
 for _,c in ipairs(u.LastResult.ranked) do assert(c.score>value) end
+''')
+
+    def test_forever_modern_talent_api_without_legacy_globals(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader;Suite.Config.upgrader.profile='auto'
+GetTalentTabInfo=nil;GetSpecialization=nil
+C_SpecializationInfo={GetSpecializationInfo=function(i) return 60+i,'Tree','Description',123,'DAMAGER',1,i==3 and 20 or 0 end,GetSpecialization=function() return 1 end}
+assert(u.Profile().key=='2:3')
+local owner=CreateFrame('Button','CharacterChestSlot');GameTooltip:SetOwner(owner)
+u.OpenDetails(5,nil,owner);RunTimers();assert(u.Details.result and u.Details.result.profile.key=='2:3' and not u.LastStatus)
+C_SpecializationInfo=nil
+GetTalentTabInfo=function(i) return 60+i,'Tree','Description',123,i==3 and 20 or 0 end
+assert(u.Profile().key=='2:3')
+''')
+
+    def test_ctrl_shift_hover_and_stationary_modifier_press(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','CharacterChestSlot');GameTooltip:SetOwner(owner)
+local shift=false;IsShiftKeyDown=function() return shift end
+u.Driver.scripts.OnEvent(nil,'PLAYER_LOGIN')
+owner.scripts.OnEnter(owner);assert(#timers==0 and not u.SourceDock)
+shift=true;u.Driver.scripts.OnEvent(nil,'MODIFIER_STATE_CHANGED');RunTimers()
+assert(u.SourceDock:IsShown() and u.SourceDock.anchor[2]==owner)
+owner.scripts.OnLeave(owner);RunTimers();assert(not u.SourceDock:IsShown())
+''')
+
+    def test_details_show_terminal_missing_profile_or_database_message(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader;Suite.Config.upgrader.profile='auto'
+GetTalentTabInfo=nil;GetSpecialization=nil;C_SpecializationInfo=nil
+u.OpenDetails(5);assert(u.LastStatus:find('profile',1,true) and not u.Details.result)
+Suite.Config.upgrader.profile='local:3';Suite.Equipment.Ensure=function() return false end
+u.OpenDetails(5);assert(u.LastStatus:find('Equipment DB',1,true) and not u.Details.result)
+''')
+
+    def test_batch_failure_is_visible_and_retry_completes(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader;local score=u.Score;local n=0
+u.Score=function(...) n=n+1;if n>1 then error('Injected scoring failure') end;return score(...) end
+local owner=CreateFrame('Button','CharacterChestSlot');GameTooltip:SetOwner(owner)
+u.OpenDetails(5,nil,owner);RunTimers()
+assert(u.LastStatus:find('Injected scoring failure',1,true) and not u.Details.result)
+u.Score=score;u.OpenDetails(5,nil,owner);RunTimers();assert(u.Details.result and not u.LastStatus)
 ''')
 
     def test_candidates_follow_every_class_armor_tier(self):

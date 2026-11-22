@@ -43,7 +43,7 @@ function G.Context(class,level,allArmor)
  local tier=armorTiers[class] and armorTiers[class][level<40 and 1 or 2]
  local known,parts,count={},{},0
  local ownClass=select(3,UnitClass('player'))
- local knownAPI=(C_SpellBook and C_SpellBook.IsSpellKnown) or IsSpellKnown
+ local knownAPI=S.KnowsSpell or (C_SpellBook and C_SpellBook.IsSpellKnown) or IsSpellKnown
  if ownClass==class and (IsPlayerSpell or knownAPI) then
   for name,spell in pairs(weaponSpells) do
    local yes=(IsPlayerSpell and IsPlayerSpell(spell)) or (knownAPI and knownAPI(spell))
@@ -83,7 +83,9 @@ function G.Eligible(r,classID,level,slot,current,otherID,context)
   local found=false;for _,name in ipairs(rule.weapons or {}) do if name==r.subclass then found=true;break end end
   if not found then return false end
  elseif r.subclass~='Miscellaneous' then
-  local required=rule.armor and rule.armor[r.subclass];if not required then return false end;if required>level and not (IsPlayerSpell and ((r.subclass=='Plate' and IsPlayerSpell(750)) or (r.subclass=='Mail' and IsPlayerSpell(8737)))) then return false end
+  local required=rule.armor and rule.armor[r.subclass];if not required then return false end
+  local knows=S.KnowsSpell or IsPlayerSpell or (C_SpellBook and C_SpellBook.IsSpellKnown)
+  if required>level and not (knows and ((r.subclass=='Plate' and knows(750)) or (r.subclass=='Mail' and knows(8737)))) then return false end
  end
  if r.unique and r.id==otherID then return false end
  -- Same weapon configuration only; a one-hand/two-hand swap needs a loadout comparison.

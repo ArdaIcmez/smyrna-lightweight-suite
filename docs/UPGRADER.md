@@ -1,6 +1,6 @@
-# Upgrader — 0.9.31 private test build
+# Upgrader — 0.9.33 private test build
 
-Press C, hover equipment and Ctrl + left-click for up to ten ranked upgrades. Bags and linked equipment use the same service. Details offer All upgrades and AH upgrades (confirmed BoE only). Settings are under the Suite Upgrader tab or /su.
+Press C and hold Ctrl + Shift while hovering character gear for the three source circles. Ctrl + left-click opens up to ten ranked upgrades. Bags and linked equipment use the same service. Details offer All upgrades and AH upgrades (confirmed BoE only). Settings are under the Suite Upgrader tab or /su.
 
 Rank by max(item requirement level, source level), then source level, stat score descending and item ID. Sources: dungeon, quest, profession, world drop. Known class/faction/level restrictions, completed nonrepeatable quests, unique paired items and incompatible armor are filtered. Weapon recommendations keep the current one-hand/two-hand configuration. Quest chains, keys, lockouts and learned weapon skills are not fully modelled.
 
@@ -14,4 +14,4 @@ At an AH, click Scan AH for these upgrades, or /sah. Replicate scans have a 15-m
 
 Build: refresh an immutable Pawn snapshot with tools/addon_sources.py, run tools/build_equipment_dev.py against pinned .local/equipment-input exports using Lua 5.1 Lupa, then tools/package_suite.py. The source watcher captures new upstream versions; it does not automatically promote runtime files. A new snapshot must be rebuilt/tested before packaging. --install targets an explicit Interface/AddOns directory and leaves WTF untouched.
 
-25 unit tests cover scoring without Pawn, restrictions, hover baseline, cache invalidation, AH tabs/limits/cancellation, loot guards, Diary caching and class-specific defenses. 2,900 imported arithmetic parity fixtures also pass. Native hover/Ctrl-click, AH actions, layout and mouse selection still need gameplay confirmation.
+39 unit tests cover scoring without Pawn, restrictions, hover baseline, cache invalidation, AH tabs/limits/cancellation, loot guards, Diary caching and class-specific defenses. 2,900 imported arithmetic parity fixtures also pass. Native hover/Ctrl-click, AH actions, layout and mouse selection still need gameplay confirmation.

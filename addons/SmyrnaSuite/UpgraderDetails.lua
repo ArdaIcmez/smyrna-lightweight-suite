@@ -1,6 +1,6 @@
 local _,S=...
 local U=S.Modules.SmyrnaUpgrader;if not U then return end
-local panel,rows,subtitle,footer,scan,request
+local panel,rows,subtitle,footer,scan,request,status,profileButton
 local function Label(parent,text,x,y,width,font)
  local f=parent:CreateFontString(nil,'OVERLAY',font or 'GameFontHighlightSmall');f:SetPoint('TOPLEFT',x,y);f:SetWidth(width);f:SetJustifyH('LEFT');f:SetText(text);return f
 end
@@ -10,6 +10,7 @@ end
 function U.RenderDetails(state)
  if not panel or not panel:IsShown() or not request or state.slot~=request.slot or state.baseID~=request.id then return end
  panel.result=state
+ status:Hide();profileButton:Hide();U.LastStatus=nil
  if S.SetButtonSelected then S.SetButtonSelected(panel.allTab,not panel.onlyAH and not panel.sourceFilter);S.SetButtonSelected(panel.ahTab,not not panel.onlyAH and not panel.sourceFilter) end
  local ranked=panel.sourceFilter=='AH' and state.rankedAH or (panel.sourceFilter and state.groups[panel.sourceFilter] or (panel.onlyAH and state.rankedAH or state.ranked))
  subtitle:SetText(state.baseName..'  -  '..state.profile.label..(panel.sourceFilter and (' / '..({Dungeon='Dungeon',Quest='Quest',AH='Auction House',Other='Profession / world drop'})[panel.sourceFilter]) or ''))
@@ -34,6 +35,16 @@ function U.RenderDetails(state)
  scan:SetEnabled(n>0)
  panel.canvas:SetHeight(math.max(90,n*83));panel.scroll:UpdateScrollChildRect()
 end
+function U.RenderStatus(message,slot,id)
+ if not panel or not panel:IsShown() or not request then return end
+ if slot and (slot~=request.slot or id~=request.id) then return end
+ U.LastStatus=message;panel.result=nil
+ for _,row in ipairs(rows) do row:Hide() end
+ subtitle:SetText('Upgrade recommendations');status:SetText(message);status:Show()
+ profileButton:SetShown(message:find('profile',1,true)~=nil)
+ footer:SetText('Ctrl + Shift while hovering character gear shows the source circles.');scan:SetEnabled(false)
+ panel.canvas:SetHeight(180);panel.scroll:UpdateScrollChildRect()
+end
 local function OpenPanel()
  if panel then return end
  panel=CreateFrame('Frame','SmyrnaUpgraderDetails',UIParent,'BackdropTemplate');panel:SetSize(730,585);panel:SetPoint('CENTER')
@@ -48,6 +59,9 @@ local function OpenPanel()
  local scroll=CreateFrame('ScrollFrame' ,nil,panel,'UIPanelScrollFrameTemplate');scroll:SetPoint('TOPLEFT',18,-75);scroll:SetSize(672,405);panel.scroll=scroll
  local canvas=CreateFrame('Frame',nil,scroll);canvas:SetSize(650,830);scroll:SetScrollChild(canvas);panel.canvas=canvas
  rows={}
+ status=Label(canvas,'',8,-8,620,'GameFontHighlight');status:Hide()
+ profileButton=CreateFrame('Button',nil,canvas,'UIPanelButtonTemplate');profileButton:SetSize(180,25);profileButton:SetPoint('TOPLEFT',8,-100);profileButton:SetText('Choose scoring profile');S.StyleButton(profileButton);profileButton:Hide()
+ profileButton:SetScript('OnClick',function() panel:Hide();U.Open() end)
  for i=1,10 do
   local b=CreateFrame('Button',nil,canvas);b:SetSize(650,79);b:SetPoint('TOPLEFT',0,-(i-1)*83);b.smyrnaUpgradeRow=true
   local line=b:CreateTexture(nil,'BACKGROUND');line:SetAllPoints();line:SetColorTexture(.07,.09,.12,1)
@@ -71,17 +85,19 @@ local function OpenPanel()
   S.Market.Scan(ids)
  end)
  footer=Label(panel,'',18,-530,680);footer:SetMaxLines(3)
- panel:SetScript('OnHide',function() request=nil;panel.result=nil;GameTooltip:Hide() end)
+ panel:SetScript('OnHide',function() request=nil;U.DetailRequest=nil;panel.result=nil;GameTooltip:Hide() end)
  UISpecialFrames[#UISpecialFrames+1]='SmyrnaUpgraderDetails';U.Details=panel;U.DetailRows=rows
 end
 function U.OpenDetails(slot,id,owner,sourceFilter)
  OpenPanel()
  panel.sourceFilter=sourceFilter
  request={slot=slot,id=id or tonumber((GetInventoryItemLink('player',slot) or ''):match('item:(%d+)'))}
- subtitle:SetText('Checking upgrades…');footer:SetText('');scan:SetEnabled(false)
+ U.DetailRequest=request
+ subtitle:SetText('Checking upgrades...');footer:SetText('');scan:SetEnabled(false);status:Hide();profileButton:Hide()
  for _,b in ipairs(rows) do b:Hide() end
  panel.result=nil;panel:Show()
- U.Hover(owner or UIParent,slot,id)
+ local _,reason=U.Hover(owner or UIParent,slot,id)
+ if reason then U.RenderStatus(reason) end
 end
 function U.RefreshMarketPrices()
  if panel and panel.result then U.RenderDetails(panel.result) end

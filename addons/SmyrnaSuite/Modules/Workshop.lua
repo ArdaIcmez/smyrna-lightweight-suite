@@ -131,7 +131,7 @@ end
 function NS.Known(r)
     if r.learned then return true end
     if r.spell then
-        local fn=IsPlayerSpell or IsSpellKnown
+        local fn=Suite.KnowsSpell or (C_SpellBook and C_SpellBook.IsSpellKnown) or IsPlayerSpell or IsSpellKnown
         if fn then return fn(r.spell) end
     end
 end

@@ -2,6 +2,8 @@
 
 ## Verified release
 
+0.9.33 compatibility hotfix: native report of missing circles/stalled details exposed a legacy-only automatic talent lookup. Forever C_SpecializationInfo.GetSpecializationInfo has pointsSpent at return 7; the deprecated GetTalentTabInfo shim has it at return 5, not the old return 3. Explicit manual-profile fixtures masked this path. Tests now cover namespace-only automatic profiles, both legacy layouts, terminal prerequisite messages, async scan errors/retry and stationary Ctrl+Shift activation. Ordinary hover does not invoke Upgrader; character-slot OnEnter and MODIFIER_STATE_CHANGED activate it only with Ctrl+Shift. Ctrl+left-click still opens details. Native confirmation remains pending.
+
 0.9.32 adds source pooling, lazy positive-upgrade source decoding, character armor/trained-weapon filters, Dungeon/Quest/AH scrollable hover menus, packed learned-recipe fallbacks with bounded decode caches, chunked activities and conservative guild-growth budgets. See STORAGE.md and RELEASE-0.9.32.md. Chat default is now 10x for an unset preference; explicit saved choices are preserved. These changes have regression/benchmark coverage, not new native gameplay confirmation.
 v0.9.31 combines the 0.9.30.4 hotfixes with Upgrader and its shared optional Equipment DB. The owner confirmed right-click message editor selection in 0.9.30 and loot interaction in 0.9.30.1. History selection, defense rendering and Upgrader/AH require native confirmation after this build. Do not claim all gameplay bugs are verified fixed.
 

@@ -103,6 +103,7 @@ end
 C_Item={GetItemInfoInstant=function() return 2866,'Armor','Mail','INVTYPE_CHEST' end}
 TooltipDataProcessor={AddTooltipPostCall=function(_,fn) itemPost=fn end};Enum={TooltipDataType={Item=0}}
 ''')
+    load(l,'addons/SmyrnaSuite/Compatibility.lua')
     return l
 
 
