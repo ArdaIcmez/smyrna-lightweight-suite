@@ -26,6 +26,6 @@ Auctionator's installed code is not included. Its licence lists All Rights Reser
 `v0.9.28` identifies the baseline. New source changes and DB snapshots will be versioned independently.
 Generated ZIPs and local configuration are excluded from source commits. Releases will contain checked installable packages.
 
-## 0.9.29 diagnostic build
+## 0.9.30 message editor
 
-Right-click a chat message to compare five native text input configurations. This temporary test replaces the single-message editor until the player identifies which mouse-selection setup works. Syntax and simulated frame tests pass; native selection remains unverified.
+Restores the user-confirmed configuration 1 native text input. X and resize controls stay outside the text area. Single-message scrolling is deferred while confirming mouse selection; history remains scrollable. `/sc selecttest` opens the five-way diagnostic if needed.

@@ -3,7 +3,7 @@
 ## Group: SmyrnaSuite
 ## Title: Smyrna Remembrance DB
 ## Notes: Optional encounter history storage. Disabling pauses Remembrance without deleting history.
-## Version: 0.9.29
+## Version: 0.9.30
 ## Dependencies: SmyrnaSuite
 ## LoadSavedVariablesFirst: 1
 ## SavedVariablesPerCharacter: SmyrnaRemembranceData

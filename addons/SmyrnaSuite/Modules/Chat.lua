@@ -257,6 +257,7 @@ local function Command(input)
             Say("Use /sc copy or /sc copy 1."); return
         end
         Copy(number)
+    elseif cmd == "selecttest" and NS.OpenSelectionTest then NS.OpenSelectionTest(UIParent,"Drag to select just these words, then Ctrl+C.")
     elseif cmd == "perf" then Performance()
     elseif cmd == "time" then Toggle("timestamps", rest)
     elseif cmd == "seconds" then Toggle("seconds", rest)

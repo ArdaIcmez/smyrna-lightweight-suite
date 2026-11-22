@@ -2,46 +2,50 @@ local _,Suite=...
 local Chat=Suite.Modules.SmyrnaChat
 if not Chat then return end
 local editor
-local function Reflow()
+local function Layout()
  if not editor then return end
- local width=math.max(240,editor:GetWidth()-42)
- editor.measure:SetWidth(width);editor.measure:SetText(editor.edit:GetText() or '')
- editor.edit:SetWidth(width);editor.edit:SetHeight(math.max(36,editor.measure:GetStringHeight()+12));editor.scroll:UpdateScrollChildRect()
+ -- Only resize with the window. Typing and moving the caret must not reposition
+ -- the native text control or change its selection geometry.
+ editor.edit:SetSize(math.max(240,editor:GetWidth()-48),math.max(64,editor:GetHeight()-82))
 end
 function Chat.OpenMessageEditor(owner,text)
- if Chat.OpenSelectionTest then return Chat.OpenSelectionTest(owner,text) end
  if not Chat.GetDB().directCopy or not Chat.Core.Readable(text) or text=='' then return end
  if Chat.CloseHistory then Chat.CloseHistory() end
+ if Chat.SelectionTest then Chat.SelectionTest:Hide() end
  local plain=Chat.Core.Plain(text)
  if not editor then
-  editor=CreateFrame('Frame','SmyrnaChatMessageEditor',UIParent,'BackdropTemplate');editor:SetFrameStrata('FULLSCREEN_DIALOG');editor:SetFrameLevel(200);editor:SetClampedToScreen(true);editor:SetResizable(true);editor:SetMovable(true)
-  editor:SetResizeBounds(280,110,900,600)
-  Suite.StylePanel(editor)
-  local close=Suite.CloseButton(editor);editor.close=close
-  local title=editor:CreateFontString(nil,'OVERLAY','GameFontNormal');title:SetPoint('TOPLEFT',12,-10);title:SetText('Message editor')
-  local drag=CreateFrame('Button',nil,editor);drag:SetPoint('TOPLEFT',0,0);drag:SetSize(200,27);drag:RegisterForDrag('LeftButton')
-  drag:SetScript('OnDragStart',function() editor:StartMoving() end);drag:SetScript('OnDragStop',function() editor:StopMovingOrSizing() end)
-  local scroll,box=Suite.CreateChatTextViewport(editor);scroll:SetPoint('TOPLEFT',12,-35);scroll:SetPoint('BOTTOMRIGHT',-30,32);editor.scroll=scroll
+  editor=CreateFrame('Frame','SmyrnaChatMessageEditor',UIParent,'BackdropTemplate')
+  editor:SetFrameStrata('FULLSCREEN_DIALOG');editor:SetFrameLevel(250);editor:SetClampedToScreen(true)
+  editor:SetResizable(true);editor:SetResizeBounds(280,146,900,750)
+  Suite.StylePanel(editor);editor.close=Suite.CloseButton(editor)
+  local title=editor:CreateFontString(nil,'OVERLAY','GameFontNormal')
+  title:SetPoint('TOPLEFT',16,-14);title:SetText('Message editor')
+  local border=CreateFrame('Frame',nil,editor,'BackdropTemplate')
+  border:SetPoint('TOPLEFT',16,-36);border:SetPoint('BOTTOMRIGHT',-16,34);Suite.StylePanel(border)
+  -- Configuration 1 from the in-game comparison: direct child, default native
+  -- mouse/keyboard handling, and above the decorative border.
+  local box=CreateFrame('EditBox',nil,editor)
+  box:SetPoint('TOPLEFT',24,-42);box:SetFrameLevel(border:GetFrameLevel()+2)
+  box:SetMultiLine(true);box:SetAutoFocus(false);box:SetFontObject(ChatFontNormal);box:SetMaxLetters(0)
+  box:SetScript('OnEscapePressed',function() editor:Hide() end)
   editor.edit=box
   editor.measure=editor:CreateFontString(nil,'BACKGROUND','ChatFontNormal');editor.measure:Hide()
-  box:SetScript('OnEscapePressed',function() editor:Hide() end)
-  box:SetScript('OnTextChanged',Reflow)
-  box:SetScript('OnCursorChanged',function(_,_,y,_,height)
-   local offset=scroll:GetVerticalScroll();if type(offset)~='number' then return end
-   if -y<offset then scroll:SetVerticalScroll(-y) elseif -y+height>offset+scroll:GetHeight() then scroll:SetVerticalScroll(-y+height-scroll:GetHeight()) end
-  end)
-  local hint=editor:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');hint:SetPoint('BOTTOMLEFT',12,12);hint:SetText('Ctrl+C to copy  /  Escape to close')
-  local resize=CreateFrame('Button',nil,editor);resize:SetSize(18,18);resize:SetPoint('BOTTOMRIGHT');resize:SetNormalTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up');resize:RegisterForDrag('LeftButton');editor.resize=resize
-  resize:SetScript('OnDragStart',function() editor:StartSizing('BOTTOMRIGHT') end);resize:SetScript('OnDragStop',function() editor:StopMovingOrSizing();Reflow() end)
-  editor:SetScript('OnSizeChanged',Reflow)
+  local hint=editor:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
+  hint:SetPoint('BOTTOMLEFT',16,14);hint:SetText('Drag to select  /  Ctrl+C to copy  /  Escape to close')
+  local resize=CreateFrame('Button',nil,editor);resize:SetSize(18,18);resize:SetPoint('BOTTOMRIGHT')
+  resize:SetNormalTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up');resize:RegisterForDrag('LeftButton')
+  resize:SetScript('OnDragStart',function() editor:StartSizing('BOTTOMRIGHT') end)
+  resize:SetScript('OnDragStop',function() editor:StopMovingOrSizing() end);editor.resize=resize
+  editor:SetScript('OnSizeChanged',Layout)
   editor:SetScript('OnHide',function() box:ClearFocus();box:SetText('');editor.measure:SetText('') end)
   UISpecialFrames[#UISpecialFrames+1]='SmyrnaChatMessageEditor'
  end
  editor.measure:SetWidth(600);editor.measure:SetText(plain)
- local natural=editor.measure:GetStringWidth();if type(natural)~='number' then natural=380 end
- local width=math.max(280,math.min(600,natural+42));editor.measure:SetWidth(width-42)
- local height=math.max(110,math.min(300,editor.measure:GetStringHeight()+79))
- editor:SetSize(width,height);editor:ClearAllPoints();editor:SetPoint('BOTTOMLEFT',owner,'TOPLEFT',0,4);editor:Show()
- editor.edit:SetText(plain);Reflow();editor.scroll:SetVerticalScroll(0);editor.edit:SetFocus();editor.edit:SetCursorPosition(0);editor.scroll:SetVerticalScroll(0)
+ local width=math.max(280,math.min(650,editor.measure:GetStringWidth()+48))
+ editor.measure:SetWidth(width-48)
+ local height=math.max(146,math.min(750,editor.measure:GetStringHeight()+94))
+ editor:SetSize(width,height);editor:ClearAllPoints();editor:SetPoint('BOTTOMLEFT',owner,'TOPLEFT',0,4)
+ Layout();editor.edit:SetText(plain);editor:Show()
+ -- As in the successful test: do not force focus, caret or highlight on open.
  Chat.MessageEditor=editor
 end
