@@ -110,65 +110,32 @@ local function HookFrames()
 end
 
 local function CreateCopyWindow()
-    local frame = CreateFrame("Frame", "SmyrnaChatCopyWindow", UIParent, "BackdropTemplate")
-    frame:SetSize(650, 400)
-    frame:SetPoint("CENTER")
-    frame:SetFrameStrata("FULLSCREEN_DIALOG");frame:SetFrameLevel(150)
-    frame:SetClampedToScreen(true)
-    frame:SetMovable(true)
-    frame:EnableMouse(true)
-    local drag=CreateFrame("Button",nil,frame);drag:SetPoint("TOPLEFT",0,0);drag:SetSize(260,32);drag:RegisterForDrag("LeftButton")
-    drag:SetScript("OnDragStart",function() frame:StartMoving() end)
-    drag:SetScript("OnDragStop",function() frame:StopMovingOrSizing() end)
-    Suite.StylePanel(frame)
-    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 16, -14);title:SetWidth(260);title:SetMaxLines(1)
-    title:SetText("Chat history")
-    local help = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    help:SetPoint("TOPLEFT", 16, -40)
-    help:SetText("Select text, then Ctrl+C. Ctrl+A selects this page. Escape closes.")
-    frame.close=Suite.CloseButton(frame)
-    local scroll,edit = Suite.CreateChatTextViewport(frame)
-    scroll:SetPoint("TOPLEFT", 16, -65)
-    scroll:SetPoint("BOTTOMRIGHT", -34, 16)
-    local measure=frame:CreateFontString(nil,"BACKGROUND","ChatFontNormal");measure:Hide()
-    local function Reflow()
-        local viewportWidth,viewportHeight=scroll:GetWidth(),scroll:GetHeight()
-        local width=type(viewportWidth)=="number" and math.max(1,viewportWidth-2) or 595
-        local minimum=type(viewportHeight)=="number" and math.max(1,viewportHeight) or 300
-        edit:SetWidth(width)
-        measure:SetWidth(math.max(1,width-4));measure:SetText(edit:GetText() or "")
-        edit:SetHeight(math.max(minimum,measure:GetStringHeight()+12))
-        scroll:UpdateScrollChildRect()
-    end
-    -- Native EditBox selection owns the mouse drag. Clicking only restores focus;
-    -- re-highlighting here would destroy a partial or cross-message selection.
-    -- Let the native EditBox own focus, caret and drag selection.
+    local frame=CreateFrame("Frame","SmyrnaChatCopyWindow",UIParent,"BackdropTemplate")
+    frame:SetSize(650,420);frame:SetPoint("CENTER");frame:SetFrameStrata("FULLSCREEN_DIALOG");frame:SetFrameLevel(150);frame:SetClampedToScreen(true)
+    Suite.StylePanel(frame);frame.close=Suite.CloseButton(frame)
+    local title=frame:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOPLEFT",16,-14);title:SetText("Chat history")
+    local help=frame:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");help:SetPoint("TOPLEFT",16,-40);help:SetText("Scroll, drag to select, Ctrl+C to copy. Ctrl+A selects all. Escape closes.")
+    -- Native configuration 4 from the user's successful five-way test. Keep
+    -- native text sizing/cursor/scroll handling; do not install custom versions.
+    local scroll=CreateFrame("ScrollFrame",nil,frame,"InputScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT",18,-68);scroll:SetSize(590,324)
+    scroll.hideCharCount=true;if scroll.CharCount then scroll.CharCount:Hide() end
+    local edit=scroll.EditBox
+    edit:SetMultiLine(true);edit:SetAutoFocus(false);edit:SetFontObject(ChatFontNormal);edit:SetMaxLetters(0);edit:SetWidth(570)
+    edit:EnableMouse(true)
     edit:SetScript("OnEscapePressed",function() frame:Hide() end)
-    edit:SetScript("OnTextChanged",Reflow)
-    scroll:SetScript("OnSizeChanged",Reflow)
-    local function Wheel(_,delta)
+    -- Preserve the template's OnTextChanged, OnCursorChanged and OnUpdate.
+    -- Its ScrollBar controls the real native scroll-child offset.
+    scroll:EnableMouseWheel(true)
+    scroll:SetScript("OnMouseWheel",function(_,delta)
         local current,maximum=scroll:GetVerticalScroll(),scroll:GetVerticalScrollRange()
-        if type(current)=="number" and type(maximum)=="number" and type(delta)=="number" then
-            scroll:SetVerticalScroll(math.max(0,math.min(maximum,current-delta*42)))
-        end
-    end
-    scroll:EnableMouseWheel(true);edit:EnableMouseWheel(true)
-    scroll:SetScript("OnMouseWheel",Wheel);edit:SetScript("OnMouseWheel",Wheel)
-    edit:SetScript("OnCursorChanged",function(_,_,y,_,height)
-        local offset=scroll:GetVerticalScroll()
-        if type(offset)~="number" or type(y)~="number" or type(height)~="number" then return end
-        local position=-y;local visible=scroll:GetHeight()
-        if position<offset then scroll:SetVerticalScroll(math.max(0,position))
-        elseif type(visible)=="number" and position+height>offset+visible then
-            scroll:SetVerticalScroll(position+height-visible)
-        end
+        if type(current)=="number" and type(maximum)=="number" then scroll:SetVerticalScroll(math.max(0,math.min(maximum,current-delta*42))) end
     end)
+    edit:EnableMouseWheel(true);edit:SetScript("OnMouseWheel",scroll:GetScript("OnMouseWheel"))
     frame:SetScript("OnHide",function()
-        edit:ClearFocus();edit:SetText("");measure:SetText("")
-        frame.source=nil;frame.offset=nil
+        frame.generation=(frame.generation or 0)+1;edit:ClearFocus();edit:SetText("");frame.source=nil
     end)
-    frame.edit,frame.scroll,frame.title,frame.Reflow=edit,scroll,title,Reflow
+    frame.edit,frame.scroll,frame.title=edit,scroll,title
     UISpecialFrames[#UISpecialFrames+1]="SmyrnaChatCopyWindow"
     return frame
 end
@@ -193,43 +160,31 @@ local function Performance()
     else Say("CPU profiling is off. See PERFORMANCE.md for a controlled in-game measurement.") end
 end
 
-local function Copy(index,sourceFrame,offset)
-    local source = sourceFrame or (index and _G["ChatFrame" .. index]) or SELECTED_CHAT_FRAME or DEFAULT_CHAT_FRAME
-    if not source or not source.GetNumMessages then Say("No chat window with that number."); return end
-    local lines = {}
-    local count = source:GetNumMessages()
+local function Copy(index,sourceFrame)
+    local source=sourceFrame or (index and _G["ChatFrame"..index]) or SELECTED_CHAT_FRAME or DEFAULT_CHAT_FRAME
+    if not source or not source.GetNumMessages then Say("No chat window with that number.");return end
+    local count=source:GetNumMessages()
     if (issecretvalue and issecretvalue(count)) or type(count)~="number" then return end
-    offset=math.max(0,math.min(offset or 0,math.max(0,count-1)))
-    local last=count-offset
-    for i = math.max(1, last - 299), last do
-        local text = source:GetMessageInfo(i)
-        if Core.Readable(text) then lines[#lines + 1] = Core.Plain(text) end
-    end
-    if not copyWindow then copyWindow = CreateCopyWindow() end
-    copyWindow.source=source;copyWindow.offset=offset
-    if not rawget(copyWindow,"older") then
-        local older=CreateFrame("Button",nil,copyWindow,"UIPanelButtonTemplate");older:SetSize(70,22);older:SetPoint("TOPRIGHT",-120,-12);older:SetText("Page up")
-        older:SetScript("OnClick",function() Copy(nil,copyWindow.source,copyWindow.offset+300) end);copyWindow.older=older
-        local newer=CreateFrame("Button",nil,copyWindow,"UIPanelButtonTemplate");newer:SetSize(70,22);newer:SetPoint("TOPRIGHT",-40,-12);newer:SetText("Page down")
-        newer:SetScript("OnClick",function() Copy(nil,copyWindow.source,math.max(0,copyWindow.offset-300)) end);copyWindow.newer=newer
-    end
-    if not rawget(copyWindow,"topButton") then
-        local top=CreateFrame("Button",nil,copyWindow,"UIPanelButtonTemplate");top:SetSize(55,22);top:SetPoint("TOPRIGHT",-260,-12);top:SetText("Top")
-        top:SetScript("OnClick",function() local s=copyWindow.source;Copy(nil,s,math.max(0,s:GetNumMessages()-300)) end);copyWindow.topButton=top
-        local bottom=CreateFrame("Button",nil,copyWindow,"UIPanelButtonTemplate");bottom:SetSize(65,22);bottom:SetPoint("TOPRIGHT",-190,-12);bottom:SetText("Bottom")
-        bottom:SetScript("OnClick",function() local s=copyWindow.source;Copy(nil,s,0);copyWindow.scroll:SetVerticalScroll(copyWindow.scroll:GetVerticalScrollRange()) end);copyWindow.bottomButton=bottom
-    end
-    copyWindow.older:SetEnabled(last>300);copyWindow.newer:SetEnabled(offset>0)
-    copyWindow.title:SetText(count==0 and "Chat history - empty" or ("Chat history - "..math.max(1,last-299).."-"..last.." / "..count))
+    if not copyWindow then copyWindow=CreateCopyWindow() end
     if NS.MessageEditor then NS.MessageEditor:Hide() end
-    copyWindow:Show()
-    copyWindow.edit:SetText(table.concat(lines,"\n"))
-    copyWindow.Reflow()
-    copyWindow.edit:SetFocus()
-    -- No automatic selection: native mouse drag and Ctrl+A own highlighting.
-    -- Focusing can move the native caret; open the page at the top.
-    copyWindow.scroll:SetVerticalScroll(0)
-
+    local window=copyWindow
+    window.generation=(window.generation or 0)+1;local token=window.generation
+    window.source=source;window:Show();window.edit:SetText("");window.title:SetText("Chat history — loading…")
+    local lines={};local position=1
+    local function ReadBatch()
+        if not window:IsShown() or window.generation~=token then return end
+        for i=position,math.min(count,position+249) do
+            local text=source:GetMessageInfo(i)
+            if Core.Readable(text) then lines[#lines+1]=Core.Plain(text) end
+        end
+        position=position+250
+        if position<=count then C_Timer.After(0,ReadBatch);return end
+        window.edit:SetText(table.concat(lines,"\n"))
+        window.title:SetText("Chat history — "..#lines.." messages")
+        -- No forced focus/highlight/caret; native mouse input owns selection.
+        window.scroll:UpdateScrollChildRect()
+    end
+    ReadBatch()
 end
 
 NS.CopyFrame=function(frame) Copy(nil,frame) end

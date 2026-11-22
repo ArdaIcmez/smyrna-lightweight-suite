@@ -128,7 +128,9 @@ end
 function NS.ItemName(id)
     local fn=C_Item and C_Item.GetItemInfo or GetItemInfo
     local name=fn and fn(id)
-    return NS.Public(name) and type(name)=="string" and name or ("Item #"..id)
+    if NS.Public(name) and type(name)=="string" then return name end
+    local gear=Suite.Equipment and Suite.Equipment.Get(id)
+    return gear and gear.name or ("Item #"..id)
 end
 function NS.Tooltip(tip,id)
     if not NS.DB or not NS.DB.settings.enabled then return end
@@ -355,6 +357,7 @@ local owners=setmetatable({},{__mode="k"})
 function NS.HookItemOwner(tip,id)
     if not tip.GetOwner then return end
     local owner=tip:GetOwner()
+    if Suite.IsLootInteraction and Suite.IsLootInteraction(owner) then return end
     if not owner or not owner.HookScript or not owner.HasScript then return end
     if owner.IsForbidden and owner:IsForbidden() then return end
     local entry=owners[owner]
@@ -371,6 +374,7 @@ function NS.HookItemOwner(tip,id)
     entry.id=id
 end
 local function ItemTip(tip,id)
+    if Suite.IsLootInteraction and Suite.IsLootInteraction(tip.GetOwner and tip:GetOwner()) then return end
     if (tip~=GameTooltip and tip~=ItemRefTooltip) or not NS.DB or not NS.DB.settings.enabled then return end
     if tip.IsForbidden and tip:IsForbidden() then return end
     if not NS.Public(id) or type(id)~="number" or id<=0 then return end
@@ -388,6 +392,7 @@ local function CarriedBag(bag)
     return NS.Public(bag) and type(bag)=="number" and bag%1==0 and bag>=0 and bag<=(NUM_TOTAL_BAG_FRAMES or 5)
 end
 function NS.ModifiedItemClick(link,location)
+    if Suite.IsLootInteraction and Suite.IsLootInteraction() then return false end
     if not NS.DB or not NS.DB.settings.enabled or not IsControlKeyDown or not IsControlKeyDown() then return false end
     if (IsShiftKeyDown and IsShiftKeyDown()) or (IsAltKeyDown and IsAltKeyDown()) then return false end
     local id=NS.ID(link)

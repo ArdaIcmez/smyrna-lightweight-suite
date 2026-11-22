@@ -3,8 +3,10 @@
 ## Group: SmyrnaSuite
 ## Title: Smyrna Bestiary DB
 ## Notes: Optional Bestiary reference data. Disable here to skip this database.
-## Version: 0.9.30
+## Version: 0.9.31
 ## Dependencies: SmyrnaSuite
 ## LoadOnDemand: 1
 Blocks.lua
 Defenses.lua
+
+ArmorBands.lua

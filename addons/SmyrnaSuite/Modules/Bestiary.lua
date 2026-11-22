@@ -181,6 +181,9 @@ function C.Item(id)
         if C.Public(name) and type(name)=="string" then return name,C.Public(link) and link or nil,C.Number(quality,0,8) and quality or 1,C.Public(icon) and icon or nil,C.Public(class) and class or nil,C.Public(subclass) and subclass or nil,C.Number(value,0,10^12) and value or 0 end
     end
     local reference=NS.Items[id]
+    if not reference and Suite.Equipment and Suite.Equipment.Ensure() then
+        local gear=Suite.Equipment.Get(id);if gear then reference={gear.quality,gear.name} end
+    end
     local icon=C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)
     return reference and reference[2] or ("Item "..id),nil,reference and reference[1] or 1,(C.Public(icon) and icon) or "Interface\\Icons\\INV_Misc_QuestionMark"
 end
@@ -854,6 +857,7 @@ function NS.MobClick(unit,button)
     local id=C.NPC(guid);if id then NS.OpenDrops(id) end
 end
 local function AddTooltip(tooltip)
+    if Suite.IsLootInteraction and Suite.IsLootInteraction(tooltip.GetOwner and tooltip:GetOwner()) then return end
     if not NS.DB or not NS.DB.settings.enabled or not NS.DB.settings.tooltip then return end
     local _,unit=tooltip:GetUnit()
     if not C.Public(unit) or type(unit)~="string" then return end

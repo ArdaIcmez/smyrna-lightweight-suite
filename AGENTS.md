@@ -5,9 +5,9 @@ Read docs/ENGINEERING.md before making changes. Update it when gameplay establis
 ## Product and architecture
 - Product name: Smyrna Lightweight Addon Suite. Target the installed Blizzard WoW Forever client, not arbitrary Classic/private-server APIs.
 - One Suite minimap launcher, alphabetically ordered feature tabs and a compact Settings entry. Optional databases are separate load-on-demand packages grouped under SmyrnaSuite. Do not create a package per profession, class or source.
-- Equipment facts must have one owner: the planned SmyrnaEquipmentDB shared service. Future features consume that service instead of creating independent weapon, armor, ring, neck, trinket or equipment-stat catalogs. It is planned, not implemented in v0.9.30.
+- Equipment facts have one owner: SmyrnaEquipmentDB, implemented in v0.9.31. Use Suite.Equipment.Ensure/Get/Candidates/Eligible instead of independent weapon, armor, jewelry, trinket or equipment-stat catalogs. Feature loot/recipe relationships stay with their modules.
 - Item identity, equip restrictions, requirement levels and acquisition provenance belong to the shared equipment service. Feature-specific UI, scoring and observations do not.
-- Pawn must remain optional. The owner explicitly requests a private optimization playground, with the owner and two guildmate testers. Local attributed upstream snapshots and private scoring experiments are authorized; preserve the original licence and authorship. Do not treat the private audience as blanket permission for redistributing modified third-party code. No public release of such experiments without a fresh licence/distribution review. Prefer installed Pawn live when present; the planned standalone fallback must keep its upstream version and adaptation history visible.
+- Pawn is not a dependency. Standalone private scoring uses an attributed Pawn 2.14.8 arithmetic/weights snapshot with hashes and adaptation notices. Runtime does not switch to installed Pawn. Preserve private-only distribution to the owner and two guildmate testers; no public release without a fresh licence/distribution review.
 - Use tools/addon_sources.py for installed-addon snapshots; .local stores unmodified snapshots and rollback pointers, upstream/*.lock.json stores source hashes/version. Never edit a snapshot in place. New upstream snapshots must pass runtime compatibility/equivalence tests before promotion into a fallback. No downloaded/installed source execution by the sync tool.
 - Preserve third-party attribution, original licences, input hashes, game flavor/build and dates. Do not treat Classic references as verified Forever facts or an absent observation as zero.
 
@@ -32,3 +32,10 @@ Read docs/ENGINEERING.md before making changes. Update it when gameplay establis
 - No forced focus/caret/highlight on open. No mouse down/up handlers or typing/cursor-triggered layout changes on this control.
 - X and resize live outside the text region. Message-editor scrolling is deferred; history has separate scrolling.
 - Five isolated native variants selected correctly in v0.9.29, while previous integrated editors did not. The exact root cause is unproven; do not claim a particular template or API was definitively responsible.
+
+## Queue regression rules
+- LootFrame/LootButton owners and ancestors bypass Workshop/Bestiary/Upgrader augmentation; LOOT_OPENED hides Suite dialogs. Never override Blizzard loot clicks. Owner confirmed this fix in 0.9.30.1.
+- History uses InputScrollFrameTemplate with native text/cursor/update handlers, one selectable buffer, no page/top/bottom controls and no forced focus/caret on open. Automated checks cannot prove native mouse selection.
+- Bestiary defenses use player class/level. Mage gets Fire/Frost/Arcane without melee information; Hunter uses ranged damage/skill. Armor mitigation remains a labelled Classic estimate.
+- Field Diary NS.Areas already caches two maps by revision. Raw Core.Aggregate rebuild timing is not idle/normal refresh cost.
+- AH scans require a user action at an open AH; no automatic purchases. Cancelled/incomplete scans preserve previous prices. Quote values are listings, not completed sales.

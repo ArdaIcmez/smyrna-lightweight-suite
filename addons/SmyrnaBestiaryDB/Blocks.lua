@@ -708,22 +708,10 @@ I	774	2	Malachite
 I	779	0	Shiny Seashell
 I	783	1	Light Hide
 I	785	1	Mageroyal
-I	792	1	Knitted Sandals
-I	793	1	Knitted Gloves
-I	794	1	Knitted Pants
-I	795	1	Knitted Tunic
-I	796	1	Rough Leather Boots
-I	797	1	Rough Leather Gloves
-I	798	1	Rough Leather Pants
-I	799	1	Rough Leather Vest
 I	804	1	Large Blue Sack
 I	805	1	Small Red Pouch
 I	818	2	Tigerseye
 I	828	1	Small Blue Pouch
-I	847	1	Chainmail Armor
-I	848	1	Chainmail Pants
-I	849	1	Chainmail Boots
-I	850	1	Chainmail Gloves
 I	856	1	Blue Leather Bag
 I	857	1	Large Red Sack
 I	858	1	Lesser Healing Potion
@@ -736,37 +724,18 @@ I	1081	1	Crisp Spider Meat
 I	1179	1	Ice Cold Milk
 I	1180	1	Scroll of Stamina
 I	1181	1	Scroll of Spirit
-I	1202	1	Wall Shield
 I	1205	1	Melon Juice
 I	1206	2	Moss Agate
 I	1210	2	Shadowgem
-I	1280	2	Cloaked Hood
 I	1288	1	Large Venom Sac
-I	1297	2	Robes of the Shadowcaster
-I	1364	0	Ragged Leather Vest
-I	1366	0	Ragged Leather Pants
-I	1367	0	Ragged Leather Boots
-I	1368	0	Ragged Leather Gloves
-I	1369	0	Ragged Leather Belt
-I	1370	0	Ragged Leather Bracers
-I	1372	0	Ragged Cloak
-I	1374	0	Frayed Shoes
-I	1376	0	Frayed Cloak
-I	1377	0	Frayed Gloves
-I	1378	0	Frayed Pants
-I	1380	0	Frayed Robe
-I	1404	2	Tidal Charm
 I	1464	0	Buzzard Talon
 I	1475	1	Small Venom Sac
 I	1476	0	Snapped Spider Limb
 I	1477	1	Scroll of Agility II
 I	1478	1	Scroll of Protection II
 I	1520	0	Troll Sweat
-I	1521	2	Lumbering Ogre Axe
 I	1529	2	Jade
-I	1602	3	Sickle Axe
 I	1645	1	Moonberry Juice
-I	1678	3	Black Ogre Kickers
 I	1685	1	Troll-hide Bag
 I	1686	0	Bristly Whisker
 I	1687	0	Retractable Claw
@@ -779,15 +748,8 @@ I	1710	1	Greater Healing Potion
 I	1711	1	Scroll of Stamina II
 I	1712	1	Scroll of Spirit II
 I	1725	1	Large Knapsack
-I	1839	1	Rough Leather Belt
-I	1840	1	Rough Leather Bracers
-I	1845	1	Chainmail Belt
-I	1846	1	Chainmail Bracers
-I	1993	2	Ogremind Ring
 I	2070	1	Darnassian Bleu
 I	2091	1	Magic Dust
-I	2210	0	Battered Buckler
-I	2211	0	Bent Large Shield
 I	2251	1	Gooey Spider Leg
 I	2287	1	Haunch of Meat
 I	2289	1	Scroll of Strength II
@@ -805,35 +767,15 @@ I	2450	1	Briarthorn
 I	2452	1	Swiftthistle
 I	2453	1	Bruiseweed
 I	2455	1	Minor Mana Potion
-I	2488	1	Gladius
-I	2489	1	Two-handed Sword
-I	2490	1	Tomahawk
-I	2491	1	Large Axe
-I	2492	1	Cudgel
-I	2493	1	Wooden Mallet
-I	2494	1	Stiletto
-I	2495	1	Walking Stick
 I	2553	2	Recipe: Elixir of Minor Agility
 I	2555	2	Recipe: Swiftness Potion
 I	2589	1	Linen Cloth
 I	2592	1	Wool Cloth
 I	2598	2	Pattern: Red Linen Robe
 I	2601	2	Pattern: Gray Woolen Robe
-I	2621	2	Cowl of Necromancy
-I	2622	2	Nimar's Tribal Headdress
-I	2623	2	Holy Diadem
-I	2624	2	Thinking Cap
-I	2649	0	Flimsy Chain Belt
-I	2650	0	Flimsy Chain Boots
-I	2651	0	Flimsy Chain Bracers
-I	2652	0	Flimsy Chain Cloak
-I	2653	0	Flimsy Chain Gloves
-I	2654	0	Flimsy Chain Pants
-I	2656	0	Flimsy Chain Vest
 I	2657	1	Red Leather Bag
 I	2672	1	Stringy Wolf Meat
 I	2698	1	Recipe: Cooked Crab Claw
-I	2754	1	Tarnished Bastard Sword
 I	2770	1	Copper Ore
 I	2771	1	Tin Ore
 I	2772	1	Iron Ore
@@ -860,20 +802,13 @@ I	2881	2	Plans: Runed Copper Breastplate
 I	2882	2	Plans: Silvered Bronze Shoulders
 I	2883	2	Plans: Deadly Bronze Poniard
 I	2885	1	Scarlet Crusade Documents
-I	2901	1	Mining Pick
 I	2928	1	Dust of Decay
 I	2934	1	Ruined Leather Scraps
 I	2940	0	Bloody Bear Paw
-I	2971	1	Spellbinder Boots
-I	2972	1	Spellbinder Gloves
-I	2975	1	Hunting Boots
-I	2979	1	Veteran Boots
 I	2996	1	Bolt of Linen Cloth
 I	2997	1	Bolt of Woolen Cloth
-I	3011	2	Feathered Headdress
 I	3012	1	Scroll of Agility
 I	3013	1	Scroll of Protection
-I	3053	2	Humbert's Chestpiece
 I	3082	1	Dargol's Skull
 I	3156	1	Glutton Shackle
 I	3157	1	Darksoul Shackle
@@ -886,8 +821,6 @@ I	3170	0	Large Bear Tooth
 I	3173	1	Bear Meat
 I	3174	1	Spider Ichor
 I	3182	1	Spider's Silk
-I	3204	2	Deepwood Bracers
-I	3207	1	Hunting Bracers
 I	3218	1	Pyrewood Shackle
 I	3236	1	Rot Hide Ichor
 I	3253	1	Grizzled Bear Heart
@@ -895,45 +828,17 @@ I	3254	1	Skittering Blood
 I	3256	1	Lake Skulker Moss
 I	3257	1	Lake Creeper Moss
 I	3258	1	Hardened Tumor
-I	3260	1	Scarlet Initiate Robes
-I	3261	1	Webbed Cloak
-I	3262	1	Putrid Wooden Hammer
-I	3263	1	Webbed Pants
 I	3264	1	Duskbat Wing
 I	3265	1	Scavenger Paw
 I	3266	1	Scarlet Armband
-I	3293	1	Deadman Cleaver
-I	3294	1	Deadman Club
-I	3295	1	Deadman Blade
-I	3296	1	Deadman Dagger
 I	3299	0	Fractured Canine
 I	3300	0	Rabbit's Foot
 I	3301	0	Sharp Canine
-I	3304	1	Brackwater Gauntlets
-I	3311	1	Ceremonial Leather Ankleguards
 I	3317	1	A Talking Head
-I	3319	1	Short Sabre
-I	3321	1	Gray Fur Booties
-I	3322	1	Wispy Cloak
-I	3323	1	Ghostly Bracers
-I	3325	1	Vile Fin Battle Axe
-I	3327	1	Vile Fin Oracle Staff
-I	3328	1	Spider Web Robe
-I	3329	1	Spiked Wooden Plank
-I	3330	2	Dargol's Hauberk
-I	3331	1	Melrache's Cape
-I	3332	1	Perrine's Boots
-I	3334	1	Farmer's Shovel
-I	3335	1	Farmer's Broom
-I	3336	2	Flesh Piercer
-I	3341	2	Gauntlets of Ogre Strength
-I	3345	2	Silk Wizard Hat
 I	3354	1	Dalaran Pendant
 I	3355	1	Wild Steelbloom
 I	3357	1	Liferoot
 I	3358	1	Khadgar's Whisker
-I	3363	0	Frayed Belt
-I	3365	0	Frayed Bracers
 I	3369	1	Grave Moss
 I	3384	1	Minor Magic Resistance Potion
 I	3385	1	Lesser Mana Potion
@@ -943,7 +848,6 @@ I	3395	2	Recipe: Limited Invulnerability Potion
 I	3396	1	Recipe: Elixir of Lesser Agility
 I	3403	0	Ivory Boar Tusk
 I	3404	1	Buzzard Wing
-I	3429	2	Guardsman Belt
 I	3466	1	Strong Flux
 I	3467	1	Dull Iron Key
 I	3476	1	Gray Bear Tongue
@@ -960,8 +864,6 @@ I	3552	1	Glommus's Head
 I	3553	1	Mug'thol's Head
 I	3554	1	Crown of Will
 I	3601	1	Syndicate Missive
-I	3602	1	Knitted Belt
-I	3603	1	Knitted Bracers
 I	3608	2	Plans: Mighty Iron Hammer
 I	3609	2	Plans: Copper Chain Vest
 I	3610	2	Plans: Gemmed Copper Gauntlets
@@ -973,7 +875,6 @@ I	3623	1	Thule's Head
 I	3626	1	Head of Baron Vardus
 I	3634	1	Head of Grimson
 I	3635	1	Maggot Eye's Paw
-I	3643	1	Spellbinder Bracers
 I	3658	1	Recovered Tome
 I	3669	0	Gelatinous Goo
 I	3670	0	Large Slimy Bone
@@ -1017,7 +918,6 @@ I	3829	1	Frost Oil
 I	3830	1	Recipe: Elixir of Fortitude
 I	3831	1	Recipe: Mighty Troll's Blood Potion
 I	3832	2	Recipe: Elixir of Detect Lesser Invisibility
-I	3841	2	Golden Scale Shoulders
 I	3857	1	Coal
 I	3864	2	Citrine
 I	3866	2	Plans: Jade Serpentblade
@@ -1039,8 +939,6 @@ I	4213	2	Grimoire of Doom
 I	4232	1	Medium Hide
 I	4234	1	Heavy Leather
 I	4235	1	Heavy Hide
-I	4261	1	Solliden's Trousers
-I	4263	1	Standard Issue Shield
 I	4292	2	Pattern: Green Woolen Bag
 I	4293	2	Pattern: Hillman's Leather Vest
 I	4294	2	Pattern: Hillman's Belt
@@ -1050,8 +948,6 @@ I	4298	3	Pattern: Guardian Belt
 I	4299	2	Pattern: Guardian Armor
 I	4300	2	Pattern: Guardian Leather Bracers
 I	4301	3	Pattern: Barbaric Belt
-I	4302	1	Small Green Dagger
-I	4303	2	Cranial Thumper
 I	4304	1	Thick Leather
 I	4305	1	Bolt of Silk Cloth
 I	4306	1	Silk Cloth
@@ -1088,11 +984,7 @@ I	4425	1	Scroll of Agility III
 I	4426	1	Scroll of Strength III
 I	4428	0	Spider Palp
 I	4435	1	Mote of Myzrael
-I	4436	2	Jewel-encrusted Sash
-I	4437	2	Channeler's Staff
-I	4439	2	Bruiser Club
 I	4440	1	Sigil of Strom
-I	4445	2	Flesh Carver
 I	4450	1	Sigil Fragment
 I	4458	1	Sigil of Arathor
 I	4460	0	Ripped Wing Webbing
@@ -1156,8 +1048,6 @@ I	4606	1	Spongy Morel
 I	4607	1	Delicious Cave Mold
 I	4608	1	Raw Black Truffle
 I	4612	1	Black Drake's Heart
-I	4614	2	Pendant of Myzrael
-I	4616	1	Ryedol's Lucky Pick
 I	4621	1	Ambassador Infernus' Bracer
 I	4623	1	Lesser Stoneshield Potion
 I	4625	1	Firebloom
@@ -1174,20 +1064,9 @@ I	4638	2	Reinforced Steel Lockbox
 I	4640	1	Sign of the Earth
 I	4646	1	Star of Xil'yeh
 I	4655	1	Giant Clam Meat
-I	4678	1	Veteran Girdle
-I	4681	1	Brackwater Girdle
-I	4687	1	Barbaric Cloth Belt
-I	4693	1	Ceremonial Leather Belt
-I	4694	1	Burnished Pauldrons
-I	4698	1	Seer's Mantle
-I	4700	1	Inscribed Leather Spaulders
-I	4723	2	Humbert's Pants
-I	4724	2	Humbert's Helm
-I	4767	2	Coppercloth Gloves
 I	4784	0	Lifeless Stone
 I	4787	0	Burning Pitch
 I	4791	1	Enchanted Water
-I	4810	2	Boulder Pads
 I	4843	1	Amethyst Runestone
 I	4844	1	Opal Runestone
 I	4845	1	Diamond Runestone
@@ -1196,8 +1075,6 @@ I	4867	0	Broken Scorpid Leg
 I	4872	0	Dry Scorpid Eye
 I	4874	0	Clean Fishbones
 I	4957	1	Old Moneybag
-I	5040	1	Shadow Hunter Knife
-I	5110	1	Dalaran Wizard's Robe
 I	5113	0	Mark of the Syndicate
 I	5116	1	Long Tail Feather
 I	5117	1	Vibrant Plume
@@ -1206,11 +1083,6 @@ I	5136	0	Torn Furry Ear
 I	5137	0	Bright Eyeball
 I	5140	1	Flash Powder
 I	5173	1	Deathweed
-I	5180	2	Necklace of Harmony
-I	5181	2	Vibrant Silk Cape
-I	5245	2	Summoner's Wand
-I	5256	2	Kovork's Rattle
-I	5257	3	Dark Hooded Cape
 I	5374	0	Small Pocket Watch
 I	5428	0	An Exotic Cookbook
 I	5432	0	Hickory Pipe
@@ -1233,7 +1105,6 @@ I	5575	1	Large Green Sack
 I	5576	1	Large Brown Sack
 I	5578	2	Plans: Silvered Bronze Breastplate
 I	5620	1	Vial of Innocent Blood
-I	5624	2	Circlet of the Order
 I	5635	1	Sharp Claw
 I	5636	0	Delicate Feather
 I	5637	1	Large Fang
@@ -1255,10 +1126,8 @@ I	5829	0	Razor-sharp Beak
 I	5830	1	Kenata's Head
 I	5831	1	Fardel's Head
 I	5832	1	Marcel's Head
-I	5969	2	Regent's Cloak
 I	5972	2	Pattern: Fine Leather Pants
 I	5974	2	Pattern: Guardian Cloak
-I	5975	2	Ruffian Belt
 I	6044	2	Plans: Iron Shield Spike
 I	6045	2	Plans: Iron Counterweight
 I	6046	2	Plans: Steel Weapon Chain
@@ -1273,8 +1142,6 @@ I	6296	0	Patch of Bat Hair
 I	6303	1	Raw Slitherskin Mackerel
 I	6308	1	Raw Bristle Whisker Catfish
 I	6312	1	Dalin's Heart
-I	6327	3	The Pacifier
-I	6331	3	Howling Blade
 I	6342	2	Formula: Enchant Chest - Minor Mana
 I	6344	2	Formula: Enchant Bracer - Minor Spirit
 I	6347	2	Formula: Enchant Bracer - Minor Strength
@@ -1287,12 +1154,6 @@ I	6391	2	Pattern: Stylish Green Shirt
 I	6444	0	Forked Tongue
 I	6454	2	Manual: Strong Anti-Venom
 I	6530	1	Nightcrawlers
-I	6549	1	Soldier's Cloak
-I	6555	1	Bard's Cloak
-I	6566	1	Shimmering Amice
-I	6579	1	Defender Spaulders
-I	6588	1	Scouting Spaulders
-I	6628	2	Raven's Claws
 I	6716	2	Schematic: EZ-Thro Dynamite
 I	6756	1	Jewelry Box
 I	6887	1	Spotted Yellowtail
@@ -1364,7 +1225,6 @@ I	8169	1	Thick Hide
 I	8170	1	Rugged Leather
 I	8171	1	Rugged Hide
 I	8244	3	Flawless Draenethyst Sphere
-I	8269	2	Ebonhold Boots
 I	8364	1	Mithril Head Trout
 I	8368	1	Thick Wolfhide
 I	8384	3	Pattern: Comfortable Leather Hat
@@ -1407,7 +1267,6 @@ I	9206	1	Elixir of Giants
 I	9224	1	Elixir of Demonslaying
 I	9241	1	Sacred Mallet
 I	9242	0	Ancient Tablet
-I	9243	2	Shriveled Heart
 I	9259	1	Troll Tribal Necklace
 I	9262	1	Black Vitriol
 I	9293	2	Recipe: Magic Resistance Potion
@@ -1418,9 +1277,6 @@ I	9297	2	Recipe: Elixir of Dream Vision
 I	9298	2	Recipe: Elixir of Giants
 I	9320	1	Witherbark Skull
 I	9322	1	Undamaged Venom Sac
-I	9375	3	Expert Goldminer's Helmet
-I	9378	3	Shovelphlange's Mining Axe
-I	9382	2	Tromping Miner's Boots
 I	9472	1	Hexx's Key
 I	9591	1	Resilient Sinew
 I	9592	1	Metallic Fragments
@@ -1439,8 +1295,6 @@ I	10312	2	Pattern: Red Mageweave Gloves
 I	10315	2	Pattern: Red Mageweave Shoulders
 I	10316	2	Pattern: Colorful Kilt
 I	10320	2	Pattern: Red Mageweave Headband
-I	10405	1	Bandit Shoulders
-I	10407	1	Raider's Shoulderpads
 I	10424	2	Plans: Silvered Bronze Leggings
 I	10505	1	Solid Blasting Powder
 I	10561	1	Mithril Casing
@@ -1568,15 +1422,8 @@ I	13499	2	Recipe: Greater Shadow Protection Potion
 I	13518	2	Recipe: Flask of Petrification
 I	13853	1	Slab of Carrion Worm Meat
 I	14047	1	Runecloth
-I	14115	1	Aboriginal Bands
-I	14116	1	Aboriginal Cape
-I	14126	1	Ritual Amice
-I	14157	1	Pagan Mantle
-I	14169	1	Aboriginal Shoulder Pads
-I	14170	1	Buccaneer's Mantle
 I	14227	1	Ironweb Spider Silk
 I	14256	1	Felcloth
-I	14368	1	Mystic's Shoulder Pads
 I	14466	2	Pattern: Frostweave Tunic
 I	14467	2	Pattern: Frostweave Robe
 I	14470	2	Pattern: Runecloth Tunic
@@ -1603,19 +1450,11 @@ I	14506	2	Pattern: Felcloth Robe
 I	14507	3	Pattern: Mooncloth Shoulders
 I	14508	2	Pattern: Felcloth Shoulders
 I	14619	1	Skeletal Fragments
-I	14728	1	War Paint Shoulder Pads
-I	15013	1	Lupine Cuffs
-I	15019	1	Lupine Mantle
-I	15300	1	Grizzly Gloves
-I	15313	1	Feral Shoulder Pads
 I	15408	1	Heavy Scorpid Scale
 I	15412	1	Green Dragonscale
 I	15419	1	Warbear Leather
 I	15420	1	Ironfeather
 I	15447	1	Living Rot
-I	15490	1	Bloodspattered Cloak
-I	15496	1	Bloodspattered Shoulder Pads
-I	15505	1	Outrunner's Pauldrons
 I	15727	2	Pattern: Heavy Scorpid Vest
 I	15731	2	Pattern: Runic Leather Gauntlets
 I	15737	2	Pattern: Chimeric Boots
@@ -1632,7 +1471,6 @@ I	15771	3	Pattern: Living Breastplate
 I	15785	1	Zaeldarr's Head
 I	15850	1	Patch of Duskwing's Fur
 I	15868	1	The Grand Crusader's Command
-I	16039	3	Ta'Kierthan Songblade
 I	16043	2	Schematic: Thorium Rifle
 I	16044	2	Schematic: Lifelike Mechanical Toad
 I	16051	2	Schematic: Thorium Shells
@@ -1648,13 +1486,8 @@ I	16245	2	Formula: Enchant Boots - Greater Agility
 I	16251	2	Formula: Enchant Bracer - Superior Stamina
 I	16252	2	Formula: Enchant Weapon - Crusader
 I	16333	1	Samuel's Remains
-I	17050	3	Chan's Imperial Robes
 I	17057	1	Shiny Fish Scales
 I	17058	1	Fish Oil
-I	17111	4	Blazefury Medallion
-I	17112	4	Empyrean Demolisher
-I	17113	4	Amberseal Keeper
-I	17187	1	Banded Buckler
 I	17202	1	Snowball
 I	17306	1	Stormpike Soldier's Blood
 I	17326	1	Stormpike Soldier's Flesh
@@ -1667,23 +1500,15 @@ I	17503	1	Frostwolf Lieutenant's Medal
 I	17504	1	Frostwolf Commander's Medal
 I	17662	1	Stolen Treats
 I	17709	1	Recipe: Elixir of Frost Power
-I	18204	4	Eskhandar's Pelt
 I	18206	1	Dwarf Spine
 I	18225	0	Worn Running Shoes
 I	18231	0	Sleeveless T-Shirt
 I	18335	3	Pristine Black Diamond
 I	18512	1	Larval Acid
-I	18543	4	Ring of Entropy
-I	18544	4	Doomhide Gauntlets
-I	18546	4	Infernal Headcage
 I	18623	1	Flawless Fel Essence (Dark Portal)
-I	18665	4	The Eye of Shadow
 I	19023	1	Katoom's Best Lure
 I	19025	1	Skylord Plume
 I	19064	1	Shackle Key
-I	19133	4	Fel Infused Leggings
-I	19134	4	Flayed Doomguard Belt
-I	19135	4	Blacklight Bracer
 I	19230	3	Two of Beasts
 I	19231	3	Three of Beasts
 I	19232	3	Four of Beasts
@@ -2579,10 +2404,7 @@ I	732	1	Okra
 I	735	1	Rolf and Malakai's Medallions
 I	750	1	Tough Wolf Meat
 I	752	1	Red Burlap Bandana
-I	753	2	Dragonmaw Shortsword
 I	755	0	Melted Candle
-I	756	2	Tunnel Pick
-I	763	1	Ice-covered Bracers
 I	765	1	Silverleaf
 I	769	1	Chunk of Boar Meat
 I	770	0	Pointy Crocolisk Tooth
@@ -2591,10 +2413,8 @@ I	772	1	Large Candle
 I	773	1	Gold Dust
 I	774	2	Malachite
 I	777	0	Prowler Teeth
-I	778	1	Kobold Excavation Pick
 I	779	0	Shiny Seashell
 I	780	1	Torn Murloc Fin
-I	781	1	Stone Gnoll Hammer
 I	782	1	Painted Gnoll Armband
 I	783	1	Light Hide
 I	785	1	Mageroyal
@@ -2602,33 +2422,18 @@ I	787	1	Slitherskin Mackerel
 I	804	1	Large Blue Sack
 I	805	1	Small Red Pouch
 I	814	1	Flask of Oil
-I	816	2	Small Hand Blade
 I	818	2	Tigerseye
-I	820	2	Slicer Blade
-I	821	2	Riverpaw Leather Vest
-I	826	2	Brutish Riverpaw Axe
-I	827	2	Wicked Blackjack
 I	828	1	Small Blue Pouch
 I	829	1	Red Leather Bandana
-I	832	2	Silver Defias Belt
 I	835	1	Large Rope Net
 I	856	1	Blue Leather Bag
 I	857	1	Large Red Sack
 I	858	1	Lesser Healing Potion
 I	878	0	Fist-sized Spinneret
-I	880	2	Staff of Horrors
 I	884	1	Ghoul Rib
-I	885	2	Black Metal Axe
-I	886	2	Black Metal Shortsword
 I	887	0	Pound of Flesh
-I	892	2	Gnoll Casting Gloves
 I	893	0	Dire Wolf Fang
-I	897	2	Madwolf Bracers
-I	899	2	Venom Web Fang
-I	911	2	Ironwood Treebranch
-I	914	2	Large Ogre Chain Armor
 I	915	1	Red Silk Bandana
-I	920	2	Wicked Spiked Mace
 I	929	1	Healing Potion
 I	933	1	Large Rucksack
 I	954	1	Scroll of Strength
@@ -2640,7 +2445,6 @@ I	1015	1	Lean Wolf Flank
 I	1019	1	Red Linen Bandana
 I	1074	0	Hard Spider Leg Tip
 I	1075	1	Shadowhide Pendant
-I	1077	2	Defias Mage Ring
 I	1080	1	Tough Condor Meat
 I	1081	1	Crisp Spider Meat
 I	1129	1	Ghoul Fang
@@ -2650,92 +2454,37 @@ I	1179	1	Ice Cold Milk
 I	1180	1	Scroll of Stamina
 I	1181	1	Scroll of Spirit
 I	1187	2	Spiked Collar
-I	1190	2	Overseer's Cloak
-I	1195	1	Kobold Mining Shovel
 I	1205	1	Melon Juice
 I	1206	2	Moss Agate
 I	1210	2	Shadowgem
-I	1211	2	Gnoll War Harness
 I	1212	0	Gnoll Spittle
-I	1213	1	Gnoll Kindred Bracers
-I	1214	2	Gnoll Punisher
-I	1215	2	Support Girdle
-I	1218	2	Heavy Gnoll War Club
-I	1219	2	Redridge Machete
-I	1220	2	Lupine Axe
 I	1221	1	Underbelly Whelp Scale
 I	1256	1	Crystal Kelp Frond
 I	1260	1	Tharil'zun's Head
 I	1261	1	Midnight Orb
 I	1274	1	Hops
-I	1287	2	Giant Tarantula Fang
 I	1288	1	Large Venom Sac
-I	1296	2	Blackrock Mace
-I	1299	2	Lesser Belt of the Spire
-I	1300	2	Lesser Staff of the Spire
 I	1307	1	Gold Pickup Schedule
-I	1314	2	Ghoul Fingers
 I	1357	1	Captain Sander's Treasure Map
-I	1364	0	Ragged Leather Vest
-I	1366	0	Ragged Leather Pants
-I	1367	0	Ragged Leather Boots
-I	1368	0	Ragged Leather Gloves
-I	1369	0	Ragged Leather Belt
-I	1370	0	Ragged Leather Bracers
-I	1372	0	Ragged Cloak
-I	1374	0	Frayed Shoes
-I	1376	0	Frayed Cloak
-I	1377	0	Frayed Gloves
-I	1378	0	Frayed Pants
-I	1380	0	Frayed Robe
 I	1381	1	A Mysterious Message
-I	1387	2	Ghoulfang
-I	1389	1	Kobold Mining Mallet
-I	1391	2	Riverpaw Mystic Staff
-I	1394	2	Driftwood Club
 I	1399	1	Magic Candle
 I	1401	1	Green Tea Leaf
-I	1405	2	Foamspittle Staff
-I	1406	2	Pearl-encrusted Spear
-I	1440	2	Gnoll Skull Basher
-I	1445	1	Blackrock Pauldrons
-I	1446	2	Blackrock Boots
-I	1448	2	Blackrock Gauntlets
-I	1455	2	Blackrock Champion's Axe
-I	1457	2	Shadowhide Mace
-I	1458	2	Shadowhide Maul
-I	1459	2	Shadowhide Scalper
-I	1460	2	Shadowhide Two-handed Sword
-I	1461	2	Slayer's Battle Axe
-I	1462	2	Ring of the Shadow
 I	1464	0	Buzzard Talon
 I	1467	1	Spotted Sunfish
 I	1468	1	Murloc Fin
-I	1469	2	Scimitar of Atun
-I	1473	2	Riverside Staff
 I	1475	1	Small Venom Sac
 I	1476	0	Snapped Spider Limb
 I	1477	1	Scroll of Agility II
 I	1478	1	Scroll of Protection II
 I	1519	1	Bloodscalp Ear
 I	1520	0	Troll Sweat
-I	1522	2	Headhunting Spear
-I	1523	2	Huge Stone Club
 I	1524	1	Skullsplitter Tusk
 I	1529	2	Jade
 I	1532	1	Shrunken Head
-I	1560	2	Bluegill Sandals
 I	1598	1	Rot Blossom
-I	1604	2	Chromatic Sword
-I	1624	2	Skullsplitter Helm
 I	1630	0	Broken Electro-lantern
 I	1645	1	Moonberry Juice
 I	1652	1	Sturdy Lunchbox
-I	1659	2	Engineering Gloves
-I	1664	2	Spellforce Rod
-I	1677	2	Drake-scale Vest
-I	1679	2	Korg Bat
-I	1680	2	Headchopper
 I	1685	1	Troll-hide Bag
 I	1686	0	Bristly Whisker
 I	1687	0	Retractable Claw
@@ -2755,88 +2504,17 @@ I	1712	1	Scroll of Spirit II
 I	1725	1	Large Knapsack
 I	1875	1	Thistlenettle's Badge
 I	1894	1	Miners' Union Card
-I	1913	1	Studded Blackjack
-I	1917	2	Jeweled Dagger
-I	1926	2	Weighted Sap
-I	1927	2	Deadmines Cleaver
-I	1928	2	Defias Mage Staff
 I	1931	1	Huge Gnoll Claw
-I	1933	2	Staff of Conjuring
-I	1938	2	Block Mallet
 I	1946	1	Mary's Looking Glass
-I	1955	2	Dragonmaw Chain Boots
-I	1958	2	Petrified Shinbone
-I	1959	2	Cold Iron Pick
 I	1962	1	Glowing Shadowhide Pendant
-I	1965	1	White Wolf Gloves
 I	1968	1	Ogre's Monocle
 I	1972	1	Westfall Deed
-I	1986	2	Gutrender
-I	1991	2	Goblin Power Shovel
-I	1996	2	Voodoo Band
-I	1997	2	Pressed Felt Robe
-I	1998	2	Bloodscalp Channeling Staff
 I	2004	1	Grelin Whitebeard's Journal
-I	2013	2	Cryptbone Staff
-I	2014	2	Black Metal Greatsword
-I	2015	2	Black Metal War Axe
-I	2017	2	Glowing Leather Bracers
-I	2018	2	Skeletal Longsword
-I	2020	2	Hollowfang Blade
-I	2021	2	Green Carapace Shield
-I	2046	2	Bluegill Kukri
-I	2054	1	Trogg Hand Axe
-I	2055	1	Small Wooden Hammer
-I	2057	1	Pitted Defias Shortsword
-I	2058	2	Kazon's Maul
-I	2064	1	Trogg Club
-I	2065	1	Rockjaw Blade
-I	2066	1	Skull Hatchet
-I	2067	1	Frostbit Staff
-I	2069	1	Black Bear Hide Vest
 I	2070	1	Darnassian Bleu
-I	2084	2	Darksteel Bastard Sword
 I	2085	0	Chunk of Flesh
-I	2087	2	Hard Crawler Carapace
-I	2088	2	Long Crawler Limb
 I	2091	1	Magic Dust
-I	2108	1	Frostmane Leather Vest
-I	2109	1	Frostmane Chain Vest
-I	2110	1	Light Magesmith Robe
-I	2112	1	Lumberjack Jerkin
-I	2114	1	Snowy Robe
-I	2129	1	Large Round Shield
-I	2166	2	Foreman's Leggings
-I	2167	2	Foreman's Gloves
-I	2168	2	Foreman's Boots
-I	2175	2	Shadowhide Battle Axe
-I	2203	2	Brashclaw's Chopper
-I	2204	2	Brashclaw's Skewer
-I	2210	0	Battered Buckler
-I	2211	0	Bent Large Shield
-I	2226	2	Ogremage Staff
-I	2227	2	Heavy Ogre War Axe
-I	2232	2	Dark Runner Boots
-I	2233	2	Shadow Weaver Leggings
-I	2234	2	Nightwalker Armor
-I	2235	2	Brackclaw
 I	2239	1	The Collector's Ring
-I	2241	2	Desperado Cape
 I	2251	1	Gooey Spider Leg
-I	2254	2	Icepane Warhammer
-I	2257	1	Frostmane Staff
-I	2258	1	Frostmane Shortsword
-I	2259	1	Frostmane Club
-I	2260	1	Frostmane Hand Axe
-I	2265	2	Stonesplinter Axe
-I	2266	2	Stonesplinter Dagger
-I	2267	2	Stonesplinter Mace
-I	2268	1	Stonesplinter Blade
-I	2274	2	Sapper's Gloves
-I	2281	2	Rodentia Flint Axe
-I	2282	1	Rodentia Shortsword
-I	2283	2	Rat Cloth Belt
-I	2284	2	Rat Cloth Cloak
 I	2287	1	Haunch of Meat
 I	2289	1	Scroll of Strength II
 I	2290	1	Scroll of Intellect II
@@ -2844,16 +2522,7 @@ I	2295	0	Large Boar Tusk
 I	2296	1	Great Goretusk Snout
 I	2318	1	Light Leather
 I	2319	1	Medium Leather
-I	2327	1	Sturdy Leather Bracers
 I	2378	1	Skeleton Finger
-I	2379	1	Tarnished Chain Vest
-I	2380	1	Tarnished Chain Belt
-I	2381	1	Tarnished Chain Leggings
-I	2383	1	Tarnished Chain Boots
-I	2384	1	Tarnished Chain Bracers
-I	2385	1	Tarnished Chain Gloves
-I	2396	1	Light Mail Bracers
-I	2398	1	Light Chain Armor
 I	2406	2	Pattern: Fine Leather Boots
 I	2407	2	Pattern: White Leather Jerkin
 I	2408	2	Pattern: Fine Leather Gloves
@@ -2867,11 +2536,9 @@ I	2455	1	Minor Mana Potion
 I	2466	1	Skullsplitter Fetish
 I	2476	1	Chilled Basilisk Haunch
 I	2536	1	Trogg Stone Tooth
-I	2546	1	Royal Frostmane Girdle
 I	2553	2	Recipe: Elixir of Minor Agility
 I	2555	2	Recipe: Swiftness Potion
 I	2561	1	Chok'sul's Head
-I	2566	2	Sacrificial Robes
 I	2589	1	Linen Cloth
 I	2590	0	Forest Spider Webbing
 I	2591	0	Dirty Trogg Cloth
@@ -2885,13 +2552,6 @@ I	2611	1	Crude Flint
 I	2629	1	Intrepid Strongbox Key
 I	2633	1	Jungle Remedy
 I	2636	1	Carved Stone Idol
-I	2649	0	Flimsy Chain Belt
-I	2650	0	Flimsy Chain Boots
-I	2651	0	Flimsy Chain Bracers
-I	2652	0	Flimsy Chain Cloak
-I	2653	0	Flimsy Chain Gloves
-I	2654	0	Flimsy Chain Pants
-I	2656	0	Flimsy Chain Vest
 I	2657	1	Red Leather Bag
 I	2671	1	Wendigo Mane
 I	2672	1	Stringy Wolf Meat
@@ -2924,13 +2584,9 @@ I	2771	1	Tin Ore
 I	2772	1	Iron Ore
 I	2775	2	Silver Ore
 I	2776	2	Gold Ore
-I	2787	1	Trogg Dagger
 I	2794	1	An Old History Book
 I	2798	1	Rethban Ore
 I	2799	1	Gorilla Fang
-I	2821	2	Mo'grosh Masher
-I	2822	2	Mo'grosh Toothpick
-I	2823	2	Mo'grosh Can Opener
 I	2835	1	Rough Stone
 I	2836	1	Coarse Stone
 I	2838	1	Heavy Stone
@@ -2940,34 +2596,17 @@ I	2881	2	Plans: Runed Copper Breastplate
 I	2882	2	Plans: Silvered Bronze Shoulders
 I	2883	2	Plans: Deadly Bronze Poniard
 I	2886	1	Crag Boar Rib
-I	2898	1	Mountaineer Chestpiece
-I	2899	2	Wendigo Collar
-I	2901	1	Mining Pick
 I	2924	1	Crocolisk Meat
 I	2925	1	Crocolisk Skin
 I	2928	1	Dust of Decay
 I	2934	1	Ruined Leather Scraps
 I	2939	1	Crocolisk Tear
 I	2940	0	Bloody Bear Paw
-I	2955	2	First Mate Hat
-I	2971	1	Spellbinder Boots
-I	2972	1	Spellbinder Gloves
-I	2975	1	Hunting Boots
-I	2979	1	Veteran Boots
 I	2997	1	Bolt of Woolen Cloth
-I	3000	2	Brood Mother Carapace
-I	3008	1	Wendigo Fur Cloak
 I	3010	0	Fine Sand
 I	3012	1	Scroll of Agility
 I	3013	1	Scroll of Protection
 I	3014	1	Battleworn Axe
-I	3018	2	Hide of Lupos
-I	3019	2	Noble's Robe
-I	3022	2	Bluegill Breeches
-I	3072	2	Smoldering Robe
-I	3073	2	Smoldering Pants
-I	3074	2	Smoldering Gloves
-I	3076	2	Smoldering Boots
 I	3080	1	Candle of Beckoning
 I	3083	1	Restabilization Cog
 I	3084	1	Gyromechanic Gear
@@ -2987,20 +2626,10 @@ I	3180	0	Flecked Raptor Scale
 I	3181	0	Partially Digested Meat
 I	3182	1	Spider's Silk
 I	3183	1	Mangy Claw
-I	3188	2	Coral Claymore
-I	3207	1	Hunting Bracers
-I	3223	2	Frostmane Scepter
-I	3224	1	Silver-lined Bracers
-I	3225	1	Bloodstained Knife
-I	3227	2	Nightbane Staff
-I	3229	2	Tarantula Silk Sash
-I	3231	2	Cutthroat Pauldrons
 I	3233	1	Gnoll Hide Sack
 I	3299	0	Fractured Canine
 I	3300	0	Rabbit's Foot
 I	3301	0	Sharp Canine
-I	3304	1	Brackwater Gauntlets
-I	3311	1	Ceremonial Leather Ankleguards
 I	3337	1	Dragonmaw War Banner
 I	3339	1	Dwarven Tinder
 I	3340	1	Incendicite Ore
@@ -3010,11 +2639,8 @@ I	3355	1	Wild Steelbloom
 I	3356	1	Kingsblood
 I	3357	1	Liferoot
 I	3358	1	Khadgar's Whisker
-I	3363	0	Frayed Belt
-I	3365	0	Frayed Bracers
 I	3369	1	Grave Moss
 I	3385	1	Lesser Mana Potion
-I	3392	2	Ringed Helm
 I	3393	1	Recipe: Minor Magic Resistance Potion
 I	3394	1	Recipe: Elixir of Poison Resistance
 I	3395	2	Recipe: Limited Invulnerability Potion
@@ -3026,10 +2652,7 @@ I	3402	0	Soft Patch of Fur
 I	3403	0	Ivory Boar Tusk
 I	3404	1	Buzzard Wing
 I	3466	1	Strong Flux
-I	3471	2	Copper Chain Vest
 I	3514	1	Mor'Ladim's Skull
-I	3563	2	Seafarer's Pantaloons
-I	3571	2	Trogg Beater
 I	3608	2	Plans: Mighty Iron Hammer
 I	3609	2	Plans: Copper Chain Vest
 I	3610	2	Plans: Gemmed Copper Gauntlets
@@ -3050,7 +2673,6 @@ I	3633	1	Head of Gath'Ilzogg
 I	3636	1	Scale of Old Murk-Eye
 I	3638	1	Sarltooth's Talon
 I	3639	1	Ear of Balgaras
-I	3643	1	Spellbinder Bracers
 I	3667	1	Tender Crocolisk Meat
 I	3669	0	Gelatinous Goo
 I	3670	0	Large Slimy Bone
@@ -3096,7 +2718,6 @@ I	3880	1	Head of Bangalash
 I	3882	0	Buzzard Feather
 I	3897	1	Dizzy's Eye
 I	3901	1	Bloodscalp Tusk
-I	3902	2	Staff of Nobles
 I	3904	1	Gan'zulah's Head
 I	3905	1	Nezzliok's Head
 I	3909	1	Broken Armor of Ana'thek
@@ -3117,7 +2738,6 @@ I	3928	1	Superior Healing Potion
 I	3930	1	Maury's Key
 I	3931	0	Poisoned Spider Fang
 I	3932	1	Smotts' Chest
-I	3985	2	Monogrammed Sash
 I	4016	1	Zanzil's Mixture
 I	4027	1	Catelyn's Blade
 I	4029	1	Akiris Reed
@@ -3135,7 +2755,6 @@ I	4106	1	Tumbled Crystal
 I	4232	1	Medium Hide
 I	4234	1	Heavy Leather
 I	4235	1	Heavy Hide
-I	4290	2	Dust Bowl
 I	4292	2	Pattern: Green Woolen Bag
 I	4293	2	Pattern: Hillman's Leather Vest
 I	4294	2	Pattern: Hillman's Belt
@@ -3145,7 +2764,6 @@ I	4298	3	Pattern: Guardian Belt
 I	4299	2	Pattern: Guardian Armor
 I	4300	2	Pattern: Guardian Leather Bracers
 I	4301	3	Pattern: Barbaric Belt
-I	4302	1	Small Green Dagger
 I	4304	1	Thick Leather
 I	4306	1	Silk Cloth
 I	4337	1	Thick Spider's Silk
@@ -3188,24 +2806,9 @@ I	4424	1	Scroll of Spirit III
 I	4425	1	Scroll of Agility III
 I	4426	1	Scroll of Strength III
 I	4428	0	Spider Palp
-I	4434	2	Scarecrow Trousers
-I	4444	2	Black Husk Shield
-I	4446	3	Blackvenom Blade
-I	4447	2	Cloak of Night
-I	4448	2	Husk of Naraxis
-I	4449	2	Naraxis' Fang
-I	4454	3	Talon of Vultros
 I	4459	0	Brittle Dragon Bone
 I	4460	0	Ripped Wing Webbing
 I	4461	1	Raptor Hide
-I	4462	2	Cloak of Rot
-I	4463	2	Beaded Raptor Collar
-I	4464	2	Trouncing Boots
-I	4465	2	Bonefist Gauntlets
-I	4474	2	Ravenwood Bow
-I	4476	2	Beastwalker Robe
-I	4477	2	Nefarious Buckler
-I	4478	2	Iridescent Scale Leggings
 I	4496	1	Small Brown Pouch
 I	4500	2	Traveler's Backpack
 I	4536	1	Shiny Red Apple
@@ -3241,7 +2844,6 @@ I	4605	1	Red-speckled Mushroom
 I	4606	1	Spongy Morel
 I	4607	1	Delicious Cave Mold
 I	4608	1	Raw Black Truffle
-I	4614	2	Pendant of Myzrael
 I	4625	1	Firebloom
 I	4632	2	Ornate Bronze Lockbox
 I	4633	2	Heavy Bronze Lockbox
@@ -3253,17 +2855,7 @@ I	4638	2	Reinforced Steel Lockbox
 I	4644	1	The Legacy Heart
 I	4655	1	Giant Clam Meat
 I	4656	1	Small Pumpkin
-I	4660	2	Walking Boots
-I	4676	2	Skeletal Gauntlets
-I	4678	1	Veteran Girdle
-I	4681	1	Brackwater Girdle
-I	4687	1	Barbaric Cloth Belt
-I	4693	1	Ceremonial Leather Belt
-I	4694	1	Burnished Pauldrons
-I	4698	1	Seer's Mantle
-I	4700	1	Inscribed Leather Spaulders
 I	4757	0	Cracked Egg Shells
-I	4766	2	Feral Blade
 I	4775	0	Cracked Bill
 I	4776	0	Ruffled Feather
 I	4784	0	Lifeless Stone
@@ -3276,12 +2868,6 @@ I	4865	0	Ruined Pelt
 I	4867	0	Broken Scorpid Leg
 I	4872	0	Dry Scorpid Eye
 I	4874	0	Clean Fishbones
-I	4949	2	Orcish Cleaver
-I	5028	2	Lord Sakrasis' Scepter
-I	5029	2	Talisman of the Naga Lord
-I	5079	2	Cold Basilisk Eye
-I	5109	1	Stonesplinter Rags
-I	5110	1	Dalaran Wizard's Robe
 I	5114	0	Severed Talon
 I	5115	0	Broken Wishbone
 I	5116	1	Long Tail Feather
@@ -3293,7 +2879,6 @@ I	5133	0	Seeping Gizzard
 I	5140	1	Flash Powder
 I	5173	1	Deathweed
 I	5233	1	Stone of Relu
-I	5319	1	Bashing Pauldrons
 I	5368	0	Empty Wallet
 I	5374	0	Small Pocket Watch
 I	5375	0	Scratching Stick
@@ -3304,7 +2889,6 @@ I	5500	2	Iridescent Pearl
 I	5503	1	Clam Meat
 I	5504	1	Tangy Clam Meat
 I	5506	0	Beady Eye Stalk
-I	5516	0	Threshadon Fang
 I	5523	1	Small Barnacled Clam
 I	5524	1	Thick-shelled Clam
 I	5529	0	Tomb Dust
@@ -3319,20 +2903,14 @@ I	5574	1	White Leather Bag
 I	5575	1	Large Green Sack
 I	5576	1	Large Brown Sack
 I	5578	2	Plans: Silvered Bronze Breastplate
-I	5608	2	Living Cowl
 I	5635	1	Sharp Claw
 I	5636	0	Delicate Feather
 I	5637	1	Large Fang
 I	5669	1	Dust Devil Debris
 I	5741	0	Rock Chip
-I	5744	2	Pale Skinner
-I	5749	2	Scythe Axe
-I	5750	2	Warchief's Girdle
-I	5755	2	Onyx Shredder Plate
 I	5758	2	Mithril Lockbox
 I	5759	2	Thorium Lockbox
 I	5760	2	Eternium Lockbox
-I	5767	1	Violet Robes
 I	5771	1	Pattern: Red Linen Bag
 I	5772	1	Pattern: Red Woolen Bag
 I	5773	2	Pattern: Robes of Arcana
@@ -3346,8 +2924,6 @@ I	5797	1	Indurium Flake
 I	5803	1	Speck of Dream Dust
 I	5851	1	Cozzle's Key
 I	5938	1	Pristine Crawler Leg
-I	5956	1	Blacksmith Hammer
-I	5967	2	Girdle of Nobility
 I	5972	2	Pattern: Fine Leather Pants
 I	5974	2	Pattern: Guardian Cloak
 I	6044	2	Plans: Iron Shield Spike
@@ -3357,34 +2933,18 @@ I	6065	1	Khadgar's Essays on Dimensional Convergence
 I	6080	1	Shadow Panther Heart
 I	6081	1	Mire Lord Fungus
 I	6147	1	Ratty Old Belt
-I	6148	1	Web-covered Boots
 I	6149	1	Greater Mana Potion
 I	6168	1	Sawtooth Snapper Claw
 I	6169	1	Unprepared Sawtooth Flank
-I	6179	2	Privateer's Cape
-I	6180	2	Slarkskin
 I	6181	1	Fetish of Hakkar
 I	6184	1	Monstrous Crawler Leg
 I	6190	1	Draenethyst Shard
-I	6195	2	Wax-polished Armor
-I	6196	0	Noboru's Cudgel
-I	6197	2	Loch Croc Hide Vest
-I	6198	2	Jurassic Wristguards
-I	6199	2	Black Widow Band
-I	6200	2	Garneg's War Belt
-I	6201	1	Lithe Boots
-I	6202	1	Fingerless Gloves
-I	6203	1	Thuggish Shield
-I	6204	2	Tribal Worg Helm
-I	6205	2	Burrowing Shovel
-I	6206	1	Rock Chipper
 I	6211	1	Recipe: Elixir of Ogre's Strength
 I	6271	2	Pattern: Red Linen Vest
 I	6289	1	Raw Longjaw Mud Snapper
 I	6303	1	Raw Slitherskin Mackerel
 I	6308	1	Raw Bristle Whisker Catfish
 I	6313	1	Comar's Heart
-I	6315	2	Steelarrow Crossbow
 I	6317	1	Raw Loch Frenzy
 I	6342	2	Formula: Enchant Chest - Minor Mana
 I	6344	2	Formula: Enchant Bracer - Minor Spirit
@@ -3397,11 +2957,6 @@ I	6390	2	Pattern: Stylish Blue Shirt
 I	6391	2	Pattern: Stylish Green Shirt
 I	6454	2	Manual: Strong Anti-Venom
 I	6530	1	Nightcrawlers
-I	6549	1	Soldier's Cloak
-I	6555	1	Bard's Cloak
-I	6566	1	Shimmering Amice
-I	6579	1	Defender Spaulders
-I	6588	1	Scouting Spaulders
 I	6716	2	Schematic: EZ-Thro Dynamite
 I	6753	1	Feather Charm
 I	6783	1	Dead-tooth's Key
@@ -3441,7 +2996,6 @@ I	7098	0	Splintered Tusk
 I	7131	1	Dragonmaw Shinbone
 I	7191	1	Fused Wiring
 I	7267	1	Pristine Spider Silk
-I	7280	2	Rugged Leather Pants
 I	7286	1	Black Whelp Scale
 I	7287	1	Red Whelp Scale
 I	7288	2	Pattern: Rugged Leather Pants
@@ -3458,7 +3012,6 @@ I	7452	3	Pattern: Dusky Boots
 I	7453	2	Pattern: Swift Boots
 I	7666	2	Shattered Necklace
 I	7675	1	Defias Shipping Schedule
-I	7809	1	Easter Dress
 I	7848	1	Rock Elemental Shard
 I	7906	1	Horns of Nez'ra
 I	7909	2	Aquamarine
@@ -3474,7 +3027,6 @@ I	7990	2	Plans: Heavy Mithril Helm
 I	7991	3	Plans: Mithril Scale Shoulders
 I	7992	2	Plans: Blue Glittering Axe
 I	7993	2	Plans: Dazzling Mithril Rapier
-I	7997	0	Red Defias Mask
 I	8009	1	Dentrium Power Stone
 I	8028	3	Plans: Runed Mithril Hammer
 I	8029	2	Plans: Wicked Mithril Blade
@@ -3527,18 +3079,7 @@ I	9298	2	Recipe: Elixir of Giants
 I	9308	1	Grime-Encrusted Object
 I	9309	1	Robo-mechanical Guts
 I	9355	0	Hoop Earring
-I	9444	1	Techbot CPU Shell
 I	9451	1	Bubbling Water
-I	9485	3	Vibroblade
-I	9486	3	Supercharger Battle Axe
-I	9487	3	Hi-tech Supergun
-I	9488	3	Oscillating Power Hammer
-I	9489	2	Gyromatic Icemaker
-I	9490	3	Gizmotron Megachopper
-I	9491	3	Hotshot Pilot's Gloves
-I	9508	3	Mechbuilder's Overalls
-I	9509	3	Petrolspill Leggings
-I	9510	3	Caverndeep Trudgers
 I	10000	1	Margol's Horn
 I	10285	1	Shadow Silk
 I	10286	1	Heart of the Wild
@@ -3555,8 +3096,6 @@ I	10312	2	Pattern: Red Mageweave Gloves
 I	10315	2	Pattern: Red Mageweave Shoulders
 I	10316	2	Pattern: Colorful Kilt
 I	10320	2	Pattern: Red Mageweave Headband
-I	10405	1	Bandit Shoulders
-I	10407	1	Raider's Shoulderpads
 I	10424	2	Plans: Silvered Bronze Leggings
 I	10446	1	Heart of Obsidion
 I	10458	1	Prayer to Elune
@@ -3566,8 +3105,6 @@ I	10509	1	Heart of Flame
 I	10511	1	Golem Oil
 I	10551	1	Thorium Plated Dagger
 I	10552	1	Symbol of Ragnaros
-I	10553	2	Foreman Vest
-I	10554	2	Foreman Pants
 I	10561	1	Mithril Casing
 I	10575	1	Black Dragonflight Molt
 I	10601	2	Schematic: Bright-Eye Goggles
@@ -3667,15 +3204,8 @@ I	13492	2	Recipe: Purification Potion
 I	13493	2	Recipe: Greater Arcane Elixir
 I	13518	2	Recipe: Flask of Petrification
 I	14047	1	Runecloth
-I	14115	1	Aboriginal Bands
-I	14116	1	Aboriginal Cape
-I	14126	1	Ritual Amice
-I	14157	1	Pagan Mantle
-I	14169	1	Aboriginal Shoulder Pads
-I	14170	1	Buccaneer's Mantle
 I	14227	1	Ironweb Spider Silk
 I	14256	1	Felcloth
-I	14368	1	Mystic's Shoulder Pads
 I	14466	2	Pattern: Frostweave Tunic
 I	14467	2	Pattern: Frostweave Robe
 I	14470	2	Pattern: Runecloth Tunic
@@ -3700,19 +3230,11 @@ I	14504	2	Pattern: Runecloth Shoulders
 I	14506	2	Pattern: Felcloth Robe
 I	14507	3	Pattern: Mooncloth Shoulders
 I	14508	2	Pattern: Felcloth Shoulders
-I	14728	1	War Paint Shoulder Pads
-I	15013	1	Lupine Cuffs
-I	15019	1	Lupine Mantle
-I	15300	1	Grizzly Gloves
-I	15313	1	Feral Shoulder Pads
 I	15408	1	Heavy Scorpid Scale
 I	15412	1	Green Dragonscale
 I	15414	1	Red Dragonscale
 I	15416	1	Black Dragonscale
 I	15420	1	Ironfeather
-I	15490	1	Bloodspattered Cloak
-I	15496	1	Bloodspattered Shoulder Pads
-I	15505	1	Outrunner's Pauldrons
 I	15731	2	Pattern: Runic Leather Gauntlets
 I	15732	2	Pattern: Volcanic Leggings
 I	15737	2	Pattern: Chimeric Boots
@@ -3742,7 +3264,6 @@ I	16883	1	Worn Junkbox
 I	17056	1	Light Feather
 I	17057	1	Shiny Fish Scales
 I	17058	1	Fish Oil
-I	17184	1	Small Shield
 I	17306	1	Stormpike Soldier's Blood
 I	17326	1	Stormpike Soldier's Flesh
 I	17327	1	Stormpike Lieutenant's Flesh
@@ -4711,31 +4232,13 @@ I	1205	1	Melon Juice
 I	1206	2	Moss Agate
 I	1210	2	Shadowgem
 I	1288	1	Large Venom Sac
-I	1351	2	Fingerbone Bracers
-I	1355	2	Buckskin Cape
-I	1364	0	Ragged Leather Vest
-I	1366	0	Ragged Leather Pants
-I	1367	0	Ragged Leather Boots
-I	1368	0	Ragged Leather Gloves
-I	1369	0	Ragged Leather Belt
-I	1370	0	Ragged Leather Bracers
-I	1372	0	Ragged Cloak
-I	1374	0	Frayed Shoes
-I	1376	0	Frayed Cloak
-I	1377	0	Frayed Gloves
-I	1378	0	Frayed Pants
-I	1380	0	Frayed Robe
-I	1384	1	Dull Blade
-I	1388	1	Crooked Staff
 I	1464	0	Buzzard Talon
 I	1468	1	Murloc Fin
 I	1475	1	Small Venom Sac
 I	1476	0	Snapped Spider Limb
 I	1477	1	Scroll of Agility II
 I	1478	1	Scroll of Protection II
-I	1493	3	Heavy Marauder Scimitar
 I	1529	2	Jade
-I	1539	2	Gnarled Hermit's Staff
 I	1645	1	Moonberry Juice
 I	1685	1	Troll-hide Bag
 I	1686	0	Bristly Whisker
@@ -4749,11 +4252,8 @@ I	1710	1	Greater Healing Potion
 I	1711	1	Scroll of Stamina II
 I	1712	1	Scroll of Spirit II
 I	1725	1	Large Knapsack
-I	2035	2	Sword of the Night Sky
 I	2070	1	Darnassian Bleu
 I	2091	1	Magic Dust
-I	2210	0	Battered Buckler
-I	2211	0	Bent Large Shield
 I	2251	1	Gooey Spider Leg
 I	2287	1	Haunch of Meat
 I	2289	1	Scroll of Strength II
@@ -4781,14 +4281,6 @@ I	2596	1	Skin of Dwarven Stout
 I	2598	2	Pattern: Red Linen Robe
 I	2601	2	Pattern: Gray Woolen Robe
 I	2608	0	Threshadon Ambergris
-I	2620	2	Augural Shroud
-I	2649	0	Flimsy Chain Belt
-I	2650	0	Flimsy Chain Boots
-I	2651	0	Flimsy Chain Bracers
-I	2652	0	Flimsy Chain Cloak
-I	2653	0	Flimsy Chain Gloves
-I	2654	0	Flimsy Chain Pants
-I	2656	0	Flimsy Chain Vest
 I	2657	1	Red Leather Bag
 I	2672	1	Stringy Wolf Meat
 I	2674	1	Crawler Meat
@@ -4811,10 +4303,6 @@ I	2925	1	Crocolisk Skin
 I	2928	1	Dust of Decay
 I	2934	1	Ruined Leather Scraps
 I	2940	0	Bloody Bear Paw
-I	2971	1	Spellbinder Boots
-I	2972	1	Spellbinder Gloves
-I	2975	1	Hunting Boots
-I	2979	1	Veteran Boots
 I	2996	1	Bolt of Linen Cloth
 I	3010	0	Fine Sand
 I	3012	1	Scroll of Agility
@@ -4829,18 +4317,13 @@ I	3176	0	Small Claw
 I	3179	0	Cracked Dragon Molting
 I	3180	0	Flecked Raptor Scale
 I	3182	1	Spider's Silk
-I	3207	1	Hunting Bracers
 I	3297	1	Fel Moss
 I	3299	0	Fractured Canine
 I	3300	0	Rabbit's Foot
 I	3301	0	Sharp Canine
-I	3304	1	Brackwater Gauntlets
-I	3311	1	Ceremonial Leather Ankleguards
 I	3355	1	Wild Steelbloom
 I	3356	1	Kingsblood
 I	3357	1	Liferoot
-I	3363	0	Frayed Belt
-I	3365	0	Frayed Bracers
 I	3369	1	Grave Moss
 I	3385	1	Lesser Mana Potion
 I	3393	1	Recipe: Minor Magic Resistance Potion
@@ -4858,7 +4341,6 @@ I	3609	2	Plans: Copper Chain Vest
 I	3610	2	Plans: Gemmed Copper Gauntlets
 I	3611	2	Plans: Green Iron Boots
 I	3612	2	Plans: Green Iron Gauntlets
-I	3643	1	Spellbinder Bracers
 I	3669	0	Gelatinous Goo
 I	3670	0	Large Slimy Bone
 I	3671	0	Lifeless Skull
@@ -4973,19 +4455,11 @@ I	4604	1	Forest Mushroom Cap
 I	4605	1	Red-speckled Mushroom
 I	4606	1	Spongy Morel
 I	4607	1	Delicious Cave Mold
-I	4614	2	Pendant of Myzrael
 I	4632	2	Ornate Bronze Lockbox
 I	4633	2	Heavy Bronze Lockbox
 I	4634	2	Iron Lockbox
 I	4636	2	Strong Iron Lockbox
 I	4637	2	Steel Lockbox
-I	4678	1	Veteran Girdle
-I	4681	1	Brackwater Girdle
-I	4687	1	Barbaric Cloth Belt
-I	4693	1	Ceremonial Leather Belt
-I	4694	1	Burnished Pauldrons
-I	4698	1	Seer's Mantle
-I	4700	1	Inscribed Leather Spaulders
 I	4702	1	Prospector's Pick
 I	4739	1	Plainstrider Meat
 I	4740	1	Plainstrider Feather
@@ -4996,17 +4470,13 @@ I	4753	1	Bronze Feather
 I	4757	0	Cracked Egg Shells
 I	4758	1	Prairie Wolf Paw
 I	4759	1	Plainstrider Talon
-I	4768	2	Adept's Gloves
 I	4769	1	Trophy Swoop Quill
 I	4770	1	Bristleback Belt
-I	4771	2	Harvest Cloak
-I	4772	1	Warm Cloak
 I	4775	0	Cracked Bill
 I	4776	0	Ruffled Feather
 I	4779	0	Dull Kodo Tooth
 I	4780	0	Kodo Horn Fragment
 I	4784	0	Lifeless Stone
-I	4785	2	Brimstone Belt
 I	4801	1	Stalker Claws
 I	4802	1	Cougar Claws
 I	4803	1	Prairie Alpha Tooth
@@ -5020,9 +4490,7 @@ I	4819	1	Fizsprocket's Clipboard
 I	4841	1	Horn of Arra'chea
 I	4848	1	Battleboar Snout
 I	4849	1	Battleboar Flank
-I	4854	1	Demon Scarred Cloak
 I	4859	1	Burning Blade Medallion
-I	4861	2	Sleek Feathered Tunic
 I	4862	1	Scorpid Worker Tail
 I	4865	0	Ruined Pelt
 I	4866	1	Zalazane's Head
@@ -5053,7 +4521,6 @@ I	4897	1	Thunderhawk Saliva Gland
 I	4898	1	Lightning Gland
 I	4903	1	Eye of Burning Shadow
 I	4905	1	Sarkoth's Mangled Claw
-I	4951	1	Squealer's Belt
 I	4957	1	Old Moneybag
 I	5006	1	Khazgorm's Journal
 I	5017	1	Nitroglycerin
@@ -5086,9 +4553,6 @@ I	5085	1	Bristleback Quilboar Tusk
 I	5086	1	Zhevra Hooves
 I	5087	1	Plainstrider Beak
 I	5089	1	Console Key
-I	5092	1	Charred Razormane Wand
-I	5093	1	Razormane Backstabber
-I	5094	1	Razormane War Shield
 I	5096	1	Prowler Claws
 I	5097	1	Cats Eye Emerald
 I	5098	1	Altered Snapjaw Shell
@@ -5097,9 +4561,6 @@ I	5102	1	Owatanka's Tailspike
 I	5103	1	Washte Pawne's Feather
 I	5104	1	Heart of Isha Awak
 I	5107	1	Deckhand's Shirt
-I	5110	1	Dalaran Wizard's Robe
-I	5111	2	Rathorian's Cape
-I	5112	2	Ritual Blade
 I	5114	0	Severed Talon
 I	5115	0	Broken Wishbone
 I	5116	1	Long Tail Feather
@@ -5128,8 +4589,6 @@ I	5168	1	Timberling Seed
 I	5170	1	Mossy Tumor
 I	5173	1	Deathweed
 I	5179	1	Moss-twined Heart
-I	5182	2	Shiver Blade
-I	5183	3	Pulsating Hydra Heart
 I	5203	1	Flatland Prowler Claw
 I	5204	1	Bloodfeather Belt
 I	5221	1	Melenas' Head
@@ -5155,10 +4614,6 @@ I	5388	1	Ran Bloodtooth's Skull
 I	5412	1	Thresher Eye
 I	5413	1	Moonstalker Fang
 I	5414	1	Grizzled Scalp
-I	5422	2	Brambleweed Leggings
-I	5423	3	Boahn's Fang
-I	5425	2	Runescale Girdle
-I	5426	3	Serpent's Kiss
 I	5445	1	Ring of Zoram
 I	5446	1	Broken Elemental Bracer
 I	5447	1	Damaged Elemental Bracer
@@ -5183,7 +4638,6 @@ I	5504	1	Tangy Clam Meat
 I	5505	1	Teronis' Journal
 I	5506	0	Beady Eye Stalk
 I	5508	1	Fallen Moonstone
-I	5516	0	Threshadon Fang
 I	5523	1	Small Barnacled Clam
 I	5524	1	Thick-shelled Clam
 I	5533	1	Ilkrud Magthrull's Tome
@@ -5216,10 +4670,6 @@ I	5686	1	Ordanus' Head
 I	5734	1	Super Reaper 6000 Blueprints
 I	5736	1	Gerenzo's Mechanical Arm
 I	5741	0	Rock Chip
-I	5751	2	Webwing Cloak
-I	5752	2	Wyvern Tailspike
-I	5753	2	Ruffled Chaplet
-I	5754	2	Wolfpack Medallion
 I	5758	2	Mithril Lockbox
 I	5759	2	Thorium Lockbox
 I	5760	2	Eternium Lockbox
@@ -5274,8 +4724,6 @@ I	6300	0	Husk Fragment
 I	6302	0	Delicate Insect Wing
 I	6303	1	Raw Slitherskin Mackerel
 I	6308	1	Raw Bristle Whisker Catfish
-I	6332	3	Black Pearl Ring
-I	6333	2	Spikelash Dagger
 I	6342	2	Formula: Enchant Chest - Minor Mana
 I	6344	2	Formula: Enchant Bracer - Minor Spirit
 I	6347	2	Formula: Enchant Bracer - Minor Strength
@@ -5297,13 +4745,6 @@ I	6470	1	Deviate Scale
 I	6471	1	Perfect Deviate Scale
 I	6486	1	Singed Scale
 I	6487	1	Vile Familiar Head
-I	6508	1	Infantry Cloak
-I	6520	1	Pioneer Cloak
-I	6549	1	Soldier's Cloak
-I	6555	1	Bard's Cloak
-I	6566	1	Shimmering Amice
-I	6579	1	Defender Spaulders
-I	6588	1	Scouting Spaulders
 I	6634	1	Ritual Salve
 I	6640	1	Felstalker Hoof
 I	6652	1	Reagent Pouch
@@ -5340,8 +4781,6 @@ I	7086	2	Pattern: Earthen Silk Belt
 I	7090	2	Pattern: Green Silk Armor
 I	7091	2	Pattern: Truefaith Gloves
 I	7092	2	Pattern: Hands of Darkness
-I	7094	1	Driftwood Branch
-I	7095	1	Bog Boots
 I	7096	0	Plucked Feather
 I	7097	1	Leg Meat
 I	7098	0	Splintered Tusk
@@ -5367,7 +4806,6 @@ I	7453	2	Pattern: Swift Boots
 I	7498	1	Top of Gelkak's Key
 I	7499	1	Middle of Gelkak's Key
 I	7500	1	Bottom of Gelkak's Key
-I	7559	2	Runic Cane
 I	7909	2	Aquamarine
 I	7910	2	Star Ruby
 I	7912	1	Solid Stone
@@ -5389,7 +4827,6 @@ I	8165	1	Worn Dragonscale
 I	8169	1	Thick Hide
 I	8170	1	Rugged Leather
 I	8171	1	Rugged Hide
-I	8224	2	Silithid Ripper
 I	8344	1	Silvery Spinnerets
 I	8363	1	Shaman Voodoo Charm
 I	8364	1	Mithril Head Trout
@@ -5428,21 +4865,8 @@ I	10315	2	Pattern: Red Mageweave Shoulders
 I	10316	2	Pattern: Colorful Kilt
 I	10320	2	Pattern: Red Mageweave Headband
 I	10338	1	Fresh Zhevra Carcass
-I	10405	1	Bandit Shoulders
-I	10407	1	Raider's Shoulderpads
 I	10424	2	Plans: Silvered Bronze Leggings
 I	10459	1	Chief Sharptusk Thornmantle's Head
-I	10567	3	Quillshooter
-I	10570	3	Manslayer
-I	10571	3	Ebony Boneclub
-I	10572	3	Freezing Shard
-I	10573	3	Boneslasher
-I	10574	3	Corpseshroud
-I	10578	3	Thoughtcast Boots
-I	10581	3	Death's Head Vestment
-I	10582	3	Briar Tredders
-I	10583	3	Quillward Harness
-I	10584	3	Stormgale Fists
 I	10601	2	Schematic: Bright-Eye Goggles
 I	10603	2	Schematic: Catseye Ultra Goggles
 I	10604	2	Schematic: Mithril Heavy-bore Rifle
@@ -5494,23 +4918,12 @@ I	12704	2	Plans: Thorium Leggings
 I	12713	2	Plans: Radiant Leggings
 I	12884	1	Arnak's Hoof
 I	12946	1	Hypercapacitor Gizmo
-I	12983	3	Rakzur Club
-I	12987	3	Darkweave Breeches
-I	13010	3	Dreamsinger Legguards
 I	13443	1	Superior Mana Potion
 I	13444	1	Major Mana Potion
 I	13446	1	Major Healing Potion
 I	13492	2	Recipe: Purification Potion
 I	13545	1	Shellfish
 I	14047	1	Runecloth
-I	14115	1	Aboriginal Bands
-I	14116	1	Aboriginal Cape
-I	14126	1	Ritual Amice
-I	14146	4	Gloves of Spell Mastery
-I	14157	1	Pagan Mantle
-I	14169	1	Aboriginal Shoulder Pads
-I	14170	1	Buccaneer's Mantle
-I	14368	1	Mystic's Shoulder Pads
 I	14474	2	Pattern: Frostweave Gloves
 I	14478	2	Pattern: Brightcloth Robe
 I	14484	2	Pattern: Brightcloth Cloak
@@ -5524,15 +4937,7 @@ I	14499	2	Pattern: Mooncloth Bag
 I	14506	2	Pattern: Felcloth Robe
 I	14508	2	Pattern: Felcloth Shoulders
 I	14544	1	Lieutenant's Insignia
-I	14728	1	War Paint Shoulder Pads
-I	15013	1	Lupine Cuffs
-I	15019	1	Lupine Mantle
-I	15300	1	Grizzly Gloves
-I	15313	1	Feral Shoulder Pads
 I	15412	1	Green Dragonscale
-I	15490	1	Bloodspattered Cloak
-I	15496	1	Bloodspattered Shoulder Pads
-I	15505	1	Outrunner's Pauldrons
 I	15731	2	Pattern: Runic Leather Gauntlets
 I	15745	2	Pattern: Runic Leather Belt
 I	15750	1	Sceptre of Light
@@ -5580,10 +4985,6 @@ I	17058	1	Fish Oil
 I	17684	1	Theradric Crystal Carving
 I	17756	1	Shadowshard Fragment
 I	17757	1	Amulet of Spirits
-I	17922	2	Lionfur Armor
-I	18610	1	Keen Machete
-I	18611	1	Gnarlpine Leggings
-I	18612	1	Bloody Chain Boots
 I	19259	3	Two of Warlords
 I	19278	3	Two of Portals
 I	19280	3	Four of Portals
@@ -6324,7 +5725,6 @@ I	4603	1	Raw Spotted Yellowtail
 I	4606	1	Spongy Morel
 I	4607	1	Delicious Cave Mold
 I	4608	1	Raw Black Truffle
-I	4614	2	Pendant of Myzrael
 I	4623	1	Lesser Stoneshield Potion
 I	4625	1	Firebloom
 I	4634	2	Iron Lockbox
@@ -6354,7 +5754,6 @@ I	5498	2	Small Lustrous Pearl
 I	5500	2	Iridescent Pearl
 I	5503	1	Clam Meat
 I	5504	1	Tangy Clam Meat
-I	5516	0	Threshadon Fang
 I	5566	0	Broken Antler
 I	5567	0	Silver Hook
 I	5569	0	Seaweed
@@ -6737,7 +6136,6 @@ I	15765	2	Pattern: Runic Leather Pants
 I	15772	3	Pattern: Devilsaur Leggings
 I	15779	2	Pattern: Frostsaber Tunic
 I	15793	0	A Chewed Bone
-I	15794	0	Ripped Ogre Loincloth
 I	15798	0	Chipped Ogre Teeth
 I	15879	1	Overlord Ror's Claw
 I	16043	2	Schematic: Thorium Rifle
@@ -6757,11 +6155,8 @@ I	16253	2	Formula: Enchant Chest - Greater Stats
 I	16869	1	The Skull of Scryer
 I	16871	1	The Skull of Chronalis
 I	16885	1	Heavy Junkbox
-I	17054	3	Joonho's Mercy
-I	17055	3	Changuk Smasher
 I	17057	1	Shiny Fish Scales
 I	17058	1	Fish Oil
-I	17070	4	Fang of the Mystics
 I	17306	1	Stormpike Soldier's Blood
 I	17326	1	Stormpike Soldier's Flesh
 I	17327	1	Stormpike Lieutenant's Flesh
@@ -6775,9 +6170,7 @@ I	18144	1	Human Bone Chip
 I	18145	1	Tauren Hoof
 I	18146	1	Darkspear Troll Mojo
 I	18147	1	Forsaken Heart
-I	18202	4	Eskhandar's Left Claw
 I	18207	1	Orc Tooth
-I	18208	4	Drape of Benediction
 I	18226	0	A Sealed Pact
 I	18227	0	Nubless Pacifier
 I	18228	0	Autographed Picture of Foror & Tigule
@@ -6786,10 +6179,6 @@ I	18230	0	Broken I.W.I.N. Button
 I	18233	0	Tear Stained Handkerchief
 I	18234	0	Document from Boomstick Imports
 I	18335	3	Pristine Black Diamond
-I	18541	4	Puissant Cape
-I	18542	4	Typhoon
-I	18545	4	Leggings of Arcane Supremacy
-I	18547	4	Unmelting Ice Girdle
 I	18588	1	Ez-Thro Dynamite II
 I	18590	1	Raging Beast's Blood
 I	18604	1	Tears of the Hederine
@@ -6797,15 +6186,6 @@ I	18622	1	Flawless Fel Essence (Jaedenar)
 I	18624	1	Flawless Fel Essence (Azshara)
 I	18625	1	Kroshius' Infernal Core
 I	18640	1	Happy Fun Rock
-I	18665	4	The Eye of Shadow
-I	18671	3	Baron Charr's Sceptre
-I	18672	2	Elemental Ember
-I	18673	3	Avalanchion's Stony Hide
-I	18674	2	Hardened Stone Band
-I	18676	3	Sash of the Windreaver
-I	18677	2	Zephyr Cloak
-I	18678	3	Tempestria's Frozen Necklace
-I	18679	2	Frigid Ring
 I	18704	4	Mature Blue Dragon Sinew
 I	18719	1	The Traitor's Heart
 I	18947	1	Rage Scar Yeti Hide
@@ -6814,9 +6194,6 @@ I	18961	1	Zukk'ash Carapace
 I	18962	1	Stinglasher's Glands
 I	18969	1	Pristine Yeti Hide
 I	18972	1	Perfect Yeti Hide
-I	19130	4	Cold Snap
-I	19131	4	Snowblind Shoes
-I	19132	4	Crystal Adorned Crown
 I	19230	3	Two of Beasts
 I	19231	3	Three of Beasts
 I	19232	3	Four of Beasts
@@ -6875,9 +6252,6 @@ I	20395	1	Twilight Lexicon - Chapter 2
 I	20396	1	Twilight Lexicon - Chapter 3
 I	20400	2	Pumpkin Bag
 I	20404	1	Encrypted Twilight Text
-I	20406	2	Twilight Cultist Mantle
-I	20407	2	Twilight Cultist Robe
-I	20408	2	Twilight Cultist Cowl
 I	20424	1	Sandworm Meat
 I	20451	1	Twilight Cultist Ring of Lordship
 I	20457	1	Hive'Ashi Silithid Brain
@@ -6901,7 +6275,6 @@ I	20613	1	Rotting Wood
 I	20614	1	Bloodvenom Essence
 I	20678	1	Decoded Twilight Text
 I	20679	1	Decoded Twilight Text
-I	20697	3	Crystalline Threaded Cape
 I	20741	1	Deadwood Ritual Totem
 I	20742	1	Winterfall Ritual Totem
 I	20763	0	Broken Weapon
@@ -6915,7 +6288,6 @@ I	21024	1	Chimaerok Tenderloin
 I	21027	1	Lakmaeran's Carcass
 I	21037	1	Crude Map
 I	21039	1	Narain's Turban
-I	21040	1	Narain's Robe
 I	21103	1	Draconic for Dummies
 I	21105	1	Draconic for Dummies
 I	21130	1	Diary of Weavil
@@ -7240,7 +6612,6 @@ I	422	1	Dwarven Mild
 I	730	1	Murloc Eye
 I	765	1	Silverleaf
 I	774	2	Malachite
-I	776	3	Vendetta
 I	783	1	Light Hide
 I	785	1	Mageroyal
 I	804	1	Large Blue Sack
@@ -7249,16 +6620,11 @@ I	818	2	Tigerseye
 I	856	1	Blue Leather Bag
 I	857	1	Large Red Sack
 I	858	1	Lesser Healing Potion
-I	872	2	Rockslicer
-I	888	3	Naga Battle Gloves
 I	915	1	Red Silk Bandana
 I	929	1	Healing Potion
 I	954	1	Scroll of Strength
 I	955	1	Scroll of Intellect
 I	1015	1	Lean Wolf Flank
-I	1076	2	Defias Renegade Ring
-I	1155	3	Rod of the Sleepwalker
-I	1156	3	Lavishly Jeweled Ring
 I	1177	1	Oil of Olaf
 I	1179	1	Ice Cold Milk
 I	1180	1	Scroll of Stamina
@@ -7266,21 +6632,10 @@ I	1181	1	Scroll of Spirit
 I	1205	1	Melon Juice
 I	1206	2	Moss Agate
 I	1210	2	Shadowgem
-I	1292	3	Butcher's Cleaver
-I	1318	3	Night Reaver
-I	1454	3	Axe of the Enforcer
 I	1468	1	Murloc Fin
 I	1470	1	Murloc Skin Bag
 I	1477	1	Scroll of Agility II
 I	1478	1	Scroll of Protection II
-I	1481	3	Grimclaw
-I	1482	3	Shadowfang
-I	1483	3	Face Smasher
-I	1484	3	Witching Stave
-I	1486	3	Tree Bark Jacket
-I	1488	3	Avenger's Armor
-I	1489	3	Gloomshroud Armor
-I	1491	3	Ring of Precision
 I	1529	2	Jade
 I	1645	1	Moonberry Juice
 I	1685	1	Troll-hide Bag
@@ -7293,33 +6648,10 @@ I	1710	1	Greater Healing Potion
 I	1711	1	Scroll of Stamina II
 I	1712	1	Scroll of Spirit II
 I	1725	1	Large Knapsack
-I	1727	3	Sword of Decay
-I	1925	2	Defias Rapier
-I	1929	2	Silk-threaded Trousers
-I	1930	2	Stonemason Cloak
-I	1934	2	Stonemason Trousers
-I	1935	3	Assassin's Blade
-I	1936	2	Goblin Screwdriver
-I	1937	2	Buzz Saw
-I	1943	2	Goblin Mail Leggings
-I	1944	2	Metalworking Gloves
-I	1945	2	Woodworking Gloves
-I	1951	2	Blackwater Cutlass
-I	1974	3	Mindthrust Bracers
 I	1975	3	Pysan's Old Greatsword
-I	1976	3	Slaghammer
-I	1978	3	Wolfclaw Gloves
-I	2034	2	Scholarly Robes
-I	2039	3	Plains Ring
-I	2169	1	Buzzer Blade
-I	2205	3	Duskbringer
-I	2264	3	Mantle of Thieves
-I	2271	3	Staff of the Blessed Seer
-I	2280	2	Kam's Walking Stick
 I	2287	1	Haunch of Meat
 I	2289	1	Scroll of Strength II
 I	2290	1	Scroll of Intellect II
-I	2292	3	Necrology Robes
 I	2295	0	Large Boar Tusk
 I	2304	1	Light Armor Kit
 I	2313	1	Medium Armor Kit
@@ -7336,10 +6668,8 @@ I	2452	1	Swiftthistle
 I	2453	1	Bruiseweed
 I	2455	1	Minor Mana Potion
 I	2459	1	Swiftness Potion
-I	2549	3	Staff of the Shade
 I	2553	2	Recipe: Elixir of Minor Agility
 I	2555	2	Recipe: Swiftness Potion
-I	2567	3	Evocator's Blade
 I	2589	1	Linen Cloth
 I	2592	1	Wool Cloth
 I	2598	2	Pattern: Red Linen Robe
@@ -7354,8 +6684,6 @@ I	2771	1	Tin Ore
 I	2772	1	Iron Ore
 I	2775	2	Silver Ore
 I	2776	2	Gold Ore
-I	2807	3	Guillotine Axe
-I	2816	3	Death Speaker Scepter
 I	2835	1	Rough Stone
 I	2836	1	Coarse Stone
 I	2838	1	Heavy Stone
@@ -7368,24 +6696,15 @@ I	2924	1	Crocolisk Meat
 I	2925	1	Crocolisk Skin
 I	2926	1	Head of Bazil Thredd
 I	2928	1	Dust of Decay
-I	2941	3	Prison Shank
-I	2942	3	Iron Knuckles
 I	3010	0	Fine Sand
 I	3012	1	Scroll of Agility
 I	3013	1	Scroll of Protection
-I	3078	2	Naga Heartpiercer
 I	3172	1	Boar Intestines
 I	3176	0	Small Claw
 I	3177	0	Tiny Fang
 I	3180	0	Flecked Raptor Scale
 I	3181	0	Partially Digested Meat
-I	3191	2	Arced War Axe
-I	3194	3	Black Malice
-I	3228	3	Jimmied Handcuffs
-I	3230	2	Black Wolf Bracers
 I	3301	0	Sharp Canine
-I	3304	1	Brackwater Gauntlets
-I	3311	1	Ceremonial Leather Ankleguards
 I	3355	1	Wild Steelbloom
 I	3356	1	Kingsblood
 I	3357	1	Liferoot
@@ -7397,12 +6716,6 @@ I	3396	1	Recipe: Elixir of Lesser Agility
 I	3401	0	Rough Crocolisk Scale
 I	3402	0	Soft Patch of Fur
 I	3403	0	Ivory Boar Tusk
-I	3413	3	Doomspike
-I	3414	3	Crested Scepter
-I	3415	3	Staff of the Friar
-I	3416	3	Martyr's Chain
-I	3417	3	Onyx Claymore
-I	3569	2	Vicar's Robe
 I	3608	2	Plans: Mighty Iron Hammer
 I	3609	2	Plans: Copper Chain Vest
 I	3610	2	Plans: Gemmed Copper Gauntlets
@@ -7419,7 +6732,6 @@ I	3673	0	Broken Arrow
 I	3674	0	Decomposed Boot
 I	3676	0	Slimy Ichor
 I	3712	1	Turtle Meat
-I	3748	3	Feline Mantle
 I	3770	1	Mutton Chop
 I	3771	1	Wild Hog Shank
 I	3818	1	Fadeleaf
@@ -7491,7 +6803,6 @@ I	4422	1	Scroll of Stamina III
 I	4424	1	Scroll of Spirit III
 I	4425	1	Scroll of Agility III
 I	4426	1	Scroll of Strength III
-I	4438	3	Pugilist Bracers
 I	4500	2	Traveler's Backpack
 I	4537	1	Tel'Abim Banana
 I	4538	1	Snapvine Watermelon
@@ -7514,7 +6825,6 @@ I	4604	1	Forest Mushroom Cap
 I	4605	1	Red-speckled Mushroom
 I	4606	1	Spongy Morel
 I	4608	1	Raw Black Truffle
-I	4614	2	Pendant of Myzrael
 I	4623	1	Lesser Stoneshield Potion
 I	4632	2	Ornate Bronze Lockbox
 I	4633	2	Heavy Bronze Lockbox
@@ -7522,15 +6832,10 @@ I	4634	2	Iron Lockbox
 I	4636	2	Strong Iron Lockbox
 I	4637	2	Steel Lockbox
 I	4638	2	Reinforced Steel Lockbox
-I	4687	1	Barbaric Cloth Belt
-I	4694	1	Burnished Pauldrons
-I	4698	1	Seer's Mantle
-I	4700	1	Inscribed Leather Spaulders
 I	4784	0	Lifeless Stone
 I	4867	0	Broken Scorpid Leg
 I	4872	0	Dry Scorpid Eye
 I	4957	1	Old Moneybag
-I	5110	1	Dalaran Wizard's Robe
 I	5116	1	Long Tail Feather
 I	5117	1	Vibrant Plume
 I	5119	0	Fine Loose Hair
@@ -7538,31 +6843,15 @@ I	5120	0	Long Tail Hair
 I	5124	0	Small Raptor Tooth
 I	5125	0	Charged Scale
 I	5128	0	Shed Lizard Skin
-I	5187	1	Rhahk'Zor's Hammer
-I	5191	3	Cruel Barb
-I	5192	2	Thief's Blade
-I	5193	3	Cape of the Brotherhood
-I	5196	2	Smite's Reaver
-I	5197	2	Cookie's Tenderizer
-I	5198	3	Cookie's Stirring Rod
-I	5199	2	Smelting Pants
-I	5200	2	Impaling Harpoon
-I	5201	3	Emberstone Staff
-I	5202	3	Corsair's Overshirt
-I	5243	3	Firebelcher
-I	5254	1	Rugged Spaulders
 I	5374	0	Small Pocket Watch
 I	5428	0	An Exotic Cookbook
 I	5430	0	Intricate Bauble
 I	5442	1	Head of Arugal
-I	5443	3	Gold-plated Buckler
-I	5444	2	Miner's Cape
 I	5470	1	Thunder Lizard Tail
 I	5498	2	Small Lustrous Pearl
 I	5500	2	Iridescent Pearl
 I	5503	1	Clam Meat
 I	5504	1	Tangy Clam Meat
-I	5516	0	Threshadon Fang
 I	5523	1	Small Barnacled Clam
 I	5524	1	Thick-shelled Clam
 I	5543	2	Plans: Iridescent Hammer
@@ -7591,7 +6880,6 @@ I	5833	1	Indurium Ore
 I	5879	1	Twilight Pendant
 I	5881	1	Head of Kelris
 I	5952	1	Corrupted Brain Stem
-I	5970	2	Serpent Gloves
 I	5972	2	Pattern: Fine Leather Pants
 I	5974	2	Pattern: Guardian Cloak
 I	6044	2	Plans: Iron Shield Spike
@@ -7599,20 +6887,10 @@ I	6045	2	Plans: Iron Counterweight
 I	6046	2	Plans: Steel Weapon Chain
 I	6149	1	Greater Mana Potion
 I	6211	1	Recipe: Elixir of Ogre's Strength
-I	6220	3	Meteor Shard
-I	6226	2	Bloody Apron
 I	6271	2	Pattern: Red Linen Vest
 I	6289	1	Raw Longjaw Mud Snapper
 I	6298	0	Bloody Bat Fang
 I	6308	1	Raw Bristle Whisker Catfish
-I	6314	2	Wolfmaster Cape
-I	6318	3	Odo's Ley Staff
-I	6319	2	Girdle of the Blindwatcher
-I	6320	3	Commander's Crest
-I	6321	3	Silverlaine's Family Seal
-I	6323	2	Baron's Scepter
-I	6324	3	Robes of Arugal
-I	6340	2	Fenrus' Hide
 I	6342	2	Formula: Enchant Chest - Minor Mana
 I	6344	2	Formula: Enchant Bracer - Minor Spirit
 I	6347	2	Formula: Enchant Bracer - Minor Strength
@@ -7621,62 +6899,15 @@ I	6361	1	Raw Rainbow Fin Albacore
 I	6375	2	Formula: Enchant Bracer - Lesser Spirit
 I	6390	2	Pattern: Stylish Blue Shirt
 I	6391	2	Pattern: Stylish Green Shirt
-I	6392	3	Belt of Arugal
 I	6443	1	Deviate Hide
 I	6444	0	Forked Tongue
 I	6445	0	Brittle Molting
-I	6447	1	Worn Turtle Shell Shield
-I	6448	2	Tail Spike
-I	6449	3	Glowing Lizardscale Cloak
 I	6454	2	Manual: Strong Anti-Venom
-I	6459	2	Savage Trodders
-I	6460	3	Cobrahn's Grasp
 I	6464	1	Wailing Essence
-I	6465	2	Robe of the Moccasin
-I	6469	3	Venomstrike
 I	6470	1	Deviate Scale
 I	6471	1	Perfect Deviate Scale
-I	6472	3	Stinging Viper
-I	6473	2	Armor of the Fang
-I	6566	1	Shimmering Amice
-I	6579	1	Defender Spaulders
-I	6588	1	Scouting Spaulders
-I	6629	2	Sporid Cape
-I	6630	3	Seedcloud Buckler
-I	6631	3	Living Root
-I	6632	2	Feyscale Cloak
-I	6633	2	Butcher's Slicer
-I	6641	2	Haunting Blade
-I	6642	3	Phantom Armor
-I	6679	2	Armor Piercer
-I	6681	1	Thornspike
-I	6682	2	Death Speaker Robes
-I	6685	2	Death Speaker Mantle
-I	6686	2	Tusken Helm
-I	6687	3	Corpsemaker
-I	6688	2	Whisperwind Headdress
-I	6689	3	Wind Spirit Staff
-I	6690	2	Ferine Leggings
-I	6691	3	Swinetusk Shank
-I	6692	3	Pronged Reaver
-I	6693	3	Agamaggan's Clutch
-I	6694	3	Heart of Agamaggan
-I	6695	3	Stygian Bone Amulet
-I	6696	3	Nightstalker Bow
-I	6697	3	Batwing Mantle
 I	6716	2	Schematic: EZ-Thro Dynamite
 I	6841	1	Vial of Phlogiston
-I	6901	3	Glowing Thresher Cape
-I	6902	2	Bands of Serra'kis
-I	6903	2	Gaze Dreamer Pants
-I	6904	3	Bite of Serra'kis
-I	6905	2	Reef Axe
-I	6906	3	Algae Fists
-I	6907	3	Tortoise Armor
-I	6908	2	Ghamoo-ra's Bind
-I	6909	3	Strike of the Hydra
-I	6910	3	Leech Pants
-I	6911	3	Moss Cinch
 I	6914	1	Soran'ruk Fragment
 I	6915	1	Large Soran'ruk Fragment
 I	6994	1	Whitestone Oak Lumber
@@ -7688,7 +6919,6 @@ I	7086	2	Pattern: Earthen Silk Belt
 I	7090	2	Pattern: Green Silk Armor
 I	7091	2	Pattern: Truefaith Gloves
 I	7092	2	Pattern: Hands of Darkness
-I	7230	3	Smite's Mighty Hammer
 I	7288	2	Pattern: Rugged Leather Pants
 I	7296	0	Extinguished Torch
 I	7360	2	Pattern: Dark Leather Gloves
@@ -7714,7 +6944,6 @@ I	7990	2	Plans: Heavy Mithril Helm
 I	7991	3	Plans: Mithril Scale Shoulders
 I	7992	2	Plans: Blue Glittering Axe
 I	7993	2	Plans: Dazzling Mithril Rapier
-I	7997	0	Red Defias Mask
 I	8009	1	Dentrium Power Stone
 I	8028	3	Plans: Runed Mithril Hammer
 I	8029	2	Plans: Wicked Mithril Blade
@@ -7748,49 +6977,7 @@ I	9206	1	Elixir of Giants
 I	9293	2	Recipe: Magic Resistance Potion
 I	9295	2	Recipe: Invisibility Potion
 I	9298	2	Recipe: Elixir of Giants
-I	9381	3	Earthen Rod
-I	9383	3	Obsidian Cleaver
-I	9384	3	Stonevault Shiv
-I	9386	3	Excavator's Brand
-I	9387	2	Revelosh's Boots
-I	9388	2	Revelosh's Armguards
-I	9389	2	Revelosh's Spaulders
-I	9390	2	Revelosh's Gloves
-I	9391	3	The Shoveler
-I	9392	3	Annealed Blade
-I	9393	3	Beacon of Hope
-I	9394	3	Horned Viking Helmet
-I	9396	3	Legguards of the Vault
-I	9397	3	Energy Cloak
-I	9398	2	Worn Running Boots
 I	9399	2	Precision Arrow
-I	9400	1	Baelog's Shortbow
-I	9401	3	Nordic Longshank
-I	9403	1	Battered Viking Shield
-I	9404	3	Olaf's All Purpose Shield
-I	9406	3	Spirewind Fetter
-I	9410	3	Cragfists
-I	9411	2	Rockshard Pauldrons
-I	9412	3	Galgann's Fireblaster
-I	9413	3	The Rockpounder
-I	9414	2	Oilskin Leggings
-I	9415	3	Grimlok's Tribal Vestments
-I	9416	3	Grimlok's Charge
-I	9418	3	Stoneslayer
-I	9419	2	Galgann's Firehammer
-I	9420	3	Adventurer's Pith Helmet
-I	9422	3	Shadowforge Bushmaster
-I	9423	3	The Jackhammer
-I	9424	3	Ginn-su Sword
-I	9425	3	Pendulum of Doom
-I	9426	3	Monolithic Bow
-I	9427	3	Stonevault Bonebreaker
-I	9428	3	Unearthed Bands
-I	9429	3	Miner's Hat of the Deep
-I	9430	3	Spaulders of a Lost Age
-I	9431	3	Papal Fez
-I	9432	3	Skullplate Bracers
-I	9465	3	Digmaster 5000
 I	9738	1	Gem of Cobrahn
 I	9740	1	Gem of Pythas
 I	9741	1	Gem of Serpentis
@@ -7801,16 +6988,6 @@ I	10312	2	Pattern: Red Mageweave Gloves
 I	10315	2	Pattern: Red Mageweave Shoulders
 I	10316	2	Pattern: Colorful Kilt
 I	10320	2	Pattern: Red Mageweave Headband
-I	10399	3	Blackened Defias Armor
-I	10400	2	Blackened Defias Leggings
-I	10401	2	Blackened Defias Gloves
-I	10402	2	Blackened Defias Boots
-I	10403	2	Blackened Defias Belt
-I	10405	1	Bandit Shoulders
-I	10407	1	Raider's Shoulderpads
-I	10410	3	Leggings of the Fang
-I	10411	2	Footpads of the Fang
-I	10413	2	Gloves of the Fang
 I	10424	2	Plans: Silvered Bronze Leggings
 I	10601	2	Schematic: Bright-Eye Goggles
 I	10603	2	Schematic: Catseye Ultra Goggles
@@ -7822,8 +6999,6 @@ I	11038	2	Formula: Enchant 2H Weapon - Lesser Spirit
 I	11039	2	Formula: Enchant Cloak - Minor Agility
 I	11081	2	Formula: Enchant Shield - Lesser Protection
 I	11098	2	Formula: Enchant Cloak - Lesser Shadow Resistance
-I	11118	3	Archaedic Stone
-I	11121	2	Darkwater Talwar
 I	11164	2	Formula: Enchant Weapon - Lesser Beastslayer
 I	11165	2	Formula: Enchant Weapon - Lesser Elemental Slayer
 I	11167	2	Formula: Enchant Boots - Lesser Spirit
@@ -7834,8 +7009,6 @@ I	11208	2	Formula: Enchant Weapon - Demonslaying
 I	11224	2	Formula: Enchant Shield - Frost Resistance
 I	11225	2	Formula: Enchant Bracer - Greater Stamina
 I	11226	2	Formula: Enchant Gloves - Riding Skill
-I	11310	3	Flameseer Mantle
-I	11311	2	Emberscale Cape
 I	11386	0	Squishy Basilisk Eye
 I	11390	0	Broken Bat Fang
 I	11391	0	Spined Bat Wing
@@ -7850,7 +7023,6 @@ I	11733	2	Libram of Constitution
 I	11734	2	Libram of Tenacity
 I	11736	2	Libram of Resilience
 I	11737	2	Libram of Voracity
-I	11982	2	Viridian Band
 I	12037	1	Mystery Meat
 I	12203	1	Red Wolf Meat
 I	12207	1	Giant Egg
@@ -7875,7 +7047,6 @@ I	12704	2	Plans: Thorium Leggings
 I	12711	3	Plans: Whitesoul Helm
 I	12713	2	Plans: Radiant Leggings
 I	12720	4	Plans: Stronghold Gauntlets
-I	13245	3	Kresh's Back
 I	13443	1	Superior Mana Potion
 I	13444	1	Major Mana Potion
 I	13446	1	Major Healing Potion
@@ -7889,19 +7060,6 @@ I	13492	2	Recipe: Purification Potion
 I	13493	2	Recipe: Greater Arcane Elixir
 I	13518	2	Recipe: Flask of Petrification
 I	14047	1	Runecloth
-I	14115	1	Aboriginal Bands
-I	14116	1	Aboriginal Cape
-I	14126	1	Ritual Amice
-I	14145	2	Cursed Felblade
-I	14147	2	Cavedweller Bracers
-I	14148	2	Crystalline Cuffs
-I	14149	2	Subterranean Cape
-I	14150	2	Robe of Evocation
-I	14151	2	Chanting Blade
-I	14157	1	Pagan Mantle
-I	14169	1	Aboriginal Shoulder Pads
-I	14170	1	Buccaneer's Mantle
-I	14368	1	Mystic's Shoulder Pads
 I	14395	1	Spells of Shadow
 I	14396	1	Incantations from the Nether
 I	14466	2	Pattern: Frostweave Tunic
@@ -7925,13 +7083,7 @@ I	14506	2	Pattern: Felcloth Robe
 I	14507	3	Pattern: Mooncloth Shoulders
 I	14508	2	Pattern: Felcloth Shoulders
 I	14540	1	Taragaman the Hungerer's Heart
-I	14728	1	War Paint Shoulder Pads
-I	15019	1	Lupine Mantle
-I	15300	1	Grizzly Gloves
-I	15313	1	Feral Shoulder Pads
 I	15420	1	Ironfeather
-I	15496	1	Bloodspattered Shoulder Pads
-I	15505	1	Outrunner's Pauldrons
 I	15731	2	Pattern: Runic Leather Gauntlets
 I	15737	2	Pattern: Chimeric Boots
 I	15742	1	Pattern: Warbear Harness
@@ -7991,17 +7143,6 @@ I	18335	3	Pristine Black Diamond
 I	19029	4	Horn of the Frostwolf Howler
 I	19031	1	Frostwolf Battle Tabard
 I	19046	3	Frostwolf Battle Standard
-I	19083	3	Frostwolf Legionnaire's Cloak
-I	19085	3	Frostwolf Advisor's Cloak
-I	19087	3	Frostwolf Plate Belt
-I	19088	3	Frostwolf Mail Belt
-I	19089	3	Frostwolf Leather Belt
-I	19090	3	Frostwolf Cloth Belt
-I	19095	3	Frostwolf Legionnaire's Pendant
-I	19096	3	Frostwolf Advisor's Pendant
-I	19099	3	Glacial Blade
-I	19101	3	Whiteout Staff
-I	19103	3	Frostbite
 I	19230	3	Two of Beasts
 I	19231	3	Three of Beasts
 I	19232	3	Four of Beasts
@@ -8032,29 +7173,17 @@ I	19283	3	Seven of Portals
 I	19284	3	Eight of Portals
 I	19301	1	Alterac Manna Biscuit
 I	19307	1	Alterac Heavy Runecloth Bandage
-I	19308	4	Tome of Arcane Domination
-I	19309	4	Tome of Shadow Force
-I	19310	4	Tome of the Ice Lord
-I	19311	4	Tome of Fiery Arcana
-I	19312	4	Lei of the Lifegiver
-I	19315	4	Therazane's Touch
 I	19316	2	Ice Threaded Arrow
 I	19317	2	Ice Threaded Bullet
 I	19318	1	Bottled Alterac Spring Water
 I	19319	3	Harpy Hide Quiver
 I	19320	3	Gnoll Skin Bandolier
-I	19321	4	The Immovable Object
-I	19323	4	The Unstoppable Force
-I	19324	4	The Lobotomizer
-I	19325	4	Don Julio's Band
 I	19483	1	Peeling the Onion
 I	19935	0	Empty Venom Sac
 I	19936	0	Dried Scorpid Carapace
 I	19937	0	Small Scorpid Claw
 I	19938	0	Heavy Scorpid Leg
 I	20400	2	Pumpkin Bag
-I	23171	3	The Axe of Severing
-I	23173	3	Abomination Skin Leggings
 I	24281	0	Carved Ivory Bone]=]
 DB.raw["loot:6"]=[=[
 N	3974	Houndmaster Loksey	34	34	1	7756:60,3456:30,4306:21,7710:10,5805:2:q,1992:0.01,2262:0.01,5756:0.01,5819:0.01,7727:0.01,7728:0.01,7729:0.01,7730:0.01,7736:0.01,7752:0.01,7753:0.01,7754:0.01,7755:0.01,7757:0.01,7758:0.01,7759:0.01,7760:0.01,7761:0.01,7786:0.01,7787:0.01,8225:0.01,8226:0.01,10332:0.01		
@@ -8464,7 +7593,6 @@ N	14686	Lady Falther'ess	40	40	1	23177:50,23178:50,4306:20,4606:6,2592:4,1205:2,
 N	14690	Revanchion	60	60	1	12843:100,23127:33.3,23128:33.3,23129:33.3,22224:20:q,14047:10,8948:6,8766:2,12808:1.33,7972:1.33,5759:0.5,18335:0.5,18332:0.5,10309:0.08,10308:0.08,10305:0.08,10306:0.08,10307:0.08,10310:0.08,4500:0.07,20400:0.03		
 N	14695	Lord Blackwood	60	60	1	12841:35,23132:33.3,23139:33.3,23156:33.3,22526:33,14047:5,7972:2.35,8948:2,12808:1.2,8766:1,13446:0.66,13444:0.34,7909:0.18,5759:0.13,7910:0.13,18335:0.1,18698:0.1,10309:0.08,10308:0.08,10305:0.08,10306:0.08,10307:0.08,10310:0.08,4500:0.07,20400:0.03,22891:0.01,22890:0.01,22393:0.01,18600:0.01,17414:0.01,17413:0.01,17683:0.01,17682:0.01		
 N	14861	Blood Steward of Kirtonos	61	61	1	12841:100,13523:100,14047:29,7972:6.79,8948:5.98,8766:2.8,5760:0.32		
-I	140	1	Brawler's Boots
 I	414	1	Dalaran Sharp
 I	422	1	Dwarven Mild
 I	537	0	Dull Frenzy Scale
@@ -8476,7 +7604,6 @@ I	804	1	Large Blue Sack
 I	818	2	Tigerseye
 I	857	1	Large Red Sack
 I	858	1	Lesser Healing Potion
-I	862	3	Runed Ring
 I	929	1	Healing Potion
 I	954	1	Scroll of Strength
 I	955	1	Scroll of Intellect
@@ -8487,7 +7614,6 @@ I	1181	1	Scroll of Spirit
 I	1205	1	Melon Juice
 I	1206	2	Moss Agate
 I	1210	2	Shadowgem
-I	1382	1	Rock Mace
 I	1477	1	Scroll of Agility II
 I	1478	1	Scroll of Protection II
 I	1520	0	Troll Sweat
@@ -8503,9 +7629,6 @@ I	1710	1	Greater Healing Potion
 I	1711	1	Scroll of Stamina II
 I	1712	1	Scroll of Spirit II
 I	1725	1	Large Knapsack
-I	1992	3	Swampchill Fetish
-I	2040	3	Troll Protector
-I	2262	3	Mark of Kern
 I	2287	1	Haunch of Meat
 I	2289	1	Scroll of Strength II
 I	2290	1	Scroll of Intellect II
@@ -8535,7 +7658,6 @@ I	2880	1	Weak Flux
 I	2881	2	Plans: Runed Copper Breastplate
 I	2882	2	Plans: Silvered Bronze Shoulders
 I	2883	2	Plans: Deadly Bronze Poniard
-I	2901	1	Mining Pick
 I	2928	1	Dust of Decay
 I	3010	0	Fine Sand
 I	3012	1	Scroll of Agility
@@ -8553,7 +7675,6 @@ I	3395	2	Recipe: Limited Invulnerability Potion
 I	3396	1	Recipe: Elixir of Lesser Agility
 I	3402	0	Soft Patch of Fur
 I	3403	0	Ivory Boar Tusk
-I	3456	2	Dog Whistle
 I	3466	1	Strong Flux
 I	3608	2	Plans: Mighty Iron Hammer
 I	3611	2	Plans: Green Iron Boots
@@ -8675,7 +7796,6 @@ I	4605	1	Red-speckled Mushroom
 I	4606	1	Spongy Morel
 I	4607	1	Delicious Cave Mold
 I	4608	1	Raw Black Truffle
-I	4614	2	Pendant of Myzrael
 I	4623	1	Lesser Stoneshield Potion
 I	4625	1	Firebloom
 I	4632	2	Ornate Bronze Lockbox
@@ -8707,17 +7827,13 @@ I	5569	0	Seaweed
 I	5575	1	Large Green Sack
 I	5576	1	Large Brown Sack
 I	5578	2	Plans: Silvered Bronze Breastplate
-I	5616	3	Gutwrencher
 I	5637	1	Large Fang
 I	5740	1	Red Fireworks Rocket
-I	5756	3	Sliverblade
 I	5758	2	Mithril Lockbox
 I	5759	2	Thorium Lockbox
 I	5760	2	Eternium Lockbox
 I	5774	2	Pattern: Green Silk Pack
 I	5805	1	Heart of Zeal
-I	5819	3	Sunblaze Coif
-I	5956	1	Blacksmith Hammer
 I	5972	2	Pattern: Fine Leather Pants
 I	5974	2	Pattern: Guardian Cloak
 I	6044	2	Plans: Iron Shield Spike
@@ -8736,12 +7852,9 @@ I	6362	1	Raw Rockscale Cod
 I	6375	2	Formula: Enchant Bracer - Lesser Spirit
 I	6390	2	Pattern: Stylish Blue Shirt
 I	6391	2	Pattern: Stylish Green Shirt
-I	6440	3	Brainlash
 I	6444	0	Forked Tongue
 I	6454	2	Manual: Strong Anti-Venom
 I	6530	1	Nightcrawlers
-I	6566	1	Shimmering Amice
-I	6579	1	Defender Spaulders
 I	6716	2	Schematic: EZ-Thro Dynamite
 I	6826	0	Brilliant Scale
 I	6893	1	Workshop Key
@@ -8768,42 +7881,7 @@ I	7449	2	Pattern: Dusky Leather Leggings
 I	7450	2	Pattern: Green Whelp Armor
 I	7452	3	Pattern: Dusky Boots
 I	7453	2	Pattern: Swift Boots
-I	7682	3	Torturing Poker
-I	7683	1	Bloody Brass Knuckles
-I	7684	2	Bloodmage Mantle
-I	7685	3	Orb of the Forgotten Seer
-I	7710	3	Loksey's Training Stick
-I	7711	2	Robe of Doan
-I	7712	2	Mantle of Doan
-I	7713	3	Illusionary Rod
-I	7714	3	Hypnotic Blade
-I	7717	3	Ravager
-I	7718	3	Herod's Shoulder
-I	7719	3	Raging Berserker's Helm
-I	7720	3	Whitemane's Chapeau
-I	7721	3	Hand of Righteousness
-I	7722	3	Triune Amulet
-I	7723	3	Mograine's Might
-I	7724	3	Gauntlets of Divinity
-I	7726	3	Aegis of the Scarlet Commander
-I	7727	3	Watchman Pauldrons
-I	7728	3	Beguiler Robes
-I	7729	3	Chesterfall Musket
-I	7730	3	Cobalt Crusher
-I	7736	3	Fight Club
 I	7742	1	Schematic: Gnomish Cloaking Device
-I	7752	3	Dreamslayer
-I	7753	3	Bloodspiller
-I	7754	3	Harbinger Boots
-I	7755	3	Flintrock Shoulders
-I	7756	2	Dog Training Gloves
-I	7757	3	Windweaver Staff
-I	7758	3	Ruthless Shiv
-I	7759	3	Archon Chestpiece
-I	7760	3	Warchief Kilt
-I	7761	3	Steelclaw Reaver
-I	7786	3	Headsplitter
-I	7787	3	Resplendent Guardian
 I	7909	2	Aquamarine
 I	7910	2	Star Ruby
 I	7912	1	Solid Stone
@@ -8828,8 +7906,6 @@ I	8167	1	Turtle Scale
 I	8169	1	Thick Hide
 I	8170	1	Rugged Leather
 I	8171	1	Rugged Hide
-I	8225	3	Tainted Pierce
-I	8226	3	The Butcher
 I	8368	1	Thick Wolfhide
 I	8384	3	Pattern: Comfortable Leather Hat
 I	8385	1	Pattern: Turtle Scale Gloves
@@ -8864,7 +7940,6 @@ I	9224	1	Elixir of Demonslaying
 I	9234	1	Tiara of the Deep
 I	9238	1	Uncracked Scarab Shell
 I	9242	0	Ancient Tablet
-I	9243	2	Shriveled Heart
 I	9261	0	Lead Ore
 I	9262	1	Black Vitriol
 I	9293	2	Recipe: Magic Resistance Potion
@@ -8877,56 +7952,13 @@ I	9309	1	Robo-mechanical Guts
 I	9326	1	Grime-Encrusted Ring
 I	9327	2	Security DELTA Data Access Card
 I	9332	0	Crusted Bandages
-I	9333	0	Tarnished Silver Necklace
 I	9334	0	Cracked Pottery
 I	9335	0	Broken Obsidian Club
 I	9336	0	Gold-capped Troll Tusk
-I	9379	3	Sang'thraze the Deflector
-I	9446	3	Electrocutioner Leg
-I	9447	3	Electrocutioner Lagnut
-I	9448	2	Spidertank Oilrag
-I	9449	3	Manual Crowd Pummeler
-I	9450	2	Gnomebot Operating Boots
 I	9451	1	Bubbling Water
-I	9452	3	Hydrocane
-I	9453	3	Toxic Revenger
-I	9454	3	Acidic Walkers
-I	9455	3	Emissary Cuffs
-I	9456	3	Glass Shooter
-I	9457	3	Royal Diplomatic Scepter
-I	9458	3	Thermaplugg's Central Core
-I	9459	3	Thermaplugg's Left Arm
-I	9461	3	Charged Gear
-I	9476	3	Big Bad Pauldrons
-I	9477	3	The Chief's Enforcer
-I	9478	3	Ripsaw
-I	9479	3	Embrace of the Lycan
-I	9480	3	Eyegouger
-I	9481	3	The Minotaur
-I	9482	3	Witch Doctor's Cane
-I	9483	3	Flaming Incinerator
-I	9484	3	Spellshock Leggings
-I	9485	3	Vibroblade
-I	9486	3	Supercharger Battle Axe
-I	9487	3	Hi-tech Supergun
-I	9488	3	Oscillating Power Hammer
-I	9489	2	Gyromatic Icemaker
-I	9490	3	Gizmotron Megachopper
-I	9491	3	Hotshot Pilot's Gloves
-I	9492	3	Electromagnetic Gigaflux Reactivator
-I	9508	3	Mechbuilder's Overalls
-I	9509	3	Petrolspill Leggings
-I	9510	3	Caverndeep Trudgers
-I	9511	3	Bloodletter Scalpel
-I	9512	3	Blackmetal Cape
 I	9523	1	Troll Temper
-I	9639	3	The Hand of Antu'sul
-I	9640	3	Vice Grips
-I	9641	3	Lifeblood Amulet
 I	10285	1	Shadow Silk
 I	10286	1	Heart of the Wild
-I	10298	2	Gnomeregan Band
-I	10299	2	Gnomeregan Amulet
 I	10300	2	Pattern: Red Mageweave Vest
 I	10301	2	Pattern: White Bandit Mask
 I	10302	2	Pattern: Red Mageweave Pants
@@ -8940,26 +7972,9 @@ I	10312	2	Pattern: Red Mageweave Gloves
 I	10315	2	Pattern: Red Mageweave Shoulders
 I	10316	2	Pattern: Colorful Kilt
 I	10320	2	Pattern: Red Mageweave Headband
-I	10328	3	Scarlet Chestpiece
-I	10329	2	Scarlet Belt
-I	10330	3	Scarlet Leggings
-I	10331	2	Scarlet Gauntlets
-I	10332	3	Scarlet Boots
-I	10333	2	Scarlet Wristguards
 I	10420	1	Skull of the Coldbringer
 I	10424	2	Plans: Silvered Bronze Leggings
 I	10454	2	Essence of Eranikus
-I	10567	3	Quillshooter
-I	10570	3	Manslayer
-I	10571	3	Ebony Boneclub
-I	10572	3	Freezing Shard
-I	10573	3	Boneslasher
-I	10574	3	Corpseshroud
-I	10578	3	Thoughtcast Boots
-I	10581	3	Death's Head Vestment
-I	10582	3	Briar Tredders
-I	10583	3	Quillward Harness
-I	10584	3	Stormgale Fists
 I	10592	1	Catseye Elixir
 I	10601	2	Schematic: Bright-Eye Goggles
 I	10603	2	Schematic: Catseye Ultra Goggles
@@ -8967,57 +7982,15 @@ I	10604	2	Schematic: Mithril Heavy-bore Rifle
 I	10605	3	Schematic: Spellpower Goggles Xtreme
 I	10606	2	Schematic: Parachute Cloak
 I	10608	3	Schematic: Sniper Scope
-I	10623	3	Winter's Bite
-I	10624	3	Stinging Bow
-I	10625	3	Stealthblade
-I	10626	3	Ragehammer
-I	10627	3	Bludgeon of the Grinning Dog
-I	10628	3	Deathblow
-I	10629	3	Mistwalker Boots
-I	10630	3	Soulcatcher Halo
-I	10631	3	Murkwater Gauntlets
-I	10632	3	Slimescale Bracers
-I	10633	3	Silvershell Leggings
-I	10634	3	Mindseye Circle
 I	10647	1	Engineer's Ink
 I	10648	1	Blank Parchment
 I	10660	1	First Mosh'aru Tablet
 I	10661	1	Second Mosh'aru Tablet
-I	10758	3	X'caliboar
-I	10761	3	Coldrage Dagger
-I	10762	3	Robes of the Lich
-I	10763	3	Icemetal Barbute
-I	10764	3	Deathchill Armor
-I	10765	2	Bonefingers
-I	10767	3	Savage Boar's Guard
-I	10768	3	Boar Champion's Belt
-I	10769	3	Glowing Eye of Mordresh
-I	10770	3	Mordresh's Lifeless Skull
-I	10771	3	Deathmage Sash
-I	10772	2	Glutton's Cleaver
-I	10774	3	Fleshhide Shoulders
-I	10795	3	Drakeclaw Band
-I	10796	3	Drakestone
-I	10797	3	Firebreather
-I	10803	2	Blade of the Wretched
-I	10804	2	Fist of the Damned
-I	10805	2	Eater of the Dead
-I	10806	3	Vestments of the Atal'ai Prophet
-I	10807	3	Kilt of the Atal'ai Prophet
-I	10808	3	Gloves of the Atal'ai Prophet
-I	10828	3	Dire Nail
-I	10829	3	Dragon's Eye
-I	10833	3	Horns of Eranikus
-I	10835	3	Crest of Supremacy
-I	10836	3	Rod of Corrosion
-I	10837	3	Tooth of Eranikus
-I	10847	4	Dragon's Call
 I	10999	1	Ironfel
 I	11038	2	Formula: Enchant 2H Weapon - Lesser Spirit
 I	11039	2	Formula: Enchant Cloak - Minor Agility
 I	11078	1	Relic Coffer Key
 I	11081	2	Formula: Enchant Shield - Lesser Protection
-I	11086	3	Jang'thraze the Protector
 I	11098	2	Formula: Enchant Cloak - Lesser Shadow Resistance
 I	11126	1	Tablet of Kurniya
 I	11129	1	Essence of the Elements
@@ -9050,78 +8023,20 @@ I	11465	1	Marshal Windsor's Lost Information
 I	11468	1	Dark Iron Fanny Pack
 I	11611	3	Plans: Dark Iron Sunderer
 I	11612	3	Plans: Dark Iron Plate
-I	11623	3	Spritecaster Cape
-I	11624	3	Kentic Amice
-I	11625	3	Enthralled Sphere
-I	11626	3	Blackveil Cape
-I	11627	3	Fleetfoot Greaves
-I	11628	3	Houndmaster's Bow
-I	11629	3	Houndmaster's Rifle
 I	11630	3	Rockshard Pellets
-I	11631	3	Stoneshell Guard
-I	11632	3	Earthslag Shoulders
-I	11669	3	Naglering
-I	11684	4	Ironfoe
 I	11732	2	Libram of Rumination
 I	11733	2	Libram of Constitution
 I	11734	2	Libram of Tenacity
 I	11736	2	Libram of Resilience
 I	11737	2	Libram of Voracity
 I	11742	2	Wayfarer's Knapsack
-I	11744	3	Bloodfist
-I	11745	3	Fists of Phalanx
-I	11746	3	Golem Skull Helm
-I	11747	3	Flamestrider Robes
-I	11748	3	Pyric Caduceus
-I	11749	3	Searingscale Leggings
-I	11750	3	Kindling Stave
 I	11754	2	Black Diamond
-I	11755	3	Verek's Collar
-I	11764	3	Cinderhide Armsplints
-I	11765	3	Pyremail Wristguards
-I	11766	3	Flameweave Cuffs
-I	11767	3	Emberplate Armguards
-I	11782	3	Boreal Mantle
-I	11783	3	Chillsteel Girdle
-I	11784	3	Arbiter's Blade
-I	11785	3	Rock Golem Bulwark
-I	11786	3	Stone of the Earth
-I	11787	3	Shalehusk Boots
-I	11802	3	Lavacrest Leggings
-I	11803	3	Force of Magma
-I	11805	3	Rubidium Hammer
-I	11807	3	Sash of the Burning Heart
-I	11808	4	Circle of Flame
-I	11809	3	Flame Wrath
-I	11810	3	Force of Will
-I	11812	3	Cape of the Fire Salamander
 I	11813	2	Formula: Smoking Heart of the Mountain
-I	11814	3	Molten Fists
-I	11815	3	Hand of Justice
-I	11816	3	Angerforge's Battle Axe
-I	11817	3	Lord General's Sword
-I	11819	3	Second Wind
-I	11820	3	Royal Decorated Armor
-I	11821	3	Warstrife Leggings
-I	11822	3	Omnicast Boots
-I	11823	3	Luminary Kilt
 I	11827	2	Schematic: Lil' Smoky
 I	11828	2	Schematic: Pet Bombling
-I	11832	3	Burst of Knowledge
-I	11839	3	Chief Architect's Monocle
 I	11840	1	Master Builder's Shirt
-I	11841	3	Senior Designer's Pantaloons
-I	11842	3	Lead Surveyor's Mantle
 I	11885	1	Shadowforge Torch
 I	11914	1	Empty Cursed Ooze Jar
-I	11924	3	Robes of the Royal Crown
-I	11928	3	Thaurissan's Royal Scepter
-I	11930	3	The Emperor's New Cape
-I	11931	3	Dreadforge Retaliator
-I	11932	3	Guiding Stave of Wisdom
-I	11933	3	Imperial Jewel
-I	11934	3	Emperor's Seal
-I	11935	3	Magmus Stone
 I	11948	1	Empty Tainted Ooze Jar
 I	12033	1	Thaurissan Family Jewels
 I	12037	1	Mystery Meat
@@ -9129,52 +8044,16 @@ I	12203	1	Red Wolf Meat
 I	12205	1	White Spider Meat
 I	12208	1	Tender Wolf Meat
 I	12219	1	Unadorned Seal of Ascension
-I	12243	3	Smoldering Claw
 I	12261	2	Plans: Searing Golden Blade
 I	12335	2	Gemstone of Smolderthorn
 I	12336	2	Gemstone of Spirestone
 I	12337	2	Gemstone of Bloodaxe
 I	12382	2	Key to the City
-I	12463	3	Drakefang Butcher
-I	12464	3	Bloodfire Talons
-I	12465	3	Nightfall Drape
-I	12466	3	Dawnspire Cord
-I	12470	3	Sandstalker Ankleguards
-I	12471	3	Desertwalker Cane
-I	12527	3	Ribsplitter
-I	12528	3	The Judge's Gavel
-I	12531	3	Searing Needle
-I	12532	3	Spire of the Stoneshaper
 I	12533	1	Roughshod Pike
 I	12534	1	Omokk's Head
-I	12535	3	Doomforged Straightedge
-I	12542	3	Funeral Pyre Vestment
-I	12546	3	Aristocratic Cuffs
-I	12547	3	Mar Alom's Grip
-I	12549	3	Braincage
-I	12550	3	Runed Golem Shackles
-I	12551	3	Stoneshield Cloak
-I	12552	3	Blisterbane Wrap
-I	12553	3	Swiftwalker Boots
-I	12554	3	Hands of the Exalted Herald
-I	12555	3	Battlechaser's Greaves
-I	12556	3	High Priestess Boots
-I	12557	3	Ebonsteel Spaulders
 I	12562	1	Important Blackrock Documents
-I	12582	3	Keris of Zul'Serak
 I	12586	1	Immature Venom Sac
-I	12592	4	Blackblade of Shahram
-I	12602	3	Draconian Deflector
-I	12604	3	Starfire Tiara
-I	12605	3	Serpentine Skuller
 I	12607	3	Brilliant Chromatic Scale
-I	12608	3	Butcher's Apron
-I	12621	3	Demonfork
-I	12626	3	Funeral Cuffs
-I	12634	3	Chiselbrand Girdle
-I	12637	3	Backusarian Gauntlets
-I	12651	3	Blackcrow
-I	12653	3	Riphook
 I	12654	3	Doomshot
 I	12662	2	Demonic Rune
 I	12682	2	Plans: Thorium Armor
@@ -9191,7 +8070,6 @@ I	12697	2	Plans: Radiant Boots
 I	12702	2	Plans: Radiant Circlet
 I	12703	3	Plans: Storm Gauntlets
 I	12704	2	Plans: Thorium Leggings
-I	12709	3	Finkle's Skinner
 I	12711	3	Plans: Whitesoul Helm
 I	12713	2	Plans: Radiant Leggings
 I	12716	3	Plans: Helm of the Great Chief
@@ -9202,8 +8080,6 @@ I	12731	4	Pristine Hide of the Beast
 I	12735	2	Frayed Abomination Stitching
 I	12753	2	Skin of Shadow
 I	12780	1	General Drakkisath's Command
-I	12791	3	Barman Shanker
-I	12793	3	Mixologist's Tunic
 I	12803	2	Living Essence
 I	12804	1	Powerful Mojo
 I	12808	2	Essence of Undeath
@@ -9217,99 +8093,21 @@ I	12839	3	Plans: Heartseeker
 I	12840	1	Minion's Scourgestone
 I	12841	1	Invader's Scourgestone
 I	12843	2	Corruptor's Scourgestone
-I	12905	3	Wildfire Cape
-I	12926	3	Flaming Band
-I	12927	3	Truestrike Shoulders
-I	12929	3	Emberfury Talisman
-I	12930	3	Briarwood Reed
-I	12963	3	Blademaster Leggings
-I	12964	3	Tristam Legguards
-I	12965	3	Spiritshroud Leggings
-I	12966	3	Blackmist Armguards
-I	12967	3	Bloodmoon Cloak
-I	12968	3	Frostweaver Cape
-I	12969	3	Seeping Willow
-I	13098	3	Painweaver Band
-I	13141	3	Tooth of Gnarr
-I	13142	3	Brigam Girdle
-I	13143	4	Mark of the Dragon Lord
-I	13161	3	Trindlehaven Staff
-I	13162	3	Reiver Claws
-I	13163	3	Relentless Scythe
-I	13166	3	Slamshot Shoulders
-I	13167	3	Fist of Omokk
-I	13168	3	Plate of the Shaman King
-I	13169	3	Tressermane Leggings
-I	13170	3	Skyshroud Leggings
-I	13173	3	Flightblade Throwing Axe
 I	13174	1	Plagued Flesh Sample
-I	13177	3	Talisman of Evasion
-I	13179	3	Brazecore Armguards
-I	13183	3	Venomspitter
-I	13184	3	Fallbrush Handgrips
-I	13185	3	Sunderseer Mantle
-I	13198	3	Hurd Smasher
-I	13203	3	Armswake Cloak
-I	13204	3	Bashguuder
-I	13210	3	Pads of the Dread Wolf
-I	13211	3	Slashclaw Bracers
-I	13212	3	Halycon's Spiked Collar
-I	13213	3	Smolderweb's Eye
-I	13218	3	Fang of the Crystal Spider
-I	13244	3	Gilded Gauntlets
 I	13251	1	Head of Baron Rivendare
-I	13252	3	Cloudrunner Girdle
-I	13253	3	Hands of Power
-I	13255	3	Trueaim Gauntlets
-I	13257	3	Demonic Runed Spaulders
-I	13260	3	Wind Dancer Boots
-I	13261	3	Globe of D'sak
-I	13282	3	Ogreseer Tower Boots
-I	13283	3	Magus Ring
-I	13284	3	Swiftdart Battleboots
-I	13285	3	The Nicker
-I	13286	3	Rivenspike
 I	13302	1	Market Row Postbox Key
 I	13303	1	Crusaders' Square Postbox Key
 I	13304	1	Festival Lane Postbox Key
 I	13305	1	Elders' Square Postbox Key
 I	13306	1	King's Square Postbox Key
 I	13307	1	Fras Siabi's Postbox Key
-I	13314	4	Alanna's Embrace
 I	13335	4	Deathcharger's Reins
-I	13340	3	Cape of the Black Baron
-I	13344	3	Dracorian Gauntlets
-I	13345	3	Seal of Rivendare
-I	13346	3	Robes of the Exalted
-I	13349	3	Scepter of the Unholy
 I	13352	1	Vosh'gajin's Snakestone
 I	13354	1	Ectoplasmic Resonator
-I	13361	3	Skullforge Reaver
 I	13362	0	Letter from the Front
 I	13364	0	Fras Siabi's Advertisement
-I	13368	3	Bonescraper
-I	13371	2	Father Flame
-I	13376	3	Royal Tribunal Cloak
 I	13377	3	Miniature Cannon Balls
-I	13378	3	Songbird Blouse
 I	13379	3	Piccolo of the Flaming Fire
-I	13380	3	Willey's Portable Howitzer
-I	13381	3	Master Cannoneer Boots
-I	13382	3	Cannonball Runner
-I	13383	3	Woollies of the Prancing Minstrel
-I	13384	3	Rainbow Girdle
-I	13385	3	Tome of Knowledge
-I	13386	3	Archivist Cape
-I	13387	3	Foresight Girdle
-I	13394	3	Skul's Cold Embrace
-I	13395	3	Skul's Fingerbone Claws
-I	13396	3	Skul's Ghastly Touch
-I	13397	3	Stoneskin Gargoyle Cape
-I	13399	3	Gargoyle Shredder Talons
-I	13404	3	Mask of the Unforgiven
-I	13405	3	Wailing Nightbane Pauldrons
-I	13408	3	Soul Breaker
-I	13409	3	Tearfall Bracers
 I	13443	1	Superior Mana Potion
 I	13444	1	Major Mana Potion
 I	13446	1	Major Healing Potion
@@ -9326,9 +8124,6 @@ I	13490	2	Recipe: Greater Stoneshield Potion
 I	13492	2	Recipe: Purification Potion
 I	13493	2	Recipe: Greater Arcane Elixir
 I	13494	2	Recipe: Greater Fire Protection Potion
-I	13498	3	Handcrafted Mastersmith Leggings
-I	13502	3	Handcrafted Mastersmith Girdle
-I	13505	4	Runeblade of Baron Rivendare
 I	13508	2	Eye of Arachnida
 I	13509	2	Clutch of Foresight
 I	13514	2	Wail of the Banshee
@@ -9336,32 +8131,13 @@ I	13518	2	Recipe: Flask of Petrification
 I	13519	2	Recipe: Flask of the Titans
 I	13521	2	Recipe: Flask of Supreme Power
 I	13523	1	Blood of Innocents
-I	13524	3	Skull of Burning Shadows
-I	13525	2	Darkbind Fingers
-I	13526	2	Flamescarred Girdle
-I	13527	2	Lavawalker Greaves
-I	13528	2	Twilight Void Bracers
-I	13529	3	Husk of Nerub'enkan
-I	13530	2	Fangdrip Runners
-I	13531	2	Crypt Stalker Leggings
-I	13532	2	Darkspinner Claws
-I	13533	2	Acid-etched Pauldrons
-I	13534	3	Banshee Finger
-I	13535	2	Coldtouch Phantom Wraps
-I	13537	2	Chillhide Bracers
-I	13538	2	Windshrieker Pauldrons
-I	13539	2	Banshee's Touch
 I	13626	1	Human Head of Ras Frostwhisper
 I	13725	1	Krastinov's Bag of Horrors
 I	13873	1	Viewing Room Key
 I	13920	1	Healthy Dragon Scale
-I	13952	3	Iceblade Hacker
-I	13954	3	Verdant Footpads
 I	14047	1	Runecloth
-I	14157	1	Pagan Mantle
 I	14227	1	Ironweb Spider Silk
 I	14256	1	Felcloth
-I	14340	3	Freezing Lich Robes
 I	14466	2	Pattern: Frostweave Tunic
 I	14467	2	Pattern: Frostweave Robe
 I	14470	2	Pattern: Runecloth Tunic
@@ -9369,7 +8145,6 @@ I	14474	2	Pattern: Frostweave Gloves
 I	14478	2	Pattern: Brightcloth Robe
 I	14479	2	Pattern: Brightcloth Gloves
 I	14484	2	Pattern: Brightcloth Cloak
-I	14487	3	Bonechill Hammer
 I	14489	2	Pattern: Frostweave Pants
 I	14491	2	Pattern: Runecloth Pants
 I	14492	2	Pattern: Felcloth Boots
@@ -9380,8 +8155,6 @@ I	14497	3	Pattern: Mooncloth Leggings
 I	14498	2	Pattern: Runecloth Headband
 I	14499	2	Pattern: Mooncloth Bag
 I	14501	3	Pattern: Mooncloth Vest
-I	14502	3	Frostbite Girdle
-I	14503	3	Death's Clutch
 I	14504	2	Pattern: Runecloth Shoulders
 I	14506	2	Pattern: Felcloth Robe
 I	14507	3	Pattern: Mooncloth Shoulders
@@ -9390,38 +8163,7 @@ I	14509	3	Pattern: Mooncloth Circlet
 I	14510	3	Pattern: Bottomless Bag
 I	14511	4	Pattern: Gloves of Spell Mastery
 I	14513	4	Pattern: Robe of the Archmage
-I	14522	3	Maelstrom Leggings
-I	14525	3	Boneclenched Gauntlets
-I	14528	3	Rattlecage Buckler
-I	14531	3	Frightskull Shaft
-I	14536	3	Bonebrace Hauberk
-I	14537	3	Corpselight Greaves
-I	14538	3	Deadwalker Mantle
-I	14539	3	Bone Ring Helm
-I	14576	3	Ebon Hilt of Marduk
-I	14577	3	Skullsmoke Pants
-I	14611	3	Bloodmail Hauberk
-I	14612	3	Bloodmail Legguards
-I	14614	3	Bloodmail Belt
-I	14615	3	Bloodmail Gauntlets
-I	14616	3	Bloodmail Boots
 I	14617	1	Sawbones Shirt
-I	14620	3	Deathbone Girdle
-I	14621	3	Deathbone Sabatons
-I	14622	3	Deathbone Gauntlets
-I	14623	3	Deathbone Legguards
-I	14624	3	Deathbone Chestplate
-I	14626	3	Necropile Robe
-I	14629	3	Necropile Cuffs
-I	14631	3	Necropile Boots
-I	14632	3	Necropile Leggings
-I	14633	3	Necropile Mantle
-I	14636	3	Cadaverous Belt
-I	14637	3	Cadaverous Armor
-I	14638	3	Cadaverous Leggings
-I	14640	3	Cadaverous Gloves
-I	14641	3	Cadaverous Walkers
-I	15313	1	Feral Shoulder Pads
 I	15412	1	Green Dragonscale
 I	15414	1	Red Dragonscale
 I	15415	1	Blue Dragonscale
@@ -9467,63 +8209,7 @@ I	16253	2	Formula: Enchant Chest - Greater Stats
 I	16254	3	Formula: Enchant Weapon - Lifestealing
 I	16255	2	Formula: Enchant 2H Weapon - Major Spirit
 I	16663	1	Blood of the Black Dragon Champion
-I	16666	3	Vest of Elements
-I	16668	3	Kilt of Elements
-I	16670	3	Boots of Elements
-I	16671	3	Bindings of Elements
-I	16672	3	Gauntlets of Elements
-I	16673	3	Cord of Elements
-I	16674	3	Beaststalker's Tunic
-I	16675	3	Beaststalker's Boots
-I	16676	3	Beaststalker's Gloves
-I	16678	3	Beaststalker's Pants
-I	16679	3	Beaststalker's Mantle
-I	16680	3	Beaststalker's Belt
-I	16681	3	Beaststalker's Bindings
-I	16682	3	Magister's Boots
-I	16683	3	Magister's Bindings
-I	16684	3	Magister's Gloves
-I	16685	3	Magister's Belt
-I	16687	3	Magister's Leggings
-I	16688	3	Magister's Robes
-I	16689	3	Magister's Mantle
-I	16690	3	Devout Robe
-I	16691	3	Devout Sandals
-I	16692	3	Devout Gloves
-I	16694	3	Devout Skirt
-I	16696	3	Devout Belt
-I	16697	3	Devout Bracers
-I	16699	3	Dreadmist Leggings
-I	16700	3	Dreadmist Robe
-I	16701	3	Dreadmist Mantle
-I	16702	3	Dreadmist Belt
-I	16703	3	Dreadmist Bracers
-I	16704	3	Dreadmist Sandals
-I	16705	3	Dreadmist Wraps
-I	16706	3	Wildheart Vest
-I	16708	3	Shadowcraft Spaulders
-I	16709	3	Shadowcraft Pants
-I	16710	3	Shadowcraft Bracers
-I	16711	3	Shadowcraft Boots
-I	16712	3	Shadowcraft Gloves
-I	16713	3	Shadowcraft Belt
-I	16714	3	Wildheart Bracers
-I	16715	3	Wildheart Boots
-I	16716	3	Wildheart Belt
-I	16717	3	Wildheart Gloves
-I	16719	3	Wildheart Kilt
-I	16721	3	Shadowcraft Tunic
-I	16722	3	Lightforge Bracers
-I	16723	3	Lightforge Belt
-I	16726	3	Lightforge Breastplate
-I	16728	3	Lightforge Legplates
-I	16729	3	Lightforge Spaulders
-I	16730	3	Breastplate of Valor
-I	16732	3	Legplates of Valor
-I	16735	3	Bracers of Valor
-I	16736	3	Belt of Valor
 I	16786	1	Black Dragonspawn Eye
-I	17061	3	Juno's Shadow
 I	17322	1	Eye of the Emberseer
 I	17413	3	Codex: Prayer of Fortitude
 I	17414	3	Codex: Prayer of Fortitude II
@@ -9532,37 +8218,7 @@ I	17683	3	Book: Gift of the Wild II
 I	17684	1	Theradric Crystal Carving
 I	17702	1	Celebrian Rod
 I	17703	1	Celebrian Diamond
-I	17717	3	Megashot Rifle
-I	17718	3	Gizlock's Hypertech Buckler
-I	17719	3	Inventor's Focal Sword
-I	17728	3	Albino Crocscale Boots
-I	17730	3	Gatorbite Axe
-I	17732	3	Rotgrip Mantle
-I	17734	3	Helm of the Mountain
-I	17736	3	Rockgrip Gauntlets
-I	17737	3	Cloud Stone
-I	17738	3	Claw of Celebras
-I	17739	3	Grovekeeper's Drape
-I	17740	3	Soothsayer's Headdress
-I	17741	3	Nature's Embrace
-I	17742	3	Fungus Shroud Armor
-I	17744	3	Heart of Noxxion
-I	17745	3	Noxious Shooter
-I	17746	3	Noxxion's Shackles
 I	17747	1	Razorlash Root
-I	17748	3	Vinerot Sandals
-I	17749	3	Phytoskin Spaulders
-I	17750	2	Chloromesh Girdle
-I	17751	2	Brusslehide Leggings
-I	17752	3	Satyr's Lash
-I	17754	3	Infernal Trickster Leggings
-I	17755	3	Satyrmane Sash
-I	17767	3	Bloomsprout Headpiece
-I	17943	3	Fist of Stone
-I	18047	3	Flame Walkers
-I	18048	3	Mastersmith's Hammer
-I	18082	3	Zum'rah's Vexing Cane
-I	18083	3	Jumanza Grips
 I	18222	0	Thorny Vine
 I	18223	0	Serrated Petal
 I	18224	0	Lasher Root
@@ -9578,55 +8234,12 @@ I	18267	2	Recipe: Runn Tum Tuber Surprise
 I	18268	1	Gordok Inner Door Key
 I	18285	0	Crystallized Mana Shard
 I	18286	0	Condensed Mana Fragment
-I	18289	3	Barbed Thorn Necklace
-I	18295	3	Phasing Boots
-I	18296	3	Marksman Bands
 I	18297	1	Thornling Seed
-I	18298	3	Unbridled Leggings
 I	18299	1	Hydrospawn Essence
-I	18301	2	Lethtendris's Wand
-I	18302	2	Band of Vigor
-I	18305	2	Breakwater Legguards
-I	18306	2	Gloves of Shadowy Mist
-I	18307	2	Riptide Shoes
-I	18308	2	Clever Hat
-I	18309	3	Gloves of Restoration
-I	18310	3	Fiendish Machete
-I	18311	3	Quel'dorai Channeling Rod
-I	18312	3	Energized Chestplate
-I	18313	3	Helm of Awareness
-I	18314	3	Ring of Demonic Guile
-I	18315	3	Ring of Demonic Potency
-I	18317	3	Tempest Talisman
-I	18318	3	Merciful Greaves
-I	18319	3	Fervent Helm
-I	18321	3	Energetic Rod
-I	18322	3	Waterspout Boots
-I	18323	3	Satyr's Bow
-I	18324	3	Waveslicer
-I	18325	3	Felhide Cap
-I	18326	3	Razor Gauntlets
-I	18327	3	Whipvine Cord
-I	18328	3	Shadewood Cloak
 I	18332	2	Libram of Rapidity
 I	18333	2	Libram of Focus
 I	18334	2	Libram of Protection
 I	18335	3	Pristine Black Diamond
-I	18337	2	Orphic Bracers
-I	18338	3	Wand of Arcane Potency
-I	18339	2	Eidolon Cloak
-I	18340	3	Eidolon Talisman
-I	18343	2	Petrified Band
-I	18344	3	Stonebark Gauntlets
-I	18345	2	Murmuring Ring
-I	18346	2	Threadbare Trousers
-I	18347	2	Well Balanced Axe
-I	18349	2	Gauntlets of Accuracy
-I	18350	2	Amplifying Cloak
-I	18351	2	Magically Sealed Bracers
-I	18352	2	Petrified Bark Shield
-I	18353	2	Stoneflower Staff
-I	18354	3	Pimgib's Collar
 I	18356	3	Garona: A Study on Stealth and Treachery
 I	18357	3	Codex of Defense
 I	18358	3	The Arcanist's Cookbook
@@ -9637,79 +8250,15 @@ I	18362	3	Holy Bologna: What the Light Won't Tell You
 I	18363	3	Frost Shock and You
 I	18364	3	The Emerald Dream
 I	18365	0	A Thoroughly Read Copy of "Nat Pagle's Extreme' Anglin."
-I	18370	3	Vigilance Charm
-I	18371	3	Mindtap Talisman
-I	18372	3	Blade of the New Moon
-I	18373	3	Chestplate of Tranquility
-I	18374	3	Flamescarred Shoulders
-I	18375	3	Bracers of the Eclipse
-I	18376	3	Timeworn Mace
-I	18377	3	Quickdraw Gloves
-I	18378	3	Silvermoon Leggings
-I	18379	3	Odious Greaves
-I	18380	3	Eldritch Reinforced Legplates
-I	18381	3	Evil Eye Pendant
-I	18382	3	Fluctuating Cloak
-I	18383	3	Force Imbued Gauntlets
-I	18384	3	Bile-etched Spaulders
-I	18385	3	Robe of Everlasting Night
-I	18386	3	Padre's Trousers
-I	18387	3	Brightspark Gloves
-I	18388	3	Stoneshatter
-I	18389	3	Cloak of the Cosmos
-I	18390	3	Tanglemoss Leggings
-I	18391	3	Eyestalk Cord
-I	18392	3	Distracting Dagger
-I	18393	3	Warpwood Binding
-I	18394	3	Demon Howl Wristguards
-I	18395	3	Emerald Flame Ring
-I	18396	3	Mind Carver
-I	18397	3	Elder Magus Pendant
 I	18401	4	Foror's Compendium of Dragon Slaying
 I	18414	4	Pattern: Belt of the Archmage
 I	18415	3	Pattern: Felcloth Gloves
 I	18416	3	Pattern: Inferno Gloves
 I	18418	3	Pattern: Cloak of Warding
-I	18425	2	Kreeg's Mug
 I	18426	1	Lethtendris's Web
-I	18450	2	Robe of Combustion
-I	18451	2	Hyena Hide Belt
-I	18458	2	Modest Armguards
-I	18459	2	Gallant's Wristguards
-I	18460	2	Unsophisticated Hand Cannon
-I	18462	2	Jagged Bone Fist
-I	18463	2	Ogre Pocket Knife
-I	18464	2	Gordok Nose Ring
-I	18475	2	Oddly Magical Belt
-I	18477	2	Shaggy Leggings
-I	18479	2	Carrion Scorpid Helm
-I	18483	3	Mana Channeling Wand
-I	18484	3	Cho'Rush's Blade
-I	18485	3	Observer's Shield
-I	18490	3	Insightful Hood
-I	18493	3	Bulky Iron Spaulders
-I	18494	3	Denwatcher's Shoulders
-I	18496	3	Heliotrope Cloak
-I	18497	3	Sublime Wristguards
-I	18498	3	Hedgecutter
-I	18502	3	Monstrous Glaive
-I	18503	3	Kromcrush's Chestplate
-I	18505	3	Mugger's Belt
-I	18507	3	Boots of the Full Moon
 I	18514	3	Pattern: Girdle of Insight
 I	18516	3	Pattern: Swift Flight Bracers
 I	18518	4	Pattern: Hide of the Wild
-I	18520	3	Barbarous Blade
-I	18521	3	Grimy Metal Boots
-I	18522	3	Band of the Ogre King
-I	18523	3	Brightly Glowing Stone
-I	18524	3	Leggings of Destruction
-I	18525	3	Bracers of Prosperity
-I	18526	3	Crown of the Ogre King
-I	18527	3	Harmonious Gauntlets
-I	18528	3	Cyclone Spaulders
-I	18530	3	Ogre Forged Hauberk
-I	18533	3	Gordok Bracers of Power
 I	18600	3	Tome of Arcane Brilliance
 I	18603	1	Satyr Blood
 I	18631	1	Truesilver Transformer
@@ -9717,45 +8266,6 @@ I	18640	1	Happy Fun Rock
 I	18653	2	Schematic: Goblin Jumper Cables XL
 I	18654	2	Schematic: Gnomish Alarm-O-Bot
 I	18661	2	Schematic: World Enlarger
-I	18680	3	Ancient Bone Bow
-I	18681	3	Burial Shawl
-I	18682	3	Ghoul Skin Leggings
-I	18683	3	Hammer of the Vesper
-I	18684	3	Dimly Opalescent Ring
-I	18686	3	Bone Golem Shoulders
-I	18691	3	Dark Advisor's Pendant
-I	18692	3	Death Knight Sabatons
-I	18693	3	Shivery Handwraps
-I	18694	3	Shadowy Mail Greaves
-I	18695	3	Spellbound Tome
-I	18696	3	Intricately Runed Shield
-I	18697	3	Coldstone Slippers
-I	18698	3	Tattered Leather Hood
-I	18699	3	Icy Tomb Spaulders
-I	18700	3	Malefic Bracers
-I	18701	3	Innervating Band
-I	18702	3	Belt of the Ordained
-I	18716	3	Ash Covered Boots
-I	18721	3	Barrage Girdle
-I	18722	3	Death Grips
-I	18725	3	Peacemaker
-I	18726	3	Magistrate's Cuffs
-I	18727	3	Crimson Felt Hat
-I	18728	3	Anastari Heirloom
-I	18729	3	Screeching Bow
-I	18730	3	Shadowy Laced Handwraps
-I	18734	3	Pale Moon Cloak
-I	18735	3	Maleki's Footwraps
-I	18736	3	Plaguehound Leggings
-I	18737	3	Bone Slicing Hatchet
-I	18738	3	Carapace Spine Crossbow
-I	18739	3	Chitinous Plate Legguards
-I	18740	3	Thuzadin Sash
-I	18741	3	Morlune's Bracer
-I	18742	3	Stratholme Militia Shoulderguard
-I	18743	3	Gracious Cape
-I	18744	3	Plaguebat Fur Gloves
-I	18745	3	Sacred Cloth Leggings
 I	18746	1	Divination Scryer
 I	18779	3	Bottom Half of Advanced Armorsmithing: Volume I
 I	18780	3	Top Half of Advanced Armorsmithing: Volume I
@@ -9794,9 +8304,6 @@ I	19282	3	Six of Portals
 I	19283	3	Seven of Portals
 I	19284	3	Eight of Portals
 I	19441	1	Huge Venom Sac
-I	19507	2	Inquisitor's Shawl
-I	19508	2	Branded Leather Bracers
-I	19509	2	Dusty Mail Boots
 I	19933	1	Glowing Scorpid Blood
 I	19934	0	Large Scorpid Claw
 I	20019	1	Tooth of Morphaz
@@ -9811,52 +8318,14 @@ I	20767	1	Scum Covered Bag
 I	21211	1	Pouch of Reindeer Dust
 I	21235	1	Winter Veil Roast
 I	21314	1	Metzen's Letters and Notes
-I	21524	2	Red Winter Hat
-I	21525	2	Green Winter Hat
 I	21982	1	Ogre Warbeads
 I	21987	1	Incendicite of Incendius
 I	21988	1	Ember of Emberseer
 I	22138	1	Blackrock Bracer
-I	22204	3	Wristguards of Renown
-I	22205	3	Black Steel Bindings
-I	22206	2	Bouquet of Red Roses
-I	22207	3	Sash of the Grand Hunt
-I	22208	3	Lavastone Hammer
-I	22212	3	Golem Fitted Pauldrons
-I	22223	3	Foreman's Head Protector
 I	22224	1	Jeering Spectre's Essence
-I	22231	3	Kayser's Boots of Precision
-I	22234	3	Mantle of Lost Hope
-I	22240	3	Greaves of Withering Despair
-I	22241	3	Dark Warder's Pauldrons
-I	22242	3	Verek's Leash
-I	22245	3	Soot Encrusted Footwear
-I	22253	3	Tome of the Lost
-I	22254	3	Wand of Eternal Light
-I	22255	3	Magma Forged Band
-I	22256	3	Mana Shaping Handwraps
-I	22267	3	Spellweaver's Turban
-I	22268	3	Draconic Infused Emblem
-I	22269	3	Shadow Prowler's Cloak
 I	22309	2	Pattern: Big Bag of Enchantment
-I	22311	3	Ironweave Boots
-I	22313	3	Ironweave Bracers
-I	22321	3	Heart of Wyrmthalak
 I	22388	4	Plans: Titanic Leggings
 I	22393	3	Codex: Prayer of Shadow Protection
-I	22395	3	Totem of Rage
-I	22397	3	Idol of Ferocity
-I	22400	3	Libram of Truth
-I	22403	3	Diana's Pearl Necklace
-I	22404	3	Willey's Back Scratcher
-I	22405	3	Mantle of the Scarlet Crusade
-I	22406	3	Redemption
-I	22407	3	Helm of the New Moon
-I	22408	3	Ritssyn's Wand of Bad Mojo
-I	22409	3	Tunic of the Crescent Moon
-I	22410	3	Gauntlets of Deftness
-I	22411	3	Helm of the Executioner
-I	22412	3	Thuzadin Mantle
 I	22525	1	Crypt Fiend Parts
 I	22526	1	Bone Fragments
 I	22527	1	Core of Elements
@@ -9865,20 +8334,6 @@ I	22529	1	Savage Frond
 I	22890	3	Tome of Frost Ward V
 I	22891	3	Grimoire of Shadow Ward IV
 I	22897	1	Tome of Conjure Food VII
-I	23124	3	Staff of Balzaphon
-I	23125	3	Chains of the Lich
-I	23126	3	Waistband of Balzaphon
-I	23127	3	Cloak of Revanchion
-I	23128	3	The Shadow's Grasp
-I	23129	3	Bracers of Mending
-I	23132	3	Lord Blackwood's Blade
-I	23139	3	Lord Blackwood's Buckler
-I	23156	3	Blackwood's Thigh
-I	23177	3	Lady Falther'ess' Finger
-I	23178	3	Mantle of Lady Falther'ess
-I	23198	3	Idol of Brutality
-I	23200	3	Totem of Sustaining
-I	23201	3	Libram of Divinity
 I	23320	3	Tablet of Flame Shock VI
 I	24101	3	Book of Ferocious Bite V
 I	24102	3	Manual of Eviscerate IX
@@ -10246,152 +8701,9 @@ I	16251	2	Formula: Enchant Bracer - Superior Stamina
 I	16253	2	Formula: Enchant Chest - Greater Stats
 I	16665	2	Tome of Tranquilizing Shot
 I	16786	1	Black Dragonspawn Eye
-I	16795	4	Arcanist Crown
-I	16796	4	Arcanist Leggings
-I	16797	4	Arcanist Mantle
-I	16798	4	Arcanist Robes
-I	16799	4	Arcanist Bindings
-I	16800	4	Arcanist Boots
-I	16801	4	Arcanist Gloves
-I	16802	4	Arcanist Belt
-I	16803	4	Felheart Slippers
-I	16804	4	Felheart Bracers
-I	16805	4	Felheart Gloves
-I	16806	4	Felheart Belt
-I	16807	4	Felheart Shoulder Pads
-I	16808	4	Felheart Horns
-I	16809	4	Felheart Robes
-I	16810	4	Felheart Pants
-I	16811	4	Boots of Prophecy
-I	16812	4	Gloves of Prophecy
-I	16813	4	Circlet of Prophecy
-I	16814	4	Pants of Prophecy
-I	16815	4	Robes of Prophecy
-I	16816	4	Mantle of Prophecy
-I	16817	4	Girdle of Prophecy
-I	16818	4	Netherwind Belt
-I	16819	4	Vambraces of Prophecy
-I	16820	4	Nightslayer Chestpiece
-I	16821	4	Nightslayer Cover
-I	16822	4	Nightslayer Pants
-I	16823	4	Nightslayer Shoulder Pads
-I	16824	4	Nightslayer Boots
-I	16825	4	Nightslayer Bracelets
-I	16826	4	Nightslayer Gloves
-I	16827	4	Nightslayer Belt
-I	16828	4	Cenarion Belt
-I	16829	4	Cenarion Boots
-I	16830	4	Cenarion Bracers
-I	16831	4	Cenarion Gloves
-I	16832	4	Bloodfang Spaulders
-I	16833	4	Cenarion Vestments
-I	16834	4	Cenarion Helm
-I	16835	4	Cenarion Leggings
-I	16836	4	Cenarion Spaulders
-I	16837	4	Earthfury Boots
-I	16838	4	Earthfury Belt
-I	16839	4	Earthfury Gauntlets
-I	16840	4	Earthfury Bracers
-I	16841	4	Earthfury Vestments
-I	16842	4	Earthfury Helmet
-I	16843	4	Earthfury Legguards
-I	16844	4	Earthfury Epaulets
-I	16845	4	Giantstalker's Breastplate
-I	16846	4	Giantstalker's Helmet
-I	16847	4	Giantstalker's Leggings
-I	16848	4	Giantstalker's Epaulets
-I	16849	4	Giantstalker's Boots
-I	16850	4	Giantstalker's Bracers
-I	16851	4	Giantstalker's Belt
-I	16852	4	Giantstalker's Gloves
-I	16853	4	Lawbringer Chestguard
-I	16854	4	Lawbringer Helm
-I	16855	4	Lawbringer Legplates
-I	16856	4	Lawbringer Spaulders
-I	16857	4	Lawbringer Bracers
-I	16858	4	Lawbringer Belt
-I	16859	4	Lawbringer Boots
-I	16860	4	Lawbringer Gauntlets
-I	16861	4	Bracers of Might
-I	16862	4	Sabatons of Might
-I	16863	4	Gauntlets of Might
-I	16864	4	Belt of Might
-I	16865	4	Breastplate of Might
-I	16866	4	Helm of Might
-I	16867	4	Legplates of Might
-I	16868	4	Pauldrons of Might
-I	16898	4	Stormrage Boots
-I	16899	4	Stormrage Handguards
-I	16900	4	Stormrage Cover
-I	16902	4	Stormrage Pauldrons
-I	16903	4	Stormrage Belt
-I	16904	4	Stormrage Bracers
-I	16906	4	Bloodfang Boots
-I	16907	4	Bloodfang Gloves
-I	16908	4	Bloodfang Hood
-I	16910	4	Bloodfang Belt
-I	16911	4	Bloodfang Bracers
-I	16912	4	Netherwind Boots
-I	16913	4	Netherwind Gloves
-I	16914	4	Netherwind Crown
-I	16917	4	Netherwind Mantle
-I	16918	4	Netherwind Bindings
-I	16919	4	Boots of Transcendence
-I	16920	4	Handguards of Transcendence
-I	16921	4	Halo of Transcendence
-I	16924	4	Pauldrons of Transcendence
-I	16925	4	Belt of Transcendence
-I	16926	4	Bindings of Transcendence
-I	16927	4	Nemesis Boots
-I	16928	4	Nemesis Gloves
-I	16929	4	Nemesis Skullcap
-I	16932	4	Nemesis Spaulders
-I	16933	4	Nemesis Belt
-I	16934	4	Nemesis Bracers
-I	16935	4	Dragonstalker's Bracers
-I	16936	4	Dragonstalker's Belt
-I	16937	4	Dragonstalker's Spaulders
-I	16939	4	Dragonstalker's Helm
-I	16940	4	Dragonstalker's Gauntlets
-I	16941	4	Dragonstalker's Greaves
-I	16943	4	Bracers of Ten Storms
-I	16944	4	Belt of Ten Storms
-I	16945	4	Epaulets of Ten Storms
-I	16947	4	Helmet of Ten Storms
-I	16948	4	Gauntlets of Ten Storms
-I	16949	4	Greaves of Ten Storms
-I	16951	4	Judgement Bindings
-I	16952	4	Judgement Belt
-I	16953	4	Judgement Spaulders
-I	16955	4	Judgement Crown
-I	16956	4	Judgement Gauntlets
-I	16957	4	Judgement Sabatons
-I	16959	4	Bracelets of Wrath
-I	16960	4	Waistband of Wrath
-I	16961	4	Pauldrons of Wrath
-I	16963	4	Helm of Wrath
-I	16964	4	Gauntlets of Wrath
-I	16965	4	Sabatons of Wrath
 I	17010	3	Fiery Core
 I	17011	3	Lava Core
 I	17012	1	Core Leather
-I	17064	4	Shard of the Scale
-I	17065	4	Medallion of Steadfast Might
-I	17066	4	Drillborer Disk
-I	17067	4	Ancient Cornerstone Grimoire
-I	17068	4	Deathbringer
-I	17069	4	Striker's Mark
-I	17071	4	Gutgore Ripper
-I	17072	4	Blastershot Launcher
-I	17073	4	Earthshaker
-I	17074	4	Shadowstrike
-I	17075	4	Vis'kag the Bloodletter
-I	17077	4	Crimson Shocker
-I	17078	4	Sapphiron Drape
-I	17103	4	Azuresong Mageblade
-I	17105	4	Aurastone Hammer
-I	17109	4	Choker of Enlightenment
-I	17110	4	Seal of the Archmagus
 I	17203	4	Sulfuron Ingot
 I	17329	1	Hand of Lucifron
 I	17330	1	Hand of Sulfuron
@@ -10400,8 +8712,6 @@ I	17332	1	Hand of Shazzrah
 I	17414	3	Codex: Prayer of Fortitude II
 I	17683	3	Book: Gift of the Wild II
 I	17966	2	Onyxia Hide Backpack
-I	18203	4	Eskhandar's Right Claw
-I	18205	4	Eskhandar's Collar
 I	18252	3	Pattern: Core Armor Kit
 I	18257	3	Recipe: Major Rejuvenation Potion
 I	18259	3	Formula: Enchant Weapon - Spell Power
@@ -10420,28 +8730,6 @@ I	18563	5	Bindings of the Windseeker
 I	18564	5	Bindings of the Windseeker
 I	18600	3	Tome of Arcane Brilliance
 I	18705	4	Mature Black Dragon Sinew
-I	18813	4	Ring of Binding
-I	18820	4	Talisman of Ephemeral Power
-I	18821	4	Quick Strike Ring
-I	18822	4	Obsidian Edged Blade
-I	18823	4	Aged Core Leather Gloves
-I	18824	4	Magma Tempered Boots
-I	18829	4	Deep Earth Spaulders
-I	18832	4	Brutality Blade
-I	18842	4	Staff of Dominance
-I	18861	4	Flamewaker Legplates
-I	18870	4	Helm of the Lifegiver
-I	18872	4	Manastorm Leggings
-I	18875	4	Salamander Scale Pants
-I	18878	4	Sorcerous Dagger
-I	18879	4	Heavy Dark Iron Ring
-I	19136	4	Mana Igniting Cord
-I	19142	4	Fire Runed Grimoire
-I	19143	4	Flameguard Gauntlets
-I	19144	4	Sabatons of the Flamewalker
-I	19145	4	Robe of Volatile Power
-I	19146	4	Wristguards of Stability
-I	19147	4	Ring of Spell Power
 I	19183	1	Hourglass Sand
 I	19221	1	Darkmoon Special Reserve
 I	19233	3	Five of Beasts
@@ -10460,54 +8748,6 @@ I	19281	3	Five of Portals
 I	19282	3	Six of Portals
 I	19283	3	Seven of Portals
 I	19284	3	Eight of Portals
-I	19343	4	Scrolls of Blinding Light
-I	19344	4	Natural Alignment Crystal
-I	19345	4	Aegis of Preservation
-I	19347	4	Claw of Chromaggus
-I	19349	4	Elementium Reinforced Bulwark
-I	19352	4	Chromatically Tempered Sword
-I	19353	4	Drake Talon Cleaver
-I	19354	4	Draconic Avenger
-I	19355	4	Shadow Wing Focus Staff
-I	19357	4	Herald of Woe
-I	19358	4	Draconic Maul
-I	19361	4	Ashjre'thul, Crossbow of Smiting
-I	19362	4	Doom's Edge
-I	19365	4	Claw of the Black Drake
-I	19367	4	Dragon's Touch
-I	19368	4	Dragonbreath Hand Cannon
-I	19385	4	Empowered Leggings
-I	19386	4	Elementium Threaded Cloak
-I	19387	4	Chromatic Boots
-I	19388	4	Angelista's Grasp
-I	19389	4	Taut Dragonhide Shoulderpads
-I	19390	4	Taut Dragonhide Gloves
-I	19391	4	Shimmering Geta
-I	19392	4	Girdle of the Fallen Crusader
-I	19393	4	Primalist's Linked Waistguard
-I	19394	4	Drake Talon Pauldrons
-I	19395	4	Rejuvenating Gem
-I	19396	4	Taut Dragonhide Belt
-I	19397	4	Ring of Blackrock
-I	19398	4	Cloak of Firemaw
-I	19399	4	Black Ash Robe
-I	19400	4	Firemaw's Clutch
-I	19401	4	Primalist's Linked Legguards
-I	19402	4	Legguards of the Fallen Crusader
-I	19403	4	Band of Forced Concentration
-I	19405	4	Malfurion's Blessed Bulwark
-I	19406	4	Drake Fang Talisman
-I	19407	4	Ebony Flame Gloves
-I	19430	4	Shroud of Pure Thought
-I	19431	4	Styleen's Impeding Scarab
-I	19432	4	Circle of Applied Force
-I	19433	4	Emberweave Leggings
-I	19434	4	Band of Dark Dominion
-I	19435	4	Essence Gatherer
-I	19436	4	Cloak of Draconic Might
-I	19437	4	Boots of Pure Thought
-I	19438	4	Ringo's Blizzard Boots
-I	19439	4	Interlaced Shadow Jerkin
 I	19441	1	Huge Venom Sac
 I	19698	2	Zulian Coin
 I	19699	2	Razzashi Coin
@@ -10551,65 +8791,14 @@ I	19818	2	Punctured Voodoo Doll
 I	19819	2	Punctured Voodoo Doll
 I	19820	2	Punctured Voodoo Doll
 I	19821	2	Punctured Voodoo Doll
-I	19852	4	Ancient Hakkari Manslayer
-I	19853	4	Gurubashi Dwarf Destroyer
-I	19854	4	Zin'rokh, Destroyer of Worlds
-I	19855	4	Bloodsoaked Legplates
-I	19856	4	The Eye of Hakkar
-I	19857	4	Cloak of Consumption
-I	19859	4	Fang of the Faceless
-I	19861	4	Touch of Chaos
-I	19862	4	Aegis of the Blood God
-I	19863	3	Primalist's Seal
-I	19864	4	Bloodcaller
-I	19865	4	Warblade of the Hakkari
-I	19866	4	Warblade of the Hakkari
-I	19867	4	Bloodlord's Defender
-I	19869	3	Blooddrenched Grips
-I	19870	3	Hakkari Loa Cloak
 I	19872	4	Swift Razzashi Raptor
-I	19873	3	Overlord's Crimson Band
-I	19874	4	Halberd of Smiting
-I	19875	3	Bloodstained Coif
-I	19876	4	Soul Corrupter's Necklace
-I	19877	3	Animist's Leggings
-I	19878	3	Bloodsoaked Pauldrons
 I	19881	1	Channeler's Head
-I	19884	4	Jin'do's Judgement
-I	19885	4	Jin'do's Evil Eye
-I	19886	3	The Hexxer's Cover
-I	19887	3	Bloodstained Legplates
-I	19888	3	Overlord's Embrace
-I	19889	3	Blooddrenched Leggings
-I	19890	4	Jin'do's Hexxer
-I	19891	4	Jin'do's Bag of Whammies
-I	19892	3	Animist's Boots
-I	19893	3	Zanzil's Seal
-I	19894	3	Bloodsoaked Gauntlets
-I	19895	3	Bloodtinged Kilt
-I	19896	4	Thekal's Grasp
-I	19897	4	Betrayer's Boots
-I	19898	3	Seal of Jin
-I	19899	3	Ritualistic Legguards
-I	19901	3	Zulian Slicer
 I	19902	4	Swift Zulian Tiger
-I	19908	3	Sceptre of Smiting
-I	19921	3	Zulian Hacker
-I	19929	3	Bloodtinged Gloves
 I	19943	1	Massive Mojo
 I	19975	1	Zulian Mudskunk
 I	20015	0	Elder Raptor Feathers
 I	20016	0	Trophy Raptor Skull
-I	20038	4	Mandokir's Sting
 I	20066	1	Arathi Basin Runecloth Bandage
-I	20257	4	Seafury Gauntlets
-I	20258	3	Zulian Ceremonial Staff
-I	20259	3	Shadow Panther Hide Gloves
-I	20260	3	Seafury Leggings
-I	20261	3	Shadow Panther Hide Belt
-I	20263	3	Gurubashi Helm
-I	20264	4	Peacekeeper Gauntlets
-I	20266	3	Peacekeeper Leggings
 I	20383	1	Head of the Broodlord Lashlayer
 I	20400	2	Pumpkin Bag
 I	20498	1	Silithid Chitin
@@ -10665,11 +8854,7 @@ I	20933	4	Husk of the Old God
 I	20951	1	Narain's Scrying Goggles
 I	21037	1	Crude Map
 I	21039	1	Narain's Turban
-I	21040	1	Narain's Robe
 I	21108	1	Draconic for Dummies
-I	21126	4	Death's Sting
-I	21128	4	Staff of the Qiraji Prophets
-I	21134	4	Dark Edge of Insanity
 I	21156	1	Scarab Bag
 I	21218	3	Blue Qiraji Resonating Crystal
 I	21220	4	Head of Ossirian the Unscarred
@@ -10689,139 +8874,10 @@ I	21321	3	Red Qiraji Resonating Crystal
 I	21323	3	Green Qiraji Resonating Crystal
 I	21324	3	Yellow Qiraji Resonating Crystal
 I	21371	3	Pattern: Core Felcloth Bag
-I	21452	4	Staff of the Ruins
-I	21453	4	Mantle of the Horusath
-I	21454	4	Runic Stone Shoulders
-I	21455	3	Southwind Helm
-I	21456	4	Sandstorm Cloak
-I	21458	4	Gauntlets of New Life
-I	21459	4	Crossbow of Imminent Doom
-I	21460	4	Helm of Domination
-I	21461	4	Leggings of the Black Blizzard
-I	21462	4	Gloves of Dark Wisdom
-I	21463	4	Ossirian's Binding
-I	21464	4	Shackles of the Unscarred
-I	21466	4	Stinger of Ayamiss
-I	21467	4	Thick Silithid Chestguard
-I	21468	3	Mantle of Maz'Nadir
-I	21469	3	Gauntlets of Southwind
-I	21470	3	Cloak of the Savior
-I	21471	4	Talon of Furious Concentration
-I	21472	4	Dustwind Turban
-I	21478	4	Bow of Taut Sinew
-I	21479	4	Gauntlets of the Immovable
-I	21485	4	Buru's Skull Fragment
-I	21486	4	Gloves of the Swarm
-I	21487	4	Slimy Scaled Gauntlets
-I	21498	4	Qiraji Sacrificial Dagger
-I	21499	4	Vestments of the Shifting Sands
-I	21579	4	Vanquished Tentacle of C'Thun
-I	21581	4	Gauntlets of Annihilation
 I	21582	4	Grasp of the Old God
-I	21583	4	Cloak of Clarity
-I	21585	4	Dark Storm Gauntlets
-I	21586	4	Belt of Never-ending Agony
-I	21596	4	Ring of the Godslayer
-I	21597	4	Royal Scepter of Vek'lor
-I	21598	4	Royal Qiraji Belt
-I	21599	4	Vek'lor's Gloves of Devastation
-I	21600	4	Boots of Epiphany
-I	21601	4	Ring of Emperor Vek'lor
-I	21602	4	Qiraji Execution Bracers
-I	21603	4	Wand of Qiraji Nobility
-I	21604	4	Bracelets of Royal Redemption
-I	21605	4	Gloves of the Hidden Temple
-I	21606	4	Belt of the Fallen Emperor
-I	21607	4	Grasp of the Fallen Emperor
-I	21608	4	Amulet of Vek'nilash
-I	21609	4	Regenerating Belt of Vek'nilash
-I	21616	4	Huhuran's Stinger
-I	21617	4	Wasphide Gauntlets
-I	21618	4	Hive Defiler Wristguards
-I	21619	4	Gloves of the Messiah
-I	21620	4	Ring of the Martyr
-I	21621	4	Cloak of the Golden Hive
-I	21622	4	Sharpened Silithid Femur
-I	21623	4	Gauntlets of the Righteous Champion
-I	21624	4	Gauntlets of Kalimdor
-I	21625	4	Scarab Brooch
-I	21626	4	Slime-coated Leggings
-I	21627	4	Cloak of Untold Secrets
-I	21635	4	Barb of the Sand Reaver
-I	21645	4	Hive Tunneler's Boots
-I	21647	4	Fetish of the Sand Reaver
-I	21648	4	Recomposed Boots
-I	21650	4	Ancient Qiraji Ripper
-I	21651	4	Scaled Sand Reaver Leggings
-I	21652	4	Silithid Carapace Chestguard
-I	21663	4	Robes of the Guardian Saint
-I	21664	4	Barbed Choker
-I	21665	4	Mantle of Wicked Revenge
-I	21666	4	Sartura's Might
-I	21667	4	Legplates of Blazing Light
-I	21668	4	Scaled Leggings of Qiraji Fury
-I	21669	4	Creeping Vine Helm
-I	21670	4	Badge of the Swarmguard
-I	21671	4	Robes of the Battleguard
-I	21672	4	Gloves of Enforcement
-I	21673	4	Silithid Claw
-I	21674	4	Gauntlets of Steadfast Determination
-I	21675	4	Thick Qirajihide Belt
-I	21676	4	Leggings of the Festering Swarm
-I	21677	4	Ring of the Qiraji Fury
-I	21678	4	Necklace of Purity
-I	21679	4	Kalimdor's Revenge
-I	21680	4	Vest of Swift Execution
-I	21681	4	Ring of the Devoured
-I	21682	4	Bile-Covered Gauntlets
-I	21683	4	Mantle of the Desert Crusade
-I	21684	4	Mantle of the Desert's Fury
-I	21685	4	Petrified Scarab
-I	21686	4	Mantle of Phrenic Power
-I	21687	4	Ukko's Ring of Darkness
-I	21688	4	Boots of the Fallen Hero
-I	21689	4	Gloves of Ebru
-I	21690	4	Angelista's Charm
-I	21691	4	Ooze-ridden Gauntlets
-I	21692	4	Triad Girdle
-I	21693	4	Guise of the Devourer
-I	21694	4	Ternary Mantle
-I	21695	4	Angelista's Touch
-I	21696	4	Robes of the Triumvirate
-I	21697	4	Cape of the Trinity
-I	21698	4	Leggings of Immersion
-I	21699	4	Barrage Shoulders
-I	21700	4	Pendant of the Qiraji Guardian
-I	21701	4	Cloak of Concentrated Hatred
-I	21702	4	Amulet of Foul Warding
-I	21703	4	Hammer of Ji'zhi
-I	21704	4	Boots of the Redeemed Prophecy
-I	21705	4	Boots of the Fallen Prophet
-I	21706	4	Boots of the Unwavering Will
-I	21707	4	Ring of Swarming Thought
-I	21708	4	Beetle Scaled Wristguards
-I	21715	4	Sand Polished Hammer
 I	21744	1	Lucky Rocket Cluster
 I	21761	1	Scarab Coffer Key
 I	21762	1	Greater Scarab Coffer Key
-I	21800	3	Silithid Husked Launcher
-I	21801	3	Antenna of Invigoration
-I	21802	3	The Lost Kris of Zedd
-I	21803	3	Helm of the Holy Avenger
-I	21804	3	Coif of Elemental Fury
-I	21805	3	Polished Obsidian Pauldrons
-I	21806	3	Gavel of Qiraji Authority
-I	21809	3	Fury of the Forgotten Swarm
-I	21810	3	Treads of the Wandering Nomad
-I	21814	4	Breastplate of Annihilation
-I	21836	4	Ritssyn's Ring of Chaos
-I	21837	4	Anubisath Warhammer
-I	21838	4	Garb of Royal Ascension
-I	21839	4	Scepter of the False Prophet
-I	21856	4	Neretzek, The Blood Drinker
-I	21888	4	Gloves of the Immortal
-I	21889	4	Gloves of the Redeemed Prophecy
-I	21891	4	Shard of the Fallen Star
 I	22202	1	Small Obsidian Shard
 I	22203	1	Large Obsidian Shard
 I	22216	1	Venoxis's Venom Sac
@@ -10857,110 +8913,14 @@ I	22388	4	Plans: Titanic Leggings
 I	22389	4	Plans: Sageblade
 I	22390	4	Plans: Persuader
 I	22393	3	Codex: Prayer of Shadow Protection
-I	22396	4	Totem of Life
-I	22399	4	Idol of Health
-I	22402	4	Libram of Grace
 I	22520	4	The Phylactery of Kel'Thuzad
 I	22637	3	Primal Hakkari Idol
 I	22708	1	Fate of Ramaladni
-I	22711	3	Cloak of the Hakkari Worshipers
-I	22712	3	Might of the Tribe
-I	22713	3	Zulian Scepter of Rites
-I	22714	3	Sacrificial Gauntlets
-I	22715	3	Gloves of the Tormented
-I	22716	3	Belt of Untapped Power
-I	22718	3	Blooddrenched Mask
-I	22720	3	Zulian Headdress
-I	22721	4	Band of Servitude
-I	22722	4	Seal of the Gurubashi Berserker
 I	22726	5	Splinter of Atiesh
-I	22730	4	Eyestalk Waist Cord
-I	22731	4	Cloak of the Devoured
-I	22732	4	Mark of C'Thun
 I	22733	1	Staff Head of Atiesh
 I	22734	1	Base of Atiesh
-I	22798	4	Might of Menethil
-I	22799	4	Soulseeker
-I	22802	4	Kingsfall
-I	22803	4	Midnight Haze
-I	22806	4	Widow's Remorse
-I	22810	4	Toxin Injector
-I	22812	4	Nerubian Slavemaker
-I	22813	4	Claymore of Unholy Might
-I	22815	4	Severance
-I	22816	4	Hatchet of Sundered Bone
-I	22818	4	The Plague Bearer
-I	22819	4	Shield of Condemnation
-I	22820	4	Wand of Fates
-I	22821	4	Doomfinger
 I	22891	3	Grimoire of Shadow Ward IV
-I	22935	4	Touch of Frost
-I	22936	4	Wristguards of Vengeance
-I	22937	4	Gem of Nerubis
-I	22938	4	Cryptfiend Silk Cloak
-I	22939	4	Band of Unanswered Prayers
-I	22940	4	Icebane Pauldrons
-I	22941	4	Polar Shoulder Pads
-I	22942	4	The Widow's Embrace
-I	22943	4	Malice Stone Pendant
-I	22960	4	Cloak of Suturing
-I	22961	4	Band of Reanimation
-I	22967	4	Icy Scale Spaulders
-I	22968	4	Glacial Mantle
-I	22981	4	Gluth's Missing Collar
-I	22983	4	Rime Covered Mantle
-I	22988	4	The End of Dreams
-I	22994	4	Digested Hand of Power
-I	23004	4	Idol of Longevity
-I	23005	4	Totem of Flowing Water
-I	23006	4	Libram of Light
-I	23009	4	Wand of the Whispering Dead
-I	23014	4	Iblis, Blade of the Fallen Seraph
-I	23017	4	Veil of Eclipse
-I	23018	4	Signet of the Fallen Defender
-I	23019	4	Icebane Helmet
-I	23020	4	Polar Helmet
-I	23021	4	The Soul Harvester's Bindings
-I	23023	4	Sadist's Collar
-I	23028	4	Hailstone Band
-I	23029	4	Noth's Frigid Heart
-I	23030	4	Cloak of the Scourge
-I	23031	4	Band of the Inevitable
-I	23032	4	Glacial Headdress
-I	23033	4	Icy Scale Coif
-I	23035	4	Preceptor's Hat
-I	23036	4	Necklace of Necropsy
-I	23044	4	Harbinger of Doom
-I	23053	4	Stormrage's Talisman of Seething
-I	23054	4	Gressil, Dawn of Ruin
 I	23055	1	Word of Thawing
-I	23056	4	Hammer of the Twisting Nether
-I	23057	4	Gem of Trapped Innocents
-I	23059	4	Ring of the Dreadnaught
-I	23060	4	Bonescythe Ring
-I	23061	4	Ring of Faith
-I	23062	4	Frostfire Ring
-I	23063	4	Plagueheart Ring
-I	23064	4	Ring of The Dreamwalker
-I	23065	4	Ring of the Earthshatterer
-I	23066	4	Ring of Redemption
-I	23067	4	Ring of  the Cryptstalker
-I	23068	4	Legplates of Carnage
-I	23069	4	Necro-Knight's Garb
-I	23073	4	Boots of Displacement
-I	23075	4	Death's Bargain
-I	23219	4	Girdle of the Mentor
-I	23221	4	Misplaced Servo Arm
-I	23226	4	Ghoul Skin Tunic
-I	23237	4	Ring of the Eternal Flame
-I	23238	4	Stygian Buckler
-I	23577	4	The Hungering Cold
-I	23663	4	Girdle of Elemental Fury
-I	23664	4	Pauldrons of Elemental Fury
-I	23665	4	Leggings of Elemental Fury
-I	23666	4	Belt of the Grand Crusader
-I	23667	4	Spaulders of the Grand Crusader
-I	23668	4	Leggings of the Grand Crusader]=]
 DB.raw["loot:8"]=[=[
 N	1	Waypoint (Only GM can see it)	1	1	0	13446:1.32,3928:0.66,1710:0.66,929:0.66,13444:0.34,13443:0.34,6149:0.34,3827:0.34,3385:0.34		
 N	314	Eliza	31	31	1	2382:100:q,6530:27.24,4306:16.87,2592:7.83,887:5.59,4606:4.22,1205:1.72,929:0.86,4634:0.52,1529:0.34,3864:0.32,3385:0.26,1477:0.12,2290:0.12,1478:0.12,1712:0.12,1711:0.12,2289:0.12,1705:0.09,11098:0.08,804:0.06,857:0.06,5575:0.06,5576:0.06,11164:0.06,5774:0.06,4299:0.06,3867:0.06,3831:0.06,11165:0.02,7450:0.02,7363:0.02,7090:0.02,7084:0.02,6045:0.02,4412:0.02,4352:0.02,4350:0.02,3870:0.02,3830:0.02		
@@ -11563,10 +9523,7 @@ I	118	1	Minor Healing Potion
 I	159	1	Refreshing Spring Water
 I	414	1	Dalaran Sharp
 I	422	1	Dwarven Mild
-I	647	4	Destiny
-I	720	3	Brawler Gloves
 I	730	1	Murloc Eye
-I	754	3	Shortsword of Vengeance
 I	765	1	Silverleaf
 I	770	0	Pointy Crocolisk Tooth
 I	774	2	Malachite
@@ -11575,55 +9532,31 @@ I	785	1	Mageroyal
 I	787	1	Slitherskin Mackerel
 I	804	1	Large Blue Sack
 I	805	1	Small Red Pouch
-I	811	4	Axe of the Deep Woods
 I	818	2	Tigerseye
 I	828	1	Small Blue Pouch
 I	829	1	Red Leather Bandana
-I	833	4	Lifestone
 I	856	1	Blue Leather Bag
 I	857	1	Large Red Sack
 I	858	1	Lesser Healing Potion
-I	862	3	Runed Ring
 I	887	0	Pound of Flesh
-I	890	3	Twisted Chanter's Staff
 I	929	1	Healing Potion
 I	932	1	Fel Steed Saddlebags
-I	934	3	Stalvan's Reaper
-I	935	3	Night Watch Shortsword
-I	936	3	Midnight Mace
-I	937	3	Black Duskwood Staff
-I	944	4	Elemental Mage Staff
 I	954	1	Scroll of Strength
 I	955	1	Scroll of Intellect
 I	1019	1	Red Linen Bandana
 I	1074	0	Hard Spider Leg Tip
-I	1076	2	Defias Renegade Ring
 I	1081	1	Crisp Spider Meat
-I	1121	3	Feet of the Lynx
-I	1168	4	Skullflame Shield
 I	1179	1	Ice Cold Milk
 I	1180	1	Scroll of Stamina
 I	1181	1	Scroll of Spirit
 I	1205	1	Melon Juice
 I	1206	2	Moss Agate
 I	1210	2	Shadowgem
-I	1263	4	Brain Hacker
-I	1265	3	Scorpion Sting
-I	1318	3	Night Reaver
-I	1443	4	Jeweled Amulet of Cainwyn
-I	1454	3	Axe of the Enforcer
 I	1468	1	Murloc Fin
 I	1475	1	Small Venom Sac
 I	1476	0	Snapped Spider Limb
 I	1477	1	Scroll of Agility II
 I	1478	1	Scroll of Protection II
-I	1481	3	Grimclaw
-I	1482	3	Shadowfang
-I	1483	3	Face Smasher
-I	1484	3	Witching Stave
-I	1486	3	Tree Bark Jacket
-I	1489	3	Gloomshroud Armor
-I	1491	3	Ring of Precision
 I	1520	0	Troll Sweat
 I	1529	2	Jade
 I	1645	1	Moonberry Juice
@@ -11637,46 +9570,13 @@ I	1708	1	Sweet Nectar
 I	1710	1	Greater Healing Potion
 I	1711	1	Scroll of Stamina II
 I	1712	1	Scroll of Spirit II
-I	1713	3	Ankh of Life
-I	1714	3	Necklace of Calisea
-I	1715	3	Polished Jazeraint Armor
-I	1716	3	Robe of the Magi
-I	1717	3	Double Link Tunic
-I	1718	3	Basilisk Hide Pants
-I	1720	3	Tanglewood Staff
-I	1722	3	Thornstone Sledgehammer
 I	1725	1	Large Knapsack
-I	1726	3	Poison-tipped Bone Spear
-I	1728	4	Teebu's Blazing Longsword
-I	1935	3	Assassin's Blade
 I	1972	1	Westfall Deed
 I	1973	3	Orb of Deception
-I	1974	3	Mindthrust Bracers
-I	1992	3	Swampchill Fetish
-I	2011	3	Twisted Sabre
-I	2040	3	Troll Protector
-I	2059	3	Sentry Cloak
 I	2070	1	Darnassian Bleu
-I	2098	3	Double-barreled Shotgun
-I	2099	4	Dwarven Hand Cannon
-I	2194	3	Diamond Hammer
-I	2205	3	Duskbringer
-I	2236	3	Blackfang
-I	2243	4	Hand of Edward the Odd
-I	2244	4	Krol Blade
-I	2245	4	Helm of Narv
-I	2246	4	Myrmidon's Signet
-I	2256	3	Skeletal Club
-I	2262	3	Mark of Kern
-I	2271	3	Staff of the Blessed Seer
-I	2276	3	Swampwalker Boots
-I	2277	3	Necromancer Leggings
-I	2278	3	Forest Tracker Epaulets
 I	2287	1	Haunch of Meat
 I	2289	1	Scroll of Strength II
 I	2290	1	Scroll of Intellect II
-I	2292	3	Necrology Robes
-I	2299	3	Burning War Axe
 I	2318	1	Light Leather
 I	2319	1	Medium Leather
 I	2382	1	The Embalmer's Heart
@@ -11692,9 +9592,6 @@ I	2453	1	Bruiseweed
 I	2455	1	Minor Mana Potion
 I	2553	2	Recipe: Elixir of Minor Agility
 I	2555	2	Recipe: Swiftness Potion
-I	2564	3	Elven Spirit Claws
-I	2565	3	Rod of Molten Fire
-I	2567	3	Evocator's Blade
 I	2589	1	Linen Cloth
 I	2590	0	Forest Spider Webbing
 I	2592	1	Wool Cloth
@@ -11726,68 +9623,38 @@ I	2775	2	Silver Ore
 I	2776	2	Gold Ore
 I	2797	1	Heart of Mokk
 I	2799	1	Gorilla Fang
-I	2800	3	Black Velvet Robes
-I	2801	4	Blade of Hanna
-I	2802	3	Blazing Emblem
-I	2807	3	Guillotine Axe
-I	2815	3	Curve-bladed Ripper
 I	2835	1	Rough Stone
 I	2836	1	Coarse Stone
-I	2877	3	Combatant Claymore
-I	2878	3	Bearded Boneaxe
-I	2879	3	Antipodean Rod
 I	2881	2	Plans: Runed Copper Breastplate
 I	2882	2	Plans: Silvered Bronze Shoulders
 I	2883	2	Plans: Deadly Bronze Poniard
 I	2909	1	Red Wool Bandana
-I	2911	3	Keller's Girdle
 I	2928	1	Dust of Decay
 I	2934	1	Ruined Leather Scraps
-I	2951	3	Ring of the Underwood
-I	2971	1	Spellbinder Boots
-I	2972	1	Spellbinder Gloves
-I	2975	1	Hunting Boots
-I	2979	1	Veteran Boots
 I	3010	0	Fine Sand
 I	3012	1	Scroll of Agility
 I	3013	1	Scroll of Protection
-I	3020	3	Enduring Cap
-I	3021	3	Ranger Bow
 I	3167	0	Thick Spider Hair
 I	3174	1	Spider Ichor
 I	3180	0	Flecked Raptor Scale
 I	3182	1	Spider's Silk
-I	3194	3	Black Malice
-I	3203	3	Dense Triangle Mace
-I	3207	1	Hunting Bracers
 I	3218	1	Pyrewood Shackle
-I	3304	1	Brackwater Gauntlets
-I	3311	1	Ceremonial Leather Ankleguards
 I	3355	1	Wild Steelbloom
 I	3356	1	Kingsblood
 I	3357	1	Liferoot
 I	3358	1	Khadgar's Whisker
-I	3360	1	Stitches' Femur
 I	3369	1	Grave Moss
 I	3385	1	Lesser Mana Potion
 I	3393	1	Recipe: Minor Magic Resistance Potion
 I	3394	1	Recipe: Elixir of Poison Resistance
 I	3395	2	Recipe: Limited Invulnerability Potion
 I	3396	1	Recipe: Elixir of Lesser Agility
-I	3413	3	Doomspike
-I	3414	3	Crested Scepter
-I	3415	3	Staff of the Friar
-I	3416	3	Martyr's Chain
-I	3417	3	Onyx Claymore
-I	3419	1	Red Rose
-I	3475	4	Cloak of Flames
 I	3608	2	Plans: Mighty Iron Hammer
 I	3609	2	Plans: Copper Chain Vest
 I	3610	2	Plans: Gemmed Copper Gauntlets
 I	3611	2	Plans: Green Iron Boots
 I	3612	2	Plans: Green Iron Gauntlets
 I	3622	1	Essence of Nightlash
-I	3643	1	Spellbinder Bracers
 I	3667	1	Tender Crocolisk Meat
 I	3668	1	Assassin's Contract
 I	3669	0	Gelatinous Goo
@@ -11826,9 +9693,6 @@ I	3914	1	Journeyman's Backpack
 I	3927	1	Fine Aged Cheddar
 I	3928	1	Superior Healing Potion
 I	3931	0	Poisoned Spider Fang
-I	3935	1	Smotts' Cutlass
-I	4090	3	Mug O' Hurt
-I	4091	3	Widowmaker
 I	4093	0	Large Basilisk Tail
 I	4232	1	Medium Hide
 I	4234	1	Heavy Leather
@@ -11923,7 +9787,6 @@ I	4605	1	Red-speckled Mushroom
 I	4606	1	Spongy Morel
 I	4607	1	Delicious Cave Mold
 I	4608	1	Raw Black Truffle
-I	4614	2	Pendant of Myzrael
 I	4615	1	Blacklash's Bindings
 I	4625	1	Firebloom
 I	4632	2	Ornate Bronze Lockbox
@@ -11934,14 +9797,6 @@ I	4637	2	Steel Lockbox
 I	4638	2	Reinforced Steel Lockbox
 I	4641	1	Hand of Dagun
 I	4645	1	Chains of Hematus
-I	4678	1	Veteran Girdle
-I	4681	1	Brackwater Girdle
-I	4687	1	Barbaric Cloth Belt
-I	4693	1	Ceremonial Leather Belt
-I	4694	1	Burnished Pauldrons
-I	4696	3	Lapidis Tankard of Tidesippe
-I	4698	1	Seer's Mantle
-I	4700	1	Inscribed Leather Spaulders
 I	4784	0	Lifeless Stone
 I	4787	0	Burning Pitch
 I	4791	1	Enchanted Water
@@ -11955,7 +9810,6 @@ I	5055	1	Intact Raptor Horn
 I	5062	1	Raptor Head
 I	5100	1	Echeyakee's Hide
 I	5101	1	Ishamuhale's Fang
-I	5110	1	Dalaran Wizard's Robe
 I	5114	0	Severed Talon
 I	5115	0	Broken Wishbone
 I	5116	1	Long Tail Feather
@@ -11967,18 +9821,14 @@ I	5133	0	Seeping Gizzard
 I	5134	1	Small Furry Paw
 I	5135	0	Thin Black Claw
 I	5173	1	Deathweed
-I	5194	3	Taskmaster Axe
-I	5195	2	Gold-flecked Gloves
 I	5206	1	Bogling Root
 I	5263	0	Pocket Lint
-I	5267	3	Scarlet Kris
 I	5268	0	Cracked Silithid Shell
 I	5269	0	Silithid Ichor
 I	5329	0	Cat Figurine
 I	5332	1	Glowing Cat Figurine
 I	5366	1	Glowing Soul Gem
 I	5374	0	Small Pocket Watch
-I	5404	1	Serpent's Shoulders
 I	5430	0	Intricate Bauble
 I	5432	0	Hickory Pipe
 I	5465	1	Small Spider Leg
@@ -11987,7 +9837,6 @@ I	5498	2	Small Lustrous Pearl
 I	5500	2	Iridescent Pearl
 I	5503	1	Clam Meat
 I	5504	1	Tangy Clam Meat
-I	5516	0	Threshadon Fang
 I	5523	1	Small Barnacled Clam
 I	5524	1	Thick-shelled Clam
 I	5543	2	Plans: Iridescent Hammer
@@ -12003,12 +9852,10 @@ I	5576	1	Large Brown Sack
 I	5578	2	Plans: Silvered Bronze Breastplate
 I	5601	0	Hatched Egg Sac
 I	5602	0	Sticky Spider Webbing
-I	5616	3	Gutwrencher
 I	5635	1	Sharp Claw
 I	5636	0	Delicate Feather
 I	5637	1	Large Fang
 I	5740	1	Red Fireworks Rocket
-I	5756	3	Sliverblade
 I	5758	2	Mithril Lockbox
 I	5759	2	Thorium Lockbox
 I	5760	2	Eternium Lockbox
@@ -12018,14 +9865,12 @@ I	5775	2	Pattern: Black Silk Pack
 I	5784	1	Slimy Murloc Scale
 I	5785	1	Thick Murloc Scale
 I	5811	1	Frostmaw's Mane
-I	5819	3	Sunblaze Coif
 I	5843	1	Grenka's Claw
 I	5847	1	Mirefin Head
 I	5871	0	Large Hoof
 I	5883	1	Forked Mudrock Tongue
 I	5884	1	Unpopped Darkmist Eye
 I	5942	1	Jeweled Pendant
-I	5943	2	Rift Bracers
 I	5959	1	Acidic Venom Sac
 I	5972	2	Pattern: Fine Leather Pants
 I	5974	2	Pattern: Guardian Cloak
@@ -12046,7 +9891,6 @@ I	6299	1	Sickly Looking Fish
 I	6300	0	Husk Fragment
 I	6302	0	Delicate Insect Wing
 I	6308	1	Raw Bristle Whisker Catfish
-I	6341	2	Eerie Stable Lantern
 I	6342	2	Formula: Enchant Chest - Minor Mana
 I	6344	2	Formula: Enchant Bracer - Minor Spirit
 I	6347	2	Formula: Enchant Bracer - Minor Strength
@@ -12057,26 +9901,16 @@ I	6390	2	Pattern: Stylish Blue Shirt
 I	6391	2	Pattern: Stylish Green Shirt
 I	6438	0	Dull Elemental Bracer
 I	6439	0	Broken Binding Bracer
-I	6440	3	Brainlash
 I	6443	1	Deviate Hide
 I	6444	0	Forked Tongue
 I	6445	0	Brittle Molting
 I	6446	1	Snakeskin Bag
 I	6454	2	Manual: Strong Anti-Venom
 I	6458	1	Oil Covered Fish
-I	6461	3	Slime-encrusted Pads
-I	6463	3	Deep Fathom Ring
 I	6464	1	Wailing Essence
 I	6470	1	Deviate Scale
 I	6471	1	Perfect Deviate Scale
 I	6530	1	Nightcrawlers
-I	6549	1	Soldier's Cloak
-I	6555	1	Bard's Cloak
-I	6566	1	Shimmering Amice
-I	6579	1	Defender Spaulders
-I	6588	1	Scouting Spaulders
-I	6622	3	Sword of Zeal
-I	6627	3	Mutant Scale Breastplate
 I	6661	2	Recipe: Savory Deviate Delight
 I	6663	2	Recipe: Elixir of Giant Growth
 I	6716	2	Schematic: EZ-Thro Dynamite
@@ -12115,32 +9949,6 @@ I	7450	2	Pattern: Green Whelp Armor
 I	7452	3	Pattern: Dusky Boots
 I	7453	2	Pattern: Swift Boots
 I	7499	1	Middle of Gelkak's Key
-I	7686	3	Ironspine's Eye
-I	7687	3	Ironspine's Fist
-I	7688	3	Ironspine's Ribcage
-I	7689	3	Morbid Dawn
-I	7690	3	Ebon Vise
-I	7691	3	Embalmed Shroud
-I	7708	3	Necrotic Wand
-I	7709	3	Blighted Leggings
-I	7727	3	Watchman Pauldrons
-I	7728	3	Beguiler Robes
-I	7729	3	Chesterfall Musket
-I	7730	3	Cobalt Crusher
-I	7731	3	Ghostshard Talisman
-I	7734	3	Six Demon Bag
-I	7736	3	Fight Club
-I	7752	3	Dreamslayer
-I	7753	3	Bloodspiller
-I	7754	3	Harbinger Boots
-I	7755	3	Flintrock Shoulders
-I	7757	3	Windweaver Staff
-I	7758	3	Ruthless Shiv
-I	7759	3	Archon Chestpiece
-I	7760	3	Warchief Kilt
-I	7761	3	Steelclaw Reaver
-I	7786	3	Headsplitter
-I	7787	3	Resplendent Guardian
 I	7848	1	Rock Elemental Shard
 I	7909	2	Aquamarine
 I	7910	2	Star Ruby
@@ -12156,8 +9964,6 @@ I	7990	2	Plans: Heavy Mithril Helm
 I	7991	3	Plans: Mithril Scale Shoulders
 I	7992	2	Plans: Blue Glittering Axe
 I	7993	2	Plans: Dazzling Mithril Rapier
-I	7997	0	Red Defias Mask
-I	8006	3	The Ziggler
 I	8009	1	Dentrium Power Stone
 I	8028	3	Plans: Runed Mithril Hammer
 I	8029	2	Plans: Wicked Mithril Blade
@@ -12171,8 +9977,6 @@ I	8165	1	Worn Dragonscale
 I	8169	1	Thick Hide
 I	8170	1	Rugged Leather
 I	8171	1	Rugged Hide
-I	8225	3	Tainted Pierce
-I	8226	3	The Butcher
 I	8244	3	Flawless Draenethyst Sphere
 I	8364	1	Mithril Head Trout
 I	8385	1	Pattern: Turtle Scale Gloves
@@ -12204,7 +10008,6 @@ I	8973	1	Thick Yeti Hide
 I	9036	1	Magic Resistance Potion
 I	9061	1	Goblin Rocket Fuel
 I	9242	0	Ancient Tablet
-I	9243	2	Shriveled Heart
 I	9259	1	Troll Tribal Necklace
 I	9260	1	Volatile Rum
 I	9261	0	Lead Ore
@@ -12220,7 +10023,6 @@ I	9309	1	Robo-mechanical Guts
 I	9324	1	Shadra's Venom
 I	9327	2	Security DELTA Data Access Card
 I	9332	0	Crusted Bandages
-I	9333	0	Tarnished Silver Necklace
 I	9334	0	Cracked Pottery
 I	9335	0	Broken Obsidian Club
 I	9336	0	Gold-capped Troll Tusk
@@ -12228,68 +10030,11 @@ I	9355	0	Hoop Earring
 I	9356	0	A Wooden Leg
 I	9357	0	A Parrot Skeleton
 I	9358	0	A Head Rag
-I	9359	3	Wirt's Third Leg
 I	9361	1	Cuergo's Gold with Worm
-I	9381	3	Earthen Rod
-I	9383	3	Obsidian Cleaver
-I	9384	3	Stonevault Shiv
-I	9385	3	Archaic Defender
-I	9386	3	Excavator's Brand
-I	9391	3	The Shoveler
-I	9392	3	Annealed Blade
-I	9393	3	Beacon of Hope
 I	9395	3	Gloves of Old
-I	9396	3	Legguards of the Vault
-I	9397	3	Energy Cloak
-I	9402	3	Earthborn Kilt
-I	9405	3	Girdle of Golem Strength
-I	9406	3	Spirewind Fetter
-I	9407	3	Stoneweaver Leggings
-I	9408	3	Ironshod Bludgeon
-I	9409	3	Ironaya's Bracers
-I	9420	3	Adventurer's Pith Helmet
-I	9422	3	Shadowforge Bushmaster
-I	9423	3	The Jackhammer
-I	9424	3	Ginn-su Sword
-I	9425	3	Pendulum of Doom
-I	9426	3	Monolithic Bow
-I	9427	3	Stonevault Bonebreaker
-I	9428	3	Unearthed Bands
-I	9429	3	Miner's Hat of the Deep
-I	9430	3	Spaulders of a Lost Age
-I	9431	3	Papal Fez
-I	9432	3	Skullplate Bracers
-I	9433	3	Forgotten Wraps
-I	9434	3	Elemental Raiment
-I	9435	3	Reticulated Bone Gauntlets
 I	9442	1	Untested Scorpid Sample
-I	9445	3	Grubbis Paws
 I	9451	1	Bubbling Water
-I	9465	3	Digmaster 5000
-I	9467	2	Gahz'rilla Fang
-I	9469	3	Gahz'rilla Scale Armor
-I	9470	3	Bad Mojo Mask
 I	9471	1	Nekrum's Medallion
-I	9473	3	Jinxed Hoodoo Skin
-I	9474	3	Jinxed Hoodoo Kilt
-I	9475	3	Diabolic Skiver
-I	9480	3	Eyegouger
-I	9481	3	The Minotaur
-I	9482	3	Witch Doctor's Cane
-I	9483	3	Flaming Incinerator
-I	9484	3	Spellshock Leggings
-I	9485	3	Vibroblade
-I	9486	3	Supercharger Battle Axe
-I	9487	3	Hi-tech Supergun
-I	9488	3	Oscillating Power Hammer
-I	9489	2	Gyromatic Icemaker
-I	9490	3	Gizmotron Megachopper
-I	9491	3	Hotshot Pilot's Gloves
-I	9508	3	Mechbuilder's Overalls
-I	9509	3	Petrolspill Leggings
-I	9510	3	Caverndeep Trudgers
-I	9511	3	Bloodletter Scalpel
-I	9512	3	Blackmetal Cape
 I	9523	1	Troll Temper
 I	9528	1	Edana's Dark Heart
 I	9589	1	Encrusted Minerals
@@ -12299,8 +10044,6 @@ I	9719	3	Broken Blade of Heroes
 I	9739	1	Gem of Anacondra
 I	10285	1	Shadow Silk
 I	10286	1	Heart of the Wild
-I	10298	2	Gnomeregan Band
-I	10299	2	Gnomeregan Amulet
 I	10300	2	Pattern: Red Mageweave Vest
 I	10301	2	Pattern: White Bandit Mask
 I	10302	2	Pattern: Red Mageweave Pants
@@ -12314,10 +10057,6 @@ I	10312	2	Pattern: Red Mageweave Gloves
 I	10315	2	Pattern: Red Mageweave Shoulders
 I	10316	2	Pattern: Colorful Kilt
 I	10320	2	Pattern: Red Mageweave Headband
-I	10332	3	Scarlet Boots
-I	10405	1	Bandit Shoulders
-I	10407	1	Raider's Shoulderpads
-I	10412	2	Belt of the Fang
 I	10424	2	Plans: Silvered Bronze Leggings
 I	10441	1	Glowing Shard
 I	10447	1	Head of Lathoric the Black
@@ -12325,18 +10064,7 @@ I	10460	1	Hakkari Blood
 I	10505	1	Solid Blasting Powder
 I	10551	1	Thorium Plated Dagger
 I	10561	1	Mithril Casing
-I	10567	3	Quillshooter
-I	10570	3	Manslayer
-I	10571	3	Ebony Boneclub
-I	10572	3	Freezing Shard
-I	10573	3	Boneslasher
-I	10574	3	Corpseshroud
 I	10575	1	Black Dragonflight Molt
-I	10578	3	Thoughtcast Boots
-I	10581	3	Death's Head Vestment
-I	10582	3	Briar Tredders
-I	10583	3	Quillward Harness
-I	10584	3	Stormgale Fists
 I	10593	2	Imperfect Draenethyst Fragment
 I	10597	1	Head of Magus Rimtori
 I	10601	2	Schematic: Bright-Eye Goggles
@@ -12345,44 +10073,9 @@ I	10604	2	Schematic: Mithril Heavy-bore Rifle
 I	10605	3	Schematic: Spellpower Goggles Xtreme
 I	10606	2	Schematic: Parachute Cloak
 I	10608	3	Schematic: Sniper Scope
-I	10623	3	Winter's Bite
-I	10624	3	Stinging Bow
-I	10625	3	Stealthblade
-I	10626	3	Ragehammer
-I	10627	3	Bludgeon of the Grinning Dog
-I	10628	3	Deathblow
-I	10629	3	Mistwalker Boots
-I	10630	3	Soulcatcher Halo
-I	10631	3	Murkwater Gauntlets
-I	10632	3	Slimescale Bracers
-I	10633	3	Silvershell Leggings
-I	10634	3	Mindseye Circle
 I	10660	1	First Mosh'aru Tablet
 I	10663	1	Essence of Hakkar
 I	10759	1	Severed Horn of the Defiler
-I	10760	2	Swine Fists
-I	10766	3	Plaguerot Sprig
-I	10775	3	Carapace of Tuten'kash
-I	10776	3	Silky Spider Cape
-I	10777	3	Arachnid Gloves
-I	10783	3	Atal'ai Spaulders
-I	10784	3	Atal'ai Breastplate
-I	10785	2	Atal'ai Leggings
-I	10786	2	Atal'ai Boots
-I	10787	3	Atal'ai Gloves
-I	10788	2	Atal'ai Girdle
-I	10795	3	Drakeclaw Band
-I	10796	3	Drakestone
-I	10797	3	Firebreather
-I	10798	3	Atal'alarion's Tusk Ring
-I	10799	3	Headspike
-I	10800	3	Darkwater Bracers
-I	10838	3	Might of Hakkar
-I	10842	3	Windscale Sarong
-I	10843	3	Featherskin Cape
-I	10844	3	Spire of Hakkar
-I	10845	3	Warrior's Embrace
-I	10846	3	Bloodshot Greaves
 I	11018	1	Un'Goro Soil
 I	11038	2	Formula: Enchant 2H Weapon - Lesser Spirit
 I	11039	2	Formula: Enchant Cloak - Minor Agility
@@ -12407,7 +10100,6 @@ I	11208	2	Formula: Enchant Weapon - Demonslaying
 I	11224	2	Formula: Enchant Shield - Frost Resistance
 I	11225	2	Formula: Enchant Bracer - Greater Stamina
 I	11226	2	Formula: Enchant Gloves - Riding Skill
-I	11302	3	Uther's Strength
 I	11312	1	Lost Thunderbrew Recipe
 I	11318	1	Atal'ai Haze
 I	11382	2	Blood of the Mountain
@@ -12425,42 +10117,19 @@ I	11477	1	White Ravasaur Claw
 I	11509	1	Ravasaur Pheromone Gland
 I	11510	1	Lar'korwi's Head
 I	11515	1	Corrupted Soul Shard
-I	11603	3	Vilerend Slicer
 I	11610	3	Plans: Dark Iron Pulverizer
-I	11633	3	Spiderfang Carapace
-I	11634	3	Silkweb Gloves
-I	11635	3	Hookfang Shanker
-I	11662	3	Ban'thok Sash
-I	11665	3	Ogreseer Fists
-I	11675	3	Shadefiend Boots
-I	11677	3	Graverot Cape
-I	11678	3	Carapace of Anub'shiah
-I	11679	3	Rubicund Armguards
-I	11685	3	Splinthide Shoulders
-I	11686	3	Girdle of Beastial Fury
-I	11702	3	Grizzle's Skinner
-I	11703	3	Stonewall Girdle
-I	11722	3	Dregmetal Spaulders
-I	11726	4	Savage Gladiator Chain
-I	11728	3	Savage Gladiator Leggings
-I	11729	3	Savage Gladiator Helm
-I	11730	3	Savage Gladiator Grips
-I	11731	3	Savage Gladiator Greaves
 I	11732	2	Libram of Rumination
 I	11733	2	Libram of Constitution
 I	11734	2	Libram of Tenacity
-I	11735	3	Ragefury Eyepatch
 I	11736	2	Libram of Resilience
 I	11737	2	Libram of Voracity
 I	11754	2	Black Diamond
-I	11824	3	Cyclopean Band
 I	11835	1	Gorishi Queen Brain
 I	11837	1	Gorishi Scent Gland
 I	11914	1	Empty Cursed Ooze Jar
 I	11948	1	Empty Tainted Ooze Jar
 I	11953	1	Empty Pure Sample Jar
 I	12037	1	Mystery Meat
-I	12103	3	Star of Mystaria
 I	12184	1	Raptor Flesh
 I	12202	1	Tiger Meat
 I	12203	1	Red Wolf Meat
@@ -12468,38 +10137,12 @@ I	12205	1	White Spider Meat
 I	12207	1	Giant Egg
 I	12208	1	Tender Wolf Meat
 I	12219	1	Unadorned Seal of Ascension
-I	12243	3	Smoldering Claw
 I	12261	2	Plans: Searing Golden Blade
 I	12291	1	Merged Ooze Sample
 I	12361	2	Blue Sapphire
 I	12364	2	Huge Emerald
-I	12462	4	Embrace of the Wind Serpent
-I	12463	3	Drakefang Butcher
-I	12464	3	Bloodfire Talons
-I	12465	3	Nightfall Drape
-I	12466	3	Dawnspire Cord
-I	12527	3	Ribsplitter
-I	12528	3	The Judge's Gavel
-I	12531	3	Searing Needle
-I	12532	3	Spire of the Stoneshaper
 I	12533	1	Roughshod Pike
-I	12535	3	Doomforged Straightedge
-I	12542	3	Funeral Pyre Vestment
-I	12546	3	Aristocratic Cuffs
-I	12547	3	Mar Alom's Grip
-I	12549	3	Braincage
-I	12550	3	Runed Golem Shackles
-I	12551	3	Stoneshield Cloak
-I	12552	3	Blisterbane Wrap
-I	12555	3	Battlechaser's Greaves
-I	12583	3	Blackhand Doomsaw
-I	12587	3	Eye of Rend
-I	12589	3	Dustfeather Sash
-I	12590	4	Felstriker
-I	12603	3	Nightbrace Tunic
-I	12606	3	Crystallized Girdle
 I	12607	3	Brilliant Chromatic Scale
-I	12609	3	Polychromatic Visionwrap
 I	12630	1	Head of Rend Blackhand
 I	12662	2	Demonic Rune
 I	12682	2	Plans: Thorium Armor
@@ -12534,190 +10177,23 @@ I	12841	1	Invader's Scourgestone
 I	12843	2	Corruptor's Scourgestone
 I	12871	4	Chromatic Carapace
 I	12925	1	Arikara Serpent Skin
-I	12935	3	Warmaster Legguards
-I	12936	3	Battleborn Armbraces
-I	12939	3	Dal'Rend's Tribal Guardian
-I	12940	3	Dal'Rend's Sacred Charge
-I	12952	3	Gyth's Skull
-I	12953	3	Dragoneye Coif
-I	12960	3	Tribal War Feathers
-I	12975	3	Prospector Axe
-I	12976	3	Ironpatch Blade
-I	12977	3	Magefist Gloves
-I	12978	3	Stormbringer Belt
-I	12979	3	Firebane Cloak
-I	12982	3	Silver-linked Footguards
-I	12983	3	Rakzur Club
-I	12984	3	Skycaller
-I	12985	3	Ring of Defense
-I	12987	3	Darkweave Breeches
-I	12988	3	Starsight Tunic
-I	12989	3	Gargoyle's Bite
-I	12990	3	Razor's Edge
-I	12992	3	Searing Blade
-I	12994	3	Thorbia's Gauntlets
-I	12996	3	Band of Purification
-I	12997	3	Redbeard Crest
-I	12998	3	Magician's Mantle
-I	12999	3	Drakewing Bands
-I	13000	3	Staff of Hale Magefire
-I	13001	3	Maiden's Circle
-I	13002	3	Lady Alizabeth's Pendant
-I	13005	3	Amy's Blanket
-I	13006	3	Mass of McGowan
-I	13008	3	Dalewind Trousers
-I	13009	3	Cow King's Hide
-I	13010	3	Dreamsinger Legguards
-I	13011	3	Silver-lined Belt
-I	13012	3	Yorgen Bracers
-I	13015	3	Serathil
-I	13016	3	Killmaim
-I	13017	3	Hellslayer Battle Axe
-I	13018	3	Executioner's Cleaver
-I	13020	3	Skystriker Bow
-I	13021	3	Needle Threader
-I	13023	3	Eaglehorn Long Bow
-I	13024	3	Beazel's Basher
-I	13025	3	Deadwood Sledge
-I	13026	3	Heaven's Light
-I	13028	3	Bludstone Hammer
-I	13029	3	Umbral Crystal
-I	13030	3	Basilisk Bone
-I	13031	3	Orb of Mistmantle
-I	13032	3	Sword of Corruption
-I	13033	3	Zealot Blade
-I	13034	3	Speedsteel Rapier
-I	13035	3	Serpent Slicer
-I	13038	3	Swiftwind
-I	13039	3	Skull Splitting Crossbow
-I	13041	3	Guardian Blade
-I	13042	3	Sword of the Magistrate
-I	13043	3	Blade of the Titans
-I	13044	3	Demonslayer
-I	13045	3	Viscous Hammer
-I	13046	3	Blanchard's Stout
-I	13047	3	Twig of the World Tree
-I	13049	3	Deanship Claymore
-I	13051	3	Witchfury
-I	13052	3	Warmonger
-I	13053	3	Doombringer
-I	13054	3	Grim Reaper
-I	13055	3	Bonechewer
-I	13057	3	Bloodpike
-I	13058	3	Khoo's Point
-I	13059	3	Stoneraven
-I	13060	3	The Needler
-I	13062	3	Thunderwood
-I	13063	3	Starfaller
-I	13064	3	Jaina's Firestarter
-I	13065	3	Wand of Allistarj
-I	13066	3	Wyrmslayer Spaulders
-I	13068	3	Obsidian Greaves
-I	13071	3	Plated Fist of Hakoo
-I	13072	3	Stonegrip Gauntlets
-I	13073	3	Mugthol's Helm
-I	13074	3	Golem Shard Leggings
-I	13075	3	Direwing Legguards
-I	13076	3	Giantslayer Bracers
-I	13079	3	Shield of Thorsen
-I	13081	3	Skullance Shield
-I	13082	3	Mountainside Buckler
-I	13083	3	Garrett Family Crest
-I	13084	3	Kaleidoscope Chain
-I	13085	3	Horizon Choker
-I	13087	3	River Pride Choker
-I	13088	3	Gazlowe's Charm
-I	13089	3	Skibi's Pendant
-I	13093	3	Blush Ember Ring
-I	13094	3	The Queen's Jewel
-I	13095	3	Assault Band
-I	13096	3	Band of the Hierophant
-I	13097	3	Thunderbrow Ring
-I	13099	3	Moccasins of the White Hare
-I	13100	3	Furen's Boots
-I	13101	3	Wolfrunner Shoes
-I	13102	3	Cassandra's Grace
-I	13103	3	Pads of the Venom Spider
-I	13105	3	Sutarn's Ring
-I	13107	3	Magiskull Cuffs
-I	13108	3	Tigerstrike Mantle
-I	13109	3	Blackflame Cape
-I	13110	3	Wolffear Harness
-I	13112	3	Winged Helm
-I	13113	3	Feathermoon Headdress
-I	13114	3	Troll's Bane Leggings
-I	13115	3	Sheepshear Mantle
-I	13116	3	Spaulders of the Unseen
-I	13117	3	Ogron's Sash
-I	13119	3	Enchanted Kodo Bracers
-I	13121	3	Wing of the Whelpling
-I	13123	3	Dreamwalker Armor
-I	13124	3	Ravasaur Scale Boots
-I	13125	3	Elven Chain Boots
-I	13128	3	High Bergg Helm
-I	13129	3	Firemane Leggings
-I	13131	3	Sparkleshell Mantle
-I	13132	3	Skeletal Shoulders
-I	13133	3	Drakesfire Epaulets
-I	13134	3	Belt of the Gladiator
-I	13135	3	Lordly Armguards
-I	13136	3	Lil Timmy's Peashooter
-I	13137	3	Ironweaver
-I	13138	3	The Silencer
-I	13139	3	Guttbuster
-I	13145	3	Enormous Ogre Belt
-I	13146	3	Shell Launcher Shotgun
 I	13172	1	Siabi's Premium Tobacco
 I	13174	1	Plagued Flesh Sample
-I	13178	3	Rosewine Circle
-I	13181	3	Demonskin Gloves
-I	13182	3	Phase Blade
 I	13194	1	Felstone Field Cauldron Key
 I	13195	1	Dalson's Tears Cauldron Key
 I	13196	1	Gahrron's Withering Cauldron Key
 I	13197	1	Writhing Haunt Cauldron Key
-I	13199	3	Crushridge Bindings
-I	13205	3	Rhombeard Protector
-I	13206	3	Wolfshear Leggings
-I	13208	3	Bleak Howler Armguards
-I	13248	3	Burstshot Harquebus
 I	13250	1	Head of Balnazzar
-I	13254	3	Astral Guard
-I	13258	3	Slaghide Gauntlets
-I	13259	3	Ribsteel Footguards
-I	13260	3	Wind Dancer Boots
-I	13348	3	Demonshear
 I	13350	1	Insignia of the Black Guard
 I	13351	1	Crimson Hammersmith's Apron
-I	13353	4	Book of the Dead
 I	13354	1	Ectoplasmic Resonator
 I	13356	1	Somatic Intensifier
 I	13357	1	Osseous Agitator
-I	13358	3	Wyrmtongue Shoulders
-I	13359	3	Crown of Tyranny
-I	13360	3	Gift of the Elven Magi
 I	13362	0	Letter from the Front
 I	13363	0	Municipal Proclamation
 I	13364	0	Fras Siabi's Advertisement
 I	13365	0	Town Meeting Notice
 I	13366	0	Ingenious Toy
-I	13369	3	Fire Striders
-I	13371	2	Father Flame
-I	13372	3	Slavedriver's Cane
-I	13373	3	Band of Flesh
-I	13374	3	Soulstealer Mantle
-I	13375	3	Crest of Retribution
-I	13388	3	The Postmaster's Tunic
-I	13389	3	The Postmaster's Trousers
-I	13390	3	The Postmaster's Band
-I	13391	3	The Postmaster's Treads
-I	13392	3	The Postmaster's Seal
-I	13393	3	Malown's Slam
-I	13398	3	Boots of the Shrieker
-I	13400	3	Vambraces of the Sadist
-I	13401	3	The Cruel Hand of Timmy
-I	13402	3	Timmy's Galoshes
-I	13403	3	Grimgore Noose
 I	13443	1	Superior Mana Potion
 I	13444	1	Major Mana Potion
 I	13446	1	Major Healing Potion
@@ -12734,36 +10210,14 @@ I	13490	2	Recipe: Greater Stoneshield Potion
 I	13492	2	Recipe: Purification Potion
 I	13493	2	Recipe: Greater Arcane Elixir
 I	13501	2	Recipe: Major Mana Potion
-I	13515	3	Ramstein's Lightning Bolts
 I	13518	2	Recipe: Flask of Petrification
 I	13520	2	Recipe: Flask of Distilled Wisdom
 I	13522	2	Recipe: Flask of Chromatic Resistance
 I	13542	1	Demon Box
 I	13874	1	Heavy Crate
-I	13937	4	Headmaster's Charge
-I	13938	3	Bonecreeper Stylus
-I	13944	3	Tombstone Breastplate
-I	13951	3	Vigorsteel Vambraces
-I	13953	3	Silent Fang
-I	13955	3	Stoneform Shoulders
-I	13956	3	Clutch of Andros
-I	13957	3	Gargoyle Slashers
-I	13960	3	Heart of the Fiend
-I	13964	3	Witchblade
-I	13967	3	Windreaver Greaves
-I	13969	3	Loomguard Armbraces
-I	13983	3	Gravestone War Axe
-I	14024	3	Frightalon
 I	14047	1	Runecloth
-I	14115	1	Aboriginal Bands
-I	14116	1	Aboriginal Cape
-I	14126	1	Ritual Amice
-I	14157	1	Pagan Mantle
-I	14169	1	Aboriginal Shoulder Pads
-I	14170	1	Buccaneer's Mantle
 I	14227	1	Ironweb Spider Silk
 I	14256	1	Felcloth
-I	14368	1	Mystic's Shoulder Pads
 I	14466	2	Pattern: Frostweave Tunic
 I	14467	2	Pattern: Frostweave Robe
 I	14470	2	Pattern: Runecloth Tunic
@@ -12790,25 +10244,11 @@ I	14510	3	Pattern: Bottomless Bag
 I	14511	4	Pattern: Gloves of Spell Mastery
 I	14512	4	Pattern: Truefaith Vestments
 I	14514	4	Pattern: Robe of the Void
-I	14536	3	Bonebrace Hauberk
-I	14553	4	Sash of Mercy
-I	14554	4	Cloudkeeper Legplates
-I	14555	4	Alcor's Sunrazor
-I	14557	4	The Lion Horn of Stormwind
-I	14558	4	Lady Maye's Pendant
 I	14613	1	Taelan's Hammer
-I	14728	1	War Paint Shoulder Pads
-I	15013	1	Lupine Cuffs
-I	15019	1	Lupine Mantle
-I	15300	1	Grizzly Gloves
-I	15313	1	Feral Shoulder Pads
 I	15412	1	Green Dragonscale
 I	15414	1	Red Dragonscale
 I	15415	1	Blue Dragonscale
 I	15416	1	Black Dragonscale
-I	15490	1	Bloodspattered Cloak
-I	15496	1	Bloodspattered Shoulder Pads
-I	15505	1	Outrunner's Pauldrons
 I	15731	2	Pattern: Runic Leather Gauntlets
 I	15733	3	Pattern: Green Dragonscale Leggings
 I	15737	2	Pattern: Chimeric Boots
@@ -12849,85 +10289,15 @@ I	16653	1	Shredder Operating Manual - Page 9
 I	16654	1	Shredder Operating Manual - Page 10
 I	16655	1	Shredder Operating Manual - Page 11
 I	16656	1	Shredder Operating Manual - Page 12
-I	16667	3	Coif of Elements
-I	16669	3	Pauldrons of Elements
-I	16673	3	Cord of Elements
-I	16677	3	Beaststalker's Cap
-I	16685	3	Magister's Belt
-I	16686	3	Magister's Crown
-I	16693	3	Devout Crown
-I	16695	3	Devout Mantle
-I	16697	3	Devout Bracers
-I	16698	3	Dreadmist Mask
-I	16703	3	Dreadmist Bracers
-I	16707	3	Shadowcraft Cap
-I	16710	3	Shadowcraft Bracers
-I	16713	3	Shadowcraft Belt
-I	16714	3	Wildheart Bracers
-I	16718	3	Wildheart Spaulders
-I	16720	3	Wildheart Cowl
-I	16722	3	Lightforge Bracers
-I	16723	3	Lightforge Belt
-I	16724	3	Lightforge Gauntlets
-I	16725	3	Lightforge Boots
-I	16727	3	Lightforge Helm
-I	16731	3	Helm of Valor
-I	16733	3	Spaulders of Valor
-I	16734	3	Boots of Valor
-I	16737	3	Gauntlets of Valor
 I	16782	2	Strange Water Globe
 I	16786	1	Black Dragonspawn Eye
-I	16799	4	Arcanist Bindings
-I	16802	4	Arcanist Belt
-I	16804	4	Felheart Bracers
-I	16806	4	Felheart Belt
-I	16817	4	Girdle of Prophecy
-I	16819	4	Vambraces of Prophecy
-I	16825	4	Nightslayer Bracelets
-I	16827	4	Nightslayer Belt
-I	16828	4	Cenarion Belt
-I	16830	4	Cenarion Bracers
-I	16838	4	Earthfury Belt
-I	16840	4	Earthfury Bracers
-I	16850	4	Giantstalker's Bracers
-I	16851	4	Giantstalker's Belt
-I	16857	4	Lawbringer Bracers
-I	16858	4	Lawbringer Belt
-I	16861	4	Bracers of Might
-I	16864	4	Belt of Might
 I	16885	1	Heavy Junkbox
-I	16897	4	Stormrage Chestguard
-I	16901	4	Stormrage Legguards
-I	16905	4	Bloodfang Chestpiece
-I	16909	4	Bloodfang Pants
-I	16915	4	Netherwind Pants
-I	16916	4	Netherwind Robes
-I	16922	4	Leggings of Transcendence
-I	16923	4	Robes of Transcendence
-I	16930	4	Nemesis Leggings
-I	16931	4	Nemesis Robes
-I	16938	4	Dragonstalker's Legguards
-I	16942	4	Dragonstalker's Breastplate
-I	16946	4	Legplates of Ten Storms
-I	16950	4	Breastplate of Ten Storms
-I	16954	4	Judgement Legplates
-I	16958	4	Judgement Breastplate
-I	16962	4	Legplates of Wrath
-I	16966	4	Breastplate of Wrath
 I	16976	1	Murgut's Totem
 I	17010	3	Fiery Core
 I	17011	3	Lava Core
 I	17056	1	Light Feather
 I	17057	1	Shiny Fish Scales
 I	17058	1	Fish Oil
-I	17061	3	Juno's Shadow
-I	17063	4	Band of Accuria
-I	17076	4	Bonereaver's Edge
-I	17082	4	Shard of the Flame
-I	17102	4	Cloak of the Shrouded Mists
-I	17104	4	Spinal Reaper
-I	17106	4	Malistar's Defender
-I	17107	4	Dragon's Blood Cape
 I	17204	5	Eye of Sulfuras
 I	17306	1	Stormpike Soldier's Blood
 I	17309	1	Discordant Bracers
@@ -12951,11 +10321,6 @@ I	17762	1	Gem of the Second Kahn
 I	17763	1	Gem of the Third Kahn
 I	17764	1	Gem of the Fourth Kahn
 I	17765	1	Gem of the Fifth Kahn
-I	18043	3	Coal Miner Boots
-I	18044	3	Hurley's Tankard
-I	18102	3	Dragonrider Boots
-I	18103	3	Band of Rumination
-I	18104	3	Feralsurge Girdle
 I	18143	1	Tuft of Gnome Hair
 I	18144	1	Human Bone Chip
 I	18145	1	Tauren Hoof
@@ -12987,49 +10352,12 @@ I	18516	3	Pattern: Swift Flight Bracers
 I	18588	1	Ez-Thro Dynamite II
 I	18600	3	Tome of Arcane Brilliance
 I	18640	1	Happy Fun Rock
-I	18646	4	The Eye of Divinity
 I	18657	2	Schematic: Hyper-Radiant Flame Reflector
 I	18658	2	Schematic: Ultra-Flash Shadow Reflector
-I	18697	3	Coldstone Slippers
-I	18698	3	Tattered Leather Hood
-I	18699	3	Icy Tomb Spaulders
-I	18700	3	Malefic Bracers
-I	18701	3	Innervating Band
-I	18702	3	Belt of the Ordained
-I	18717	3	Hammer of the Grand Crusader
-I	18718	3	Grand Crusader's Helm
-I	18720	3	Shroud of the Nathrezim
-I	18723	3	Animated Chain Necklace
-I	18736	3	Plaguehound Leggings
-I	18741	3	Morlune's Bracer
-I	18742	3	Stratholme Militia Shoulderguard
-I	18743	3	Gracious Cape
-I	18744	3	Plaguebat Fur Gloves
-I	18745	3	Sacred Cloth Leggings
 I	18749	1	Charger's Lost Soul
-I	18754	3	Fel Hardened Bracers
-I	18755	3	Xorothian Firestick
-I	18756	3	Dreadguard's Protector
-I	18757	3	Diabolic Mantle
-I	18758	3	Specter's Blade
-I	18759	3	Malicious Axe
-I	18760	3	Necromantic Band
-I	18761	3	Oblivion's Touch
 I	18781	3	Bottom Half of Advanced Armorsmithing: Volume II
 I	18783	3	Bottom Half of Advanced Armorsmithing: Volume III
 I	18784	3	Top Half of Advanced Armorsmithing: Volume III
-I	18803	4	Finkle's Lava Dredger
-I	18805	4	Core Hound Tooth
-I	18806	4	Core Forged Greaves
-I	18808	4	Gloves of the Hypnotic Flame
-I	18809	4	Sash of Whispered Secrets
-I	18810	4	Wild Growth Spaulders
-I	18811	4	Fireproof Cloak
-I	18812	4	Wristguards of True Flight
-I	18814	4	Choker of the Fire Lord
-I	18815	4	Essence of the Pure Flame
-I	18816	4	Perdition's Blade
-I	18817	4	Crown of Destruction
 I	18880	1	Darkreaver's Head
 I	18945	1	Dark Iron Residue
 I	18947	1	Rage Scar Yeti Hide
@@ -13046,14 +10374,6 @@ I	19003	4	Head of Nefarian
 I	19017	1	Essence of the Firelord
 I	19018	5	Dormant Wind Kissed Blade
 I	19034	1	Lard's Lunch
-I	19109	3	Deep Rooted Ring
-I	19111	3	Winteraxe Epaulets
-I	19112	3	Frozen Steel Vambraces
-I	19113	3	Yeti Hide Bracers
-I	19137	4	Onslaught Girdle
-I	19138	4	Band of Sulfuras
-I	19139	4	Fireguard Shoulders
-I	19140	4	Cauterizing Band
 I	19230	3	Two of Beasts
 I	19231	3	Three of Beasts
 I	19232	3	Four of Beasts
@@ -13083,18 +10403,6 @@ I	19281	3	Five of Portals
 I	19282	3	Six of Portals
 I	19283	3	Seven of Portals
 I	19284	3	Eight of Portals
-I	19356	4	Staff of the Shadow Flame
-I	19360	4	Lok'amir il Romathis
-I	19363	4	Crul'shorukh, Edge of Chaos
-I	19364	4	Ashkandi, Greatsword of the Brotherhood
-I	19375	4	Mish'undare, Circlet of the Mind Flayer
-I	19376	4	Archimtiros' Ring of Reckoning
-I	19377	4	Prestor's Talisman of Connivery
-I	19378	4	Cloak of the Brood Lord
-I	19379	4	Neltharion's Tear
-I	19380	4	Therazane's Link
-I	19381	4	Boots of the Shadow Flame
-I	19382	4	Pure Elementium Band
 I	19441	1	Huge Venom Sac
 I	19716	4	Primal Hakkari Bindings
 I	19717	4	Primal Hakkari Armsplint
@@ -13116,16 +10424,6 @@ I	19940	2	Renataki's Tooth
 I	19941	2	Wushoolay's Mane
 I	19942	2	Hazza'rah's Dream Thread
 I	19943	1	Massive Mojo
-I	19944	4	Nat Pagle's Fish Terminator
-I	19945	4	Foror's Eyepatch
-I	19961	3	Gri'lek's Grinder
-I	19962	3	Gri'lek's Carver
-I	19963	3	Pitchfork of Madness
-I	19964	3	Renataki's Soul Conduit
-I	19965	3	Wushoolay's Poker
-I	19967	3	Thoughtblighter
-I	19968	3	Fiery Retributer
-I	19993	3	Hoodoo Hunting Bow
 I	20015	0	Elder Raptor Feathers
 I	20016	0	Trophy Raptor Skull
 I	20381	2	Dreamscale
@@ -13138,77 +10436,10 @@ I	20499	0	Broken Silithid Chitin
 I	20513	2	Abyssal Crest
 I	20514	3	Abyssal Signet
 I	20515	4	Abyssal Scepter
-I	20577	4	Nightmare Blade
-I	20578	4	Emerald Dragonfang
-I	20579	4	Green Dragonskin Cloak
-I	20580	4	Hammer of Bestial Fury
-I	20581	4	Staff of Rampant Growth
-I	20582	4	Trance Stone
-I	20599	4	Polished Ironwood Crossbow
 I	20606	1	Amber Voodoo Feather
 I	20607	1	Blue Voodoo Feather
 I	20608	1	Green Voodoo Feather
-I	20615	4	Dragonspur Wraps
-I	20616	4	Dragonbone Wristguards
-I	20617	4	Ancient Corroded Leggings
-I	20618	4	Gloves of Delusional Power
-I	20619	4	Acid Inscribed Greaves
-I	20621	4	Boots of the Endless Moor
-I	20622	4	Dragonheart Necklace
-I	20623	4	Circlet of Restless Dreams
-I	20624	4	Ring of the Unliving
-I	20625	4	Belt of the Dark Bog
-I	20626	4	Black Bark Wristbands
-I	20627	4	Dark Heart Pants
-I	20628	4	Deviate Growth Cap
-I	20629	4	Malignant Footguards
-I	20630	4	Gauntlets of the Shining Light
-I	20631	4	Mendicant's Slippers
-I	20632	4	Mindtear Band
-I	20633	4	Unnatural Leather Spaulders
-I	20634	4	Boots of Fright
-I	20635	4	Jade Inlaid Vestments
-I	20636	4	Hibernation Crystal
-I	20637	4	Acid Inscribed Pauldrons
-I	20638	4	Leggings of the Demented Mind
-I	20639	4	Strangely Glyphed Legplates
 I	20644	4	Nightmare Engulfed Object
-I	20652	2	Abyssal Cloth Slippers
-I	20653	2	Abyssal Plate Gauntlets
-I	20654	3	Amethyst War Staff
-I	20655	2	Abyssal Cloth Handwraps
-I	20656	2	Abyssal Mail Sabatons
-I	20657	3	Crystal Tipped Stiletto
-I	20658	2	Abyssal Leather Boots
-I	20659	2	Abyssal Mail Handguards
-I	20660	3	Stonecutting Glaive
-I	20661	2	Abyssal Leather Gloves
-I	20662	2	Abyssal Plate Greaves
-I	20663	3	Deep Strike Bow
-I	20664	2	Abyssal Cloth Sash
-I	20665	3	Abyssal Leather Leggings
-I	20666	3	Hardened Steel Warhammer
-I	20667	2	Abyssal Leather Belt
-I	20668	3	Abyssal Mail Legguards
-I	20669	3	Darkstone Claymore
-I	20670	2	Abyssal Mail Clutch
-I	20671	3	Abyssal Plate Legplates
-I	20672	3	Sparkling Crystal Wand
-I	20673	2	Abyssal Plate Girdle
-I	20674	3	Abyssal Cloth Pants
-I	20675	3	Soulrender
-I	20680	3	Abyssal Mail Pauldrons
-I	20681	3	Abyssal Leather Bracers
-I	20682	4	Elemental Focus Band
-I	20683	3	Abyssal Plate Epaulets
-I	20684	3	Abyssal Mail Armguards
-I	20685	4	Wavefront Necklace
-I	20686	3	Abyssal Cloth Amice
-I	20687	3	Abyssal Plate Vambraces
-I	20688	4	Earthen Guard
-I	20689	3	Abyssal Leather Shoulders
-I	20690	3	Abyssal Cloth Wristbands
-I	20691	4	Windshear Cape
 I	20727	3	Formula: Enchant Gloves - Shadow Power
 I	20728	3	Formula: Enchant Gloves - Frost Power
 I	20729	3	Formula: Enchant Gloves - Fire Power
@@ -13260,9 +10491,6 @@ I	21314	1	Metzen's Letters and Notes
 I	21321	3	Red Qiraji Resonating Crystal
 I	21323	3	Green Qiraji Resonating Crystal
 I	21324	3	Yellow Qiraji Resonating Crystal
-I	21492	4	Manslayer of the Qiraji
-I	21493	4	Boots of the Vanguard
-I	21525	2	Green Winter Hat
 I	21557	1	Small Red Rocket
 I	21558	1	Small Blue Rocket
 I	21559	1	Small Green Rocket
@@ -13273,65 +10501,13 @@ I	21590	1	Large Green Rocket
 I	21592	1	Large Red Rocket
 I	21593	1	Large White Rocket
 I	21595	1	Large Yellow Rocket
-I	21610	4	Wormscale Blocker
-I	21611	4	Burrower Bracers
-I	21615	4	Don Rigoberto's Lost Hat
 I	21762	1	Greater Scarab Coffer Key
-I	21836	4	Ritssyn's Ring of Chaos
-I	21837	4	Anubisath Warhammer
-I	21838	4	Garb of Royal Ascension
-I	21856	4	Neretzek, The Blood Drinker
-I	21888	4	Gloves of the Immortal
-I	21889	4	Gloves of the Redeemed Prophecy
-I	21891	4	Shard of the Fallen Star
 I	21982	1	Ogre Warbeads
 I	21984	1	Left Piece of Lord Valthalak's Amulet
 I	21989	1	Cinder of Cynders
 I	22046	1	Right Piece of Lord Valthalak's Amulet
 I	22047	1	Top Piece of Lord Valthalak's Amulet
 I	22138	1	Blackrock Bracer
-I	22205	3	Black Steel Bindings
-I	22225	3	Dragonskin Cowl
-I	22232	3	Marksman's Girdle
-I	22247	3	Faith Healer's Boots
-I	22254	3	Wand of Eternal Light
-I	22255	3	Magma Forged Band
-I	22256	3	Mana Shaping Handwraps
-I	22257	3	Bloodclot Band
-I	22266	3	Flarethorn
-I	22270	3	Entrenching Boots
-I	22271	3	Leggings of Frenzied Magic
-I	22275	3	Firemoss Boots
-I	22301	3	Ironweave Robe
-I	22302	3	Ironweave Cowl
-I	22303	3	Ironweave Pants
-I	22304	3	Ironweave Gloves
-I	22305	3	Ironweave Mantle
-I	22306	3	Ironweave Belt
-I	22314	3	Huntsman's Harpoon
-I	22315	3	Hammer of Revitalization
-I	22317	3	Lefty's Brass Knuckle
-I	22318	3	Malgen's Long Bow
-I	22319	3	Tome of Divine Right
-I	22322	3	The Jaw Breaker
-I	22325	3	Belt of the Trickster
-I	22326	3	Amalgam's Band
-I	22327	3	Amulet of the Redeemed
-I	22328	3	Legplates of Vigilance
-I	22329	3	Scepter of Interminable Focus
-I	22330	3	Shroud of Arcane Mastery
-I	22331	3	Band of the Steadfast Hero
-I	22332	3	Blade of Necromancy
-I	22333	3	Hammer of Divine Might
-I	22334	3	Band of Mending
-I	22335	3	Lord Valthalak's Staff of Command
-I	22336	3	Draconian Aegis of the Legion
-I	22337	3	Shroud of Domination
-I	22339	3	Rune Band of Wizardry
-I	22340	3	Pendant of Celerity
-I	22342	3	Leggings of Torment
-I	22343	3	Handguards of Savagery
-I	22345	3	Totem of Rebirth
 I	22373	3	Wartorn Leather Scrap
 I	22374	3	Wartorn Chain Scrap
 I	22375	3	Wartorn Plate Scrap
@@ -13339,12 +10515,8 @@ I	22376	3	Wartorn Cloth Scrap
 I	22388	4	Plans: Titanic Leggings
 I	22389	4	Plans: Sageblade
 I	22393	3	Codex: Prayer of Shadow Protection
-I	22398	3	Idol of Rejuvenation
-I	22401	3	Libram of Hope
-I	22433	3	Don Mauricio's Band of Domination
 I	22435	1	Gorishi Sting
 I	22444	1	Putrid Vine
-I	22472	3	Boots of Ferocity
 I	22484	1	Necrotic Rune
 I	22525	1	Crypt Fiend Parts
 I	22526	1	Bone Fragments
@@ -13352,16 +10524,6 @@ I	22527	1	Core of Elements
 I	22528	1	Dark Iron Scraps
 I	22529	1	Savage Frond
 I	22708	1	Fate of Ramaladni
-I	22711	3	Cloak of the Hakkari Worshipers
-I	22712	3	Might of the Tribe
-I	22713	3	Zulian Scepter of Rites
-I	22714	3	Sacrificial Gauntlets
-I	22715	3	Gloves of the Tormented
-I	22716	3	Belt of Untapped Power
-I	22718	3	Blooddrenched Mask
-I	22720	3	Zulian Headdress
-I	22721	4	Band of Servitude
-I	22722	4	Seal of the Gurubashi Berserker
 I	22739	3	Tome of Polymorph: Turtle
 I	22890	3	Tome of Frost Ward V
 I	22891	3	Grimoire of Shadow Ward IV
@@ -13371,45 +10533,11 @@ I	22973	1	A Crumpled Missive
 I	22974	1	A Ragged Page
 I	22975	1	A Smudged Document
 I	22977	1	A Torn Letter
-I	23040	4	Glyph of Deflection
-I	23041	4	Slayer's Crest
-I	23043	4	The Face of Death
-I	23044	4	Harbinger of Doom
-I	23045	4	Shroud of Dominion
-I	23046	4	The Restrained Essence of Sapphiron
-I	23047	4	Eye of the Dead
-I	23048	4	Sapphiron's Right Eye
-I	23049	4	Sapphiron's Left Eye
-I	23050	4	Cloak of the Necropolis
 I	23055	1	Word of Thawing
-I	23085	3	Robe of Undead Cleansing
-I	23087	3	Breastplate of Undead Slaying
-I	23088	3	Chestguard of Undead Slaying
-I	23089	3	Tunic of Undead Slaying
-I	23090	3	Bracers of Undead Slaying
-I	23091	3	Bracers of Undead Cleansing
-I	23092	3	Wristguards of Undead Slaying
-I	23093	3	Wristwraps of Undead Slaying
-I	23168	3	Scorn's Focal Dagger
-I	23169	3	Scorn's Icy Choker
-I	23170	3	The Frozen Clutch
 I	23192	1	Tabard of the Scarlet Crusade
-I	23197	3	Idol of the Moon
-I	23198	3	Idol of Brutality
-I	23199	3	Totem of the Storm
-I	23203	3	Libram of Fervor
-I	23221	4	Misplaced Servo Arm
-I	23237	4	Ring of the Eternal Flame
-I	23238	4	Stygian Buckler
-I	23242	4	Claw of the Frost Wyrm
 I	23545	4	Power of the Scourge
 I	23547	4	Resilience of the Scourge
 I	23548	4	Might of the Scourge
 I	23549	4	Fortitude of the Scourge
-I	23557	4	Larvae of the Great Worm
-I	23558	4	The Burrower's Shell
-I	23570	4	Jom Gabbar
-I	23665	4	Leggings of Elemental Fury
-I	23668	4	Leggings of the Grand Crusader
 I	24232	0	Shabby Knot
 I	24281	0	Carved Ivory Bone]=]

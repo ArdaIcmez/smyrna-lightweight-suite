@@ -1,0 +1,9 @@
+## Interface: 16000, 16001
+## Title: Smyrna Equipment DB
+## Group: SmyrnaSuite
+## Category: Smyrna
+## Notes: Shared armor, weapon, jewelry, trinket and equipment acquisition references.
+## Version: 0.9.31
+## Dependencies: SmyrnaSuite
+## LoadOnDemand: 1
+Data.lua

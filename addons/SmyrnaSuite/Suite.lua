@@ -1,5 +1,5 @@
 local _,NS=...
-NS.Features={{"SmyrnaChat","Chat","SMYRNACHAT","options"},{"SmyrnaFieldDiary","Field Diary","SMYRNAFIELDDIARY","options"},{"SmyrnaBestiary","Bestiary","SMYRNABESTIARY","options"},{"SmyrnaWorkshop","Workshop","SMYRNAWORKSHOP",""},{"SmyrnaRemembrance","Remembrance","SMYRNAREMEMBRANCE",""}}
+NS.Features={{"SmyrnaChat","Chat","SMYRNACHAT","options"},{"SmyrnaFieldDiary","Field Diary","SMYRNAFIELDDIARY","options"},{"SmyrnaBestiary","Bestiary","SMYRNABESTIARY","options"},{"SmyrnaWorkshop","Workshop","SMYRNAWORKSHOP",""},{"SmyrnaRemembrance","Remembrance","SMYRNAREMEMBRANCE",""},{"SmyrnaUpgrader","Upgrader","SMYRNAUPGRADER",""}}
 NS.Professions={"Cooking","Alchemy","Blacksmithing","Enchanting","Engineering","FirstAid","Leatherworking","Mining","Tailoring","Herbalism","Skinning","Fishing"}
 local panel,checks,statuses,dataChecks,dbcheck
 local function Say(text) DEFAULT_CHAT_FRAME:AddMessage("|cffdfb66bSmyrna:|r "..text) end
@@ -21,7 +21,7 @@ function NS.Memory()
     local api=C_AddOns or {};local update=api.UpdateAddOnMemoryUsage or UpdateAddOnMemoryUsage;local get=api.GetAddOnMemoryUsage or GetAddOnMemoryUsage
     if not update or not get then Say("Memory information is unavailable.");return end
     update()
-    for _,package in ipairs({"SmyrnaSuite","SmyrnaBestiaryDB","SmyrnaWorkshopDB","SmyrnaRemembranceDB"}) do
+    for _,package in ipairs({"SmyrnaSuite","SmyrnaBestiaryDB","SmyrnaWorkshopDB","SmyrnaRemembranceDB","SmyrnaEquipmentDB"}) do
         Say(string.format("%s: %.1f KiB",package,get(package) or 0))
     end
 end
@@ -63,13 +63,14 @@ function NS.OpenOverview()
         -- Keep reference choices clipped independently of the fixed action buttons.
         local references=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate")
         references:SetPoint("TOPLEFT",20,-319);references:SetSize(450,168)
-        local referenceContent=CreateFrame("Frame",nil,references);referenceContent:SetSize(450,202)
+        local referenceContent=CreateFrame("Frame",nil,references);referenceContent:SetSize(450,230)
         references:SetScrollChild(referenceContent)
         for i,slug in ipairs(NS.Professions) do
             local key="recipe:"..slug
             dataChecks[key]=Check(referenceContent,slug=="FirstAid" and "First Aid" or slug,math.floor((i-1)/6)*230,-((i-1)%6)*28,function(value) NS.Config.data[key]=value end)
         end
         dataChecks.loot=Check(referenceContent,"Mob loot references",0,-168,function(value) NS.Config.data.loot=value end)
+        dataChecks.equipment=Check(referenceContent,"Equipment references",230,-168,function(value) NS.Config.data.equipment=value end)
         Button(panel,"AoE range",100,24,-508,function() if NS.AoE then NS.AoE.Open() end end)
         Button(panel,"Memory",100,132,-508,NS.Memory)
         Button(panel,"Turn suite off & reload",205,268,-508,NS.Off)

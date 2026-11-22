@@ -1,5 +1,11 @@
 # Smyrna Lightweight Addon Suite
 
+## 0.9.31 private test build
+
+Upgrader is integrated into the Suite with one optional shared Equipment DB. Press C, hover gear, then Ctrl + left-click for ranked upgrades; select a profile in the Upgrader tab if automatic talent selection is unavailable. At an AH, scan listing prices and use each confirmed BoE item's search button. Pawn is not required. This experimental scorer is private owner/two-guildmate research, with original notices retained; do not publish this build publicly.
+
+This build includes the loot interaction fix, native scrollable/selectable History without page controls, and class-specific Bestiary defense estimates. Automated checks pass; native input, AH actions and rendering still require gameplay confirmation. See docs/UPGRADER.md, docs/ENGINEERING.md and reports/PERFORMANCE-2026-11-22.md for scope, unfinished work and measured limits.
+
 Development baseline: **0.9.28** for WoW Forever.
 
 ## Packages

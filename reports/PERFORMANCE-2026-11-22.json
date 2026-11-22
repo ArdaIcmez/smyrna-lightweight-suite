@@ -1,0 +1,103 @@
+{
+  "scope": "Installed 0.9.30.4; Lua 5.1 simulation, full GC; excludes native UI/engine and personal saved data. No gameplay FPS claim.",
+  "databases": [
+    {
+      "package": "SmyrnaBestiaryDB",
+      "source_bytes": 2635835,
+      "load_ms": 15.236,
+      "retained_KiB": 2952.28
+    },
+    {
+      "package": "SmyrnaWorkshopDB",
+      "source_bytes": 395740,
+      "load_ms": 4.902,
+      "retained_KiB": 633.96
+    },
+    {
+      "package": "SmyrnaRemembranceDB",
+      "source_bytes": 298,
+      "load_ms": 0.211,
+      "retained_KiB": 0.91
+    }
+  ],
+  "packed_blocks": [
+    20,
+    2658566
+  ],
+  "decode_all": [
+    {
+      "kind": "loot:",
+      "blocks": 8,
+      "total_ms": 45.627,
+      "additional_KiB": 2651.71,
+      "note": "Actual decoder; registration tables retained; excludes production feature indexes."
+    },
+    {
+      "kind": "recipe:",
+      "blocks": 12,
+      "total_ms": 16.112,
+      "additional_KiB": 2049.46,
+      "note": "Actual decoder; registration tables retained; excludes production feature indexes."
+    }
+  ],
+  "diary": [
+    {
+      "inputs": 100,
+      "retained_records": 100,
+      "retained_KiB": 62.8,
+      "ingest_total_ms": 0.174,
+      "aggregate_cold_ms": 0.198,
+      "aggregate_repeated_ms": 0.1941
+    },
+    {
+      "inputs": 1000,
+      "retained_records": 1000,
+      "retained_KiB": 572.64,
+      "ingest_total_ms": 1.57,
+      "aggregate_cold_ms": 2.135,
+      "aggregate_repeated_ms": 2.2148
+    },
+    {
+      "inputs": 4000,
+      "retained_records": 4000,
+      "retained_KiB": 2314.57,
+      "ingest_total_ms": 6.844,
+      "aggregate_cold_ms": 6.412,
+      "aggregate_repeated_ms": 7.4887
+    },
+    {
+      "inputs": 100000,
+      "retained_records": 4000,
+      "retained_KiB": 2382.48,
+      "ingest_total_ms": 330.346,
+      "aggregate_cold_ms": 6.398,
+      "aggregate_repeated_ms": 7.8234
+    },
+    {
+      "inputs": 1000000,
+      "retained_records": 4000,
+      "retained_KiB": 2386.38,
+      "ingest_total_ms": 3327.732,
+      "aggregate_cold_ms": 7.213,
+      "aggregate_repeated_ms": 7.9919
+    }
+  ],
+  "remembrance": [
+    {
+      "players": 100000,
+      "retained_MiB": 21.564,
+      "bytes_per_player": 226.1,
+      "build_ms": 2058.99,
+      "lookup_100k_ms": 69.37,
+      "scope": "Actual PackRecord and unique keys; no activities, histories, UI or other indexes."
+    },
+    {
+      "players": 1000000,
+      "retained_MiB": 199.455,
+      "bytes_per_player": 209.1,
+      "build_ms": 26477.1,
+      "lookup_100k_ms": 81.32,
+      "scope": "Actual PackRecord and unique keys; no activities, histories, UI or other indexes."
+    }
+  ]
+}

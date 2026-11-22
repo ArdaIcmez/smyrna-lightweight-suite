@@ -1,0 +1,77 @@
+{
+  "source": {
+    "game": "World of Warcraft: Forever",
+    "client_build": "1.60.1.71037",
+    "generated_utc": "2026-11-21T14:39:35Z",
+    "counts": {
+      "items": 22838,
+      "items_from_classic_data": 5015,
+      "items_still_hidden": 7499,
+      "quests": 4244,
+      "item_sources": 62456
+    },
+    "files": {
+      "items": "api/items.json",
+      "quests": "api/quests.json",
+      "item_sources": "api/item_sources.json",
+      "proficiency": "api/proficiency.json",
+      "items_csv": "api/items.csv",
+      "quests_csv": "api/quests.csv",
+      "item_sources_csv": "api/item_sources.csv",
+      "sqlite": "wow_forever.db"
+    },
+    "sources": {
+      "items": "WoW Forever client tables (DB2) via wago.tools",
+      "quests_vendors": "Questie addon WoW Forever database (github.com/Questie/QuestieDB, GPLv3)",
+      "loot_and_classic_items": "vmangos Classic world database (github.com/vmangos/core, GPLv2)"
+    },
+    "docs": "https://github.com/gBlaku/wow-forever-kb#readme"
+  },
+  "files": {
+    "items.json": "e706fa9b0015af5d3595fec025995b4cbc63e75f10d1141dc147e18dbe9b9bc1",
+    "item_sources.json": "66a2074ef9b645ffa34cf5e2d6fcb1680444945bd8bdf24addee892904803ad6",
+    "meta.json": "e8dab777794517d0fa31f793b679045f8880fe2cfb9c9af3ad1f9f4f30b66dd6",
+    "proficiency.json": "6f3fe6dd3efbdd3507419be6eaede1fa62b9bee0f97fc850388b4b96176a8562",
+    "quests.json": "c29988a03fa31e20e626a497a55ecc24e5a5f6475e86d7eaa66c1dc9a6554947"
+  },
+  "equipment": 11525,
+  "with_sources": 8006,
+  "source_rows": 34800,
+  "lua_bytes": 3370159,
+  "dungeon_names": [
+    "Blackfathom Deeps",
+    "Blackrock Depths",
+    "Blackrock Spire",
+    "Deadmines",
+    "Dire Maul",
+    "Gnomeregan",
+    "Lower Blackrock Spire",
+    "Maraudon",
+    "Ragefire Chasm",
+    "Razorfen Downs",
+    "Razorfen Kraul",
+    "Scarlet Monastery",
+    "Scholomance",
+    "Shadowfang Keep",
+    "Stockade",
+    "Stratholme",
+    "Sunken Temple",
+    "The Deadmines",
+    "The Stockade",
+    "The Temple of Atal'Hakkar",
+    "Uldaman",
+    "Upper Blackrock Spire",
+    "Wailing Caverns",
+    "Zul'Farrak"
+  ],
+  "raid_names_excluded": [
+    "Ahn'Qiraj",
+    "Blackwing Lair",
+    "Molten Core",
+    "Naxxramas",
+    "Onyxia's Lair",
+    "Ruins of Ahn'Qiraj",
+    "Temple of Ahn'Qiraj",
+    "Zul'Gurub"
+  ]
+}

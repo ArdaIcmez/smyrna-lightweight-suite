@@ -1,0 +1,36 @@
+{
+  "scope": "Lua5.1 simulation on this machine; not native WoW CPU/FPS/attributed RAM",
+  "equipment_count": 11525,
+  "baseline_all_new_modules_KiB": 4561.11,
+  "quote_stress": [
+    {
+      "input_rows": 100000,
+      "unique_items": 5000,
+      "total_ms": 42.81,
+      "retained_KiB": 752.75
+    },
+    {
+      "input_rows": 1000000,
+      "unique_items": 5000,
+      "total_ms": 417.1,
+      "retained_KiB": 752.75
+    }
+  ],
+  "chest_recommendation_total_simulated_ms": 12.01,
+  "top10": [
+    "Veteran Armor",
+    "Runed Copper Breastplate",
+    "Murloc Scale Breastplate",
+    "Veteran's Chain Shirt",
+    "Defender's Leather Armor",
+    "Totemic Leather Armor",
+    "Brawler's Leather Armor",
+    "Acolyte's Chain Shirt",
+    "Guard's Chain Shirt",
+    "Wisdom's Leather Armor"
+  ],
+  "after_recommendation_KiB": 5222.72,
+  "original_full_row_100k_ms": 188.5,
+  "quote_projection_100k_ms": 5.62,
+  "pawn_arithmetic_parity_fixtures": 2900
+}

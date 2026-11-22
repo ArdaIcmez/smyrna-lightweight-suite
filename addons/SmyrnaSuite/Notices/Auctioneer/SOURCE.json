@@ -1,0 +1,7 @@
+{
+  "url": "https://edge.forgecdn.net/files/9514/989/AuctioneerSuite-4.0.3.zip",
+  "sha256": "6e0487baee9a72bc907dfa3ee8d3878c081d27fe3e498e9d11529134264a9256",
+  "file": "Auc-Advanced/CoreScan.lua",
+  "decoder_sha256": "43b6722da92cb0aa3a3fe34eae1e13fa8bdd9383a66d210f657e76eb850626cf",
+  "changes": "Local isolated Const mapping; metadata GetItemInfo omitted (quote-only consumer). Original decoding function retained. No seller identities persisted."
+}

@@ -1,0 +1,102 @@
+import unittest
+from lua_harness import upgrader_runtime
+
+
+class UpgraderTests(unittest.TestCase):
+    def setUp(self):
+        self.l = upgrader_runtime()
+
+    def test_no_pawn_character_hover_and_details(self):
+        self.l.execute('''
+assert(PawnCommon==nil and PawnGetItemValue==nil)
+local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','CharacterChestSlot')
+GameTooltip:SetOwner(owner);GameTooltip:SetInventoryItem('player',5)
+u.Hover(owner,5);RunTimers()
+local result=u.LastResult;assert(result and result.baseID==2866 and #result.ranked==10)
+for i,c in ipairs(result.ranked) do
+ assert(c.row.id~=2866 and c.row.level<=30 and c.score>u.Score(Suite.Equipment.Get(2866),result.profile))
+ if i>1 then assert(not u.Better(c,result.ranked[i-1])) end
+end
+assert(GameTooltip.lines[1]:find('Nearest upgrade:',1,true) and #GameTooltip.lines==3)
+u.OpenDetails(5,nil,owner);assert(u.Details:IsShown() and u.Details.result==result)
+assert(u.DetailRows[1].candidate.row.id==result.ranked[1].row.id)
+u.Details:Hide();assert(u.Details.result==nil)
+''')
+
+    def test_ah_tab_only_boe(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','CharacterChestSlot')
+GameTooltip:SetOwner(owner);u.OpenDetails(5,nil,owner);RunTimers()
+local state=u.Details.result;assert(state and #state.rankedAH>0)
+u.Details.ahTab.scripts.OnClick();assert(u.Details.onlyAH)
+for i,c in ipairs(state.rankedAH) do assert(c.row.bind=='Binds when equipped' and u.DetailRows[i].candidate==c) end
+u.Details.allTab.scripts.OnClick();assert(not u.Details.onlyAH)
+assert(u.DetailRows[1].candidate==state.ranked[1])
+''')
+
+    def test_slot_and_class_restrictions(self):
+        self.l.execute('''
+local g=Suite.Equipment
+assert(not g.Eligible(g.Get(7935),2,30,5,g.Get(2866))) -- Plate before 40
+assert(not g.Eligible(g.Get(7959),2,30,16,g.Get(7957))) -- Requires level45
+assert(not g.Eligible(g.Get(5191),2,30,16,g.Get(7957))) -- 1H vs 2H
+assert(not g.Eligible(g.Get(2870),8,30,5,nil)) -- Mage cannot wear mail
+local r={level=1,quality=2,class='Armor',subclass='Miscellaneous',classMask=-1,id=99,unique=true,inv=11}
+assert(not g.Eligible(r,2,30,11,nil,99))
+r.classMask=1;assert(not g.Eligible(r,2,30,11,nil))
+''')
+
+    def test_hovered_bag_item_is_comparison_baseline(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','BagItem')
+GameTooltip:SetOwner(owner);GameTooltip.item='item:2870'
+u.ItemTooltip(GameTooltip);RunTimers()
+assert(u.LastResult.baseID==2870)
+local value=u.Score(Suite.Equipment.Get(2870),u.LastResult.profile)
+for _,c in ipairs(u.LastResult.ranked) do assert(c.score>value) end
+''')
+
+    def test_profile_no_spell_usage_guess_and_cache(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader
+Suite.Config.upgrader.profile='auto'
+GetTalentTabInfo=function(i) return 'Tree',nil,i==3 and 20 or 0 end
+assert(u.Profile().key=='2:3')
+local owner=CreateFrame('Button','CharacterChestSlot');GameTooltip:SetOwner(owner)
+u.Hover(owner,5);RunTimers();local old=u.LastResult
+u.Hover(owner,5);assert(#timers==0 and u.LastResult==old)
+u.Invalidate();u.Hover(owner,5);assert(#timers>0);RunTimers();assert(u.LastResult~=old)
+''')
+
+    def test_quest_filters_and_no_ah_claim(self):
+        self.l.execute('''
+local u=Suite.Modules.SmyrnaUpgrader
+local row={sources={{kind='Quest',level=1,id=1,faction='Alliance',classes='',repeatable=false},{kind='Quest',level=1,id=2,faction='Horde',classes='Mage',repeatable=false}}}
+assert(next(u.SelectSource(row,30))==nil)
+row.sources={{kind='Quest',level=1,id=3,faction='Horde',classes='',repeatable=false}}
+C_QuestLog={IsQuestFlaggedCompleted=function() return true end};assert(next(u.SelectSource(row,30))==nil)
+assert(u.SourceLabel({source={kind='Crafted'},row={bind='Binds when equipped'}})=='Profession (AH)')
+assert(u.SourceLabel({source={kind='World'},row={bind='Binds when picked up'}})=='World drop')
+''')
+
+    def test_looting_bypasses_upgrade_hooks(self):
+        self.l.execute("""
+Suite.IsLootInteraction=function() return true end
+local u=Suite.Modules.SmyrnaUpgrader
+local owner=CreateFrame('Button','LootButton1');GameTooltip:SetOwner(owner)
+u.Hover(owner,5);u.ItemTooltip(GameTooltip)
+assert(#timers==0 and u.LastResult==nil)
+""")
+
+    def test_engine_handles_unusable_stats_and_speed_baseline(self):
+        self.l.execute('''
+local e=Suite.PrivatePawn
+assert(e.Score({Strength=10,Stamina=5},{Strength=2,Stamina=1})==25)
+assert(e.Score({Strength=10,IsShield=1},{Strength=2,IsShield=-1000000})==0)
+assert(e.Score({MeleeSpeed=3},{MeleeSpeed=2,SpeedBaseline=2})==2)
+assert(e.Score({RedSocket=1},{Strength=1})==nil)
+''')
+
+
+if __name__ == '__main__':
+    unittest.main()
