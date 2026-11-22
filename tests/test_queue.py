@@ -48,6 +48,7 @@ Suite.Modules.SmyrnaBestiary.Matchups.Evidence=function() return row end
 local m=Suite.Modules.SmyrnaBestiary.Matchups
 assert(math.abs(m.ArmorFraction(1234,37)-1234/4779)<1e-12)
 local text=m.Text(681);assert(text:find('185 vs estimated defense 155',1,true))
+assert(text:find('Normal hit: 60-90; after armor: about 45-67.',1,true))
 class='MAGE';text=m.Text(681)
 assert(text:find('Frost: resistant',1,true) and not text:find('Weapon') and not text:find('Armor'))
 ''')

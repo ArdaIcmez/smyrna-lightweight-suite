@@ -101,7 +101,7 @@ dest=ROOT/'addons/SmyrnaEquipmentDB';(dest/'Data.lua').write_text(text,encoding=
 ## Group: SmyrnaSuite
 ## Category: Smyrna
 ## Notes: Shared armor, weapon, jewelry, trinket and equipment acquisition references.
-## Version: 0.9.31
+## Version: 0.9.31.1
 ## Dependencies: SmyrnaSuite
 ## LoadOnDemand: 1
 Data.lua

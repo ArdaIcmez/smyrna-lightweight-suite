@@ -24,6 +24,8 @@ Everloot provides observed Forever data with attribution/CC BY-SA requirements. 
 
 ## Queue verification for 0.9.31
 
+0.9.31.1: saved screenshot WoWScrnShot_112226_023543.jpg confirms the Unicode right arrow renders as a missing-glyph box in the normal-hit line. Use ASCII numeric ranges and explicit "after armor" wording there. Sword/shield texture icons render correctly. No additional native rendering claim is implied.
+
 - Loot guard covers Workshop, Bestiary and Upgrader; dialogs close on LOOT_OPENED. Original native loot clicks remain untouched.
 - History has one InputScrollFrameTemplate editor with native handlers, scroll wheel, mouse-selection support and no page/top/bottom controls. The 650-message test passes; native mouse behavior remains unconfirmed.
 - Bestiary gives class-specific resistance information and player-level armor estimates. Hunter skill now uses UnitRangedAttack; Mage has no physical section. Estimates are not verified Forever combat rules.

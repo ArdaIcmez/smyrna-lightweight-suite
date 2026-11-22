@@ -64,7 +64,7 @@ function M.Text(id)
     if class=='HUNTER' and UnitRangedDamage then local _,a,b=UnitRangedDamage('player');lo,hi=a,b
     elseif UnitDamage then lo,hi=UnitDamage('player') end
     if Number(lo) and Number(hi) and lo>0 then
-     text[#text+1]=string.format('Normal hit: %.0f–%.0f → about %.0f–%.0f.',lo,hi,lo*(1-fraction),hi*(1-fraction))
+     text[#text+1]=string.format('Normal hit: %.0f-%.0f; after armor: about %.0f-%.0f.',lo,hi,lo*(1-fraction),hi*(1-fraction))
     end
     local grade=M.ArmorGrade(row.armor,mobLevel,rank)
     text[#text+1]='Armor '..row.armor..(grade and (' — '..grade..' for level '..mobLevel..' enemies.') or '.')
