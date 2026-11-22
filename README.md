@@ -1,5 +1,7 @@
 # Smyrna Lightweight Addon Suite
 
+Current private build: **0.9.32**. Gear hover offers Dungeon, Quest (!) and AH circles with scrollable top-ten lists. Storage/reference optimizations and character-specific filters are covered in [release notes](docs/RELEASE-0.9.32.md), [storage contracts](docs/STORAGE.md) and `reports/OPTIMIZATION-0.9.32.json`. Earlier release sections describe their respective baselines.
+
 ## 0.9.31 private test build
 
 Upgrader is integrated into the Suite with one optional shared Equipment DB. Press C, hover gear, then Ctrl + left-click for ranked upgrades; select a profile in the Upgrader tab if automatic talent selection is unavailable. At an AH, scan listing prices and use each confirmed BoE item's search button. Pawn is not required. This experimental scorer is private owner/two-guildmate research, with original notices retained; do not publish this build publicly.

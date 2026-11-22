@@ -4,7 +4,7 @@ if not Chat then return end
 local frames={}
 function Chat.HistoryRetention()
  local value=Chat.GetDB().historyRetention
- return (value==10 or value==100 or value==1000) and value or 50
+ return (value==50 or value==100 or value==1000) and value or 10
 end
 -- Native PackageEntry + CircularBuffer benchmark: 80-400 byte unique messages,
 -- three numeric extra arguments. Rounded full-buffer range; not live RAM telemetry.

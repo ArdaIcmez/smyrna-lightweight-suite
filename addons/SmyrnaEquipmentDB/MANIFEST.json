@@ -37,7 +37,7 @@
   "equipment": 11525,
   "with_sources": 8006,
   "source_rows": 34800,
-  "lua_bytes": 3370159,
+  "lua_bytes": 2060583,
   "dungeon_names": [
     "Blackfathom Deeps",
     "Blackrock Depths",
@@ -73,5 +73,7 @@
     "Ruins of Ahn'Qiraj",
     "Temple of Ahn'Qiraj",
     "Zul'Gurub"
-  ]
+  ],
+  "format": "pooled acquisition source IDs",
+  "unique_sources": 4601
 }

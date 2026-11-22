@@ -10,9 +10,9 @@ end
 function U.RenderDetails(state)
  if not panel or not panel:IsShown() or not request or state.slot~=request.slot or state.baseID~=request.id then return end
  panel.result=state
- if S.SetButtonSelected then S.SetButtonSelected(panel.allTab,not panel.onlyAH);S.SetButtonSelected(panel.ahTab,not not panel.onlyAH) end
- local ranked=panel.onlyAH and state.rankedAH or state.ranked
- subtitle:SetText(state.baseName..'  —  '..state.profile.label)
+ if S.SetButtonSelected then S.SetButtonSelected(panel.allTab,not panel.onlyAH and not panel.sourceFilter);S.SetButtonSelected(panel.ahTab,not not panel.onlyAH and not panel.sourceFilter) end
+ local ranked=panel.sourceFilter=='AH' and state.rankedAH or (panel.sourceFilter and state.groups[panel.sourceFilter] or (panel.onlyAH and state.rankedAH or state.ranked))
+ subtitle:SetText(state.baseName..'  -  '..state.profile.label..(panel.sourceFilter and (' / '..({Dungeon='Dungeon',Quest='Quest',AH='Auction House',Other='Profession / world drop'})[panel.sourceFilter]) or ''))
  for i,b in ipairs(rows) do
   local c=ranked[i];b.candidate=c
   if c then
@@ -30,7 +30,7 @@ function U.RenderDetails(state)
   else b:Hide() end
  end
  local n=#ranked
- footer:SetText((n>0 and ('Showing '..n..' upgrades. Earliest usable/source level first; ties use stat score.') or 'No upgrade found in eligible reference data.')..'\nStat scores exclude unmodelled procs/set effects. Check quest prerequisites, entry access and listing variants.')
+ footer:SetText((n>0 and ('Showing '..n..' upgrades. Earliest usable/source level first; ties use stat score.') or 'No upgrade found in eligible reference data.')..'\n'..(state.context and not state.context.trainingKnown and 'Weapon training not reported; class weapon rules used. ' or '')..'Check procs, quest access and AH variants.')
  scan:SetEnabled(n>0)
  panel.canvas:SetHeight(math.max(90,n*83));panel.scroll:UpdateScrollChildRect()
 end
@@ -42,8 +42,8 @@ local function OpenPanel()
  subtitle=Label(panel,'',18,-44,680,'GameFontHighlight')
  local all=CreateFrame('Button',nil,panel,'UIPanelButtonTemplate');all:SetSize(105,23);all:SetPoint('TOPLEFT',405,-12);all:SetText('All upgrades');S.StyleButton(all)
  local ah=CreateFrame('Button',nil,panel,'UIPanelButtonTemplate');ah:SetSize(105,23);ah:SetPoint('TOPLEFT',515,-12);ah:SetText('AH upgrades');S.StyleButton(ah)
- all:SetScript('OnClick',function() panel.onlyAH=false;if panel.result then U.RenderDetails(panel.result) end end)
- ah:SetScript('OnClick',function() panel.onlyAH=true;if panel.result then U.RenderDetails(panel.result) end end)
+ all:SetScript('OnClick',function() panel.onlyAH=false;panel.sourceFilter=nil;if panel.result then U.RenderDetails(panel.result) end end)
+ ah:SetScript('OnClick',function() panel.onlyAH=true;panel.sourceFilter=nil;if panel.result then U.RenderDetails(panel.result) end end)
  panel.allTab=all;panel.ahTab=ah
  local scroll=CreateFrame('ScrollFrame' ,nil,panel,'UIPanelScrollFrameTemplate');scroll:SetPoint('TOPLEFT',18,-75);scroll:SetSize(672,405);panel.scroll=scroll
  local canvas=CreateFrame('Frame',nil,scroll);canvas:SetSize(650,830);scroll:SetScrollChild(canvas);panel.canvas=canvas
@@ -74,8 +74,9 @@ local function OpenPanel()
  panel:SetScript('OnHide',function() request=nil;panel.result=nil;GameTooltip:Hide() end)
  UISpecialFrames[#UISpecialFrames+1]='SmyrnaUpgraderDetails';U.Details=panel;U.DetailRows=rows
 end
-function U.OpenDetails(slot,id,owner)
+function U.OpenDetails(slot,id,owner,sourceFilter)
  OpenPanel()
+ panel.sourceFilter=sourceFilter
  request={slot=slot,id=id or tonumber((GetInventoryItemLink('player',slot) or ''):match('item:(%d+)'))}
  subtitle:SetText('Checking upgrades…');footer:SetText('');scan:SetEnabled(false)
  for _,b in ipairs(rows) do b:Hide() end

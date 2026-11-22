@@ -1,0 +1,91 @@
+{
+  "scope": "Lua5.1 simulation, fresh VMs, retained heap after GC. Same machine/input. Not native WoW memory, rendering or FPS.",
+  "upgrader": [
+    {
+      "version": "before",
+      "loaded_KiB": 4480.81,
+      "after_recommendation_KiB": 5142.66,
+      "cold_total_ms": 12.757,
+      "score_calls_cold": 301,
+      "cached_hover_mean_ms": 0.03858,
+      "gear_count": 11525,
+      "top_count": 10
+    },
+    {
+      "version": "after",
+      "loaded_KiB": 3540.58,
+      "after_recommendation_KiB": 4114.81,
+      "cold_total_ms": 7.073,
+      "score_calls_cold": 113,
+      "cached_hover_mean_ms": 0.04038,
+      "gear_count": 11525,
+      "top_count": 10
+    }
+  ],
+  "workshop": [
+    {
+      "version": "before",
+      "recipes": 3000,
+      "including_index_KiB": 3252.18
+    },
+    {
+      "version": "after",
+      "recipes": 3000,
+      "including_index_KiB": 1366.66
+    }
+  ],
+  "activities": [
+    {
+      "version": "before",
+      "events": 10000,
+      "append_ms": 292.44,
+      "retained_KiB": 222.4
+    },
+    {
+      "version": "after",
+      "events": 10000,
+      "append_ms": 7.36,
+      "retained_KiB": 195.36
+    },
+    {
+      "version": "after",
+      "events": 100000,
+      "append_ms": 78.26,
+      "retained_KiB": 1982.73
+    },
+    {
+      "version": "after",
+      "events": 1000000,
+      "append_ms": 1389.21,
+      "retained_KiB": 20919.7
+    }
+  ],
+  "references": [
+    {
+      "version": "before",
+      "package_retained_KiB": {
+        "SmyrnaBestiaryDB": 2870.2,
+        "SmyrnaWorkshopDB": 633.33,
+        "SmyrnaRemembranceDB": 0.81,
+        "SmyrnaEquipmentDB": 4187.28
+      },
+      "all_packed_plus_shared_core_KiB": 7805.67,
+      "scope": "All reference packages loaded, before block decoding; excludes production feature indexes and personal data."
+    },
+    {
+      "version": "after",
+      "package_retained_KiB": {
+        "SmyrnaBestiaryDB": 2866.11,
+        "SmyrnaWorkshopDB": 633.3,
+        "SmyrnaRemembranceDB": 0.81,
+        "SmyrnaEquipmentDB": 3206.41
+      },
+      "all_packed_plus_shared_core_KiB": 6836.58,
+      "scope": "All reference packages loaded, before block decoding; excludes production feature indexes and personal data."
+    }
+  ],
+  "installed_package_bytes": {
+    "before": 8654768,
+    "after": 7348805
+  }
+}

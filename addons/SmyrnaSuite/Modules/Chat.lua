@@ -170,17 +170,19 @@ local function Copy(index,sourceFrame)
     local window=copyWindow
     window.generation=(window.generation or 0)+1;local token=window.generation
     window.source=source;window:Show();window.edit:SetText("");window.title:SetText("Chat history — loading…")
-    local lines={};local position=1
+    local parts={};local total=0;local position=1
     local function ReadBatch()
         if not window:IsShown() or window.generation~=token then return end
+        local lines={}
         for i=position,math.min(count,position+249) do
             local text=source:GetMessageInfo(i)
             if Core.Readable(text) then lines[#lines+1]=Core.Plain(text) end
         end
+        if #lines>0 then parts[#parts+1]=table.concat(lines,"\n");total=total+#lines end
         position=position+250
         if position<=count then C_Timer.After(0,ReadBatch);return end
-        window.edit:SetText(table.concat(lines,"\n"))
-        window.title:SetText("Chat history — "..#lines.." messages")
+        window.edit:SetText(table.concat(parts,"\n"));parts=nil
+        window.title:SetText("Chat history — "..total.." messages")
         -- No forced focus/highlight/caret; native mouse input owns selection.
         window.scroll:UpdateScrollChildRect()
     end

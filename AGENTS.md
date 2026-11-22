@@ -1,6 +1,7 @@
 # Smyrna Suite — instructions for developers and coding agents
 
 Read docs/ENGINEERING.md before making changes. Update it when gameplay establishes a new fact.
+Read docs/STORAGE.md before changing data formats, ownership or caches. The 0.9.32 migrations and source-menu behavior are documented in docs/RELEASE-0.9.32.md.
 
 ## Product and architecture
 - Product name: Smyrna Lightweight Addon Suite. Target the installed Blizzard WoW Forever client, not arbitrary Classic/private-server APIs.

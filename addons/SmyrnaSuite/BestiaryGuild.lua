@@ -11,19 +11,29 @@ local function Guild()
  return n..'@'..(realm or (GetRealmName and GetRealmName()) or '')
 end
 local RECENT=8192
+local KEYCAP,ITEMCAP,GUILDCAP=4096,256,8
 local function Decode(text)
  local total,body=(text or ''):match('^(%d+)|([%d:,]*)$')
  local hits={};for id,n in (body or ''):gmatch('(%d+):(%d+)') do hits[tonumber(id)]=tonumber(n) end
  return tonumber(total) or 0,hits
 end
-local function Add(d,build,context,npc,diff,ids)
+local function Add(d,build,context,npc,diff,ids,migrating)
  local key=build..':'..context..':'..diff..':'..npc
+ if not d.totals[key] then
+  if not d.keyCount then d.keyCount=0;for _ in pairs(d.totals) do d.keyCount=d.keyCount+1 end end
+  if not migrating and d.keyCount>=KEYCAP then B.GuildCapacityReached=true;return false end
+ end
  local total,hits=Decode(d.totals[key]);total=total+1
+ local size=0;for _ in pairs(hits) do size=size+1 end
+ for _,id in ipairs(ids) do if not hits[id] then size=size+1 end end
+ if not migrating and size>ITEMCAP then B.GuildCapacityReached=true;return false end
  for _,id in ipairs(ids) do hits[id]=(hits[id] or 0)+1 end
  local keys={};for id in pairs(hits) do keys[#keys+1]=id end;table.sort(keys)
  local parts={};for _,id in ipairs(keys) do parts[#parts+1]=id..':'..hits[id] end
+ if not d.totals[key] then d.keyCount=(d.keyCount or 0)+1 end
  d.totals[key]=total..'|'..table.concat(parts,',')
  d.count=(d.count or 0)+1
+ return true
 end
 local function Remember(d,guid)
  local slot=d.cursor or 1;local old=d.queue[slot]
@@ -43,13 +53,17 @@ local function Store()
      local body;context,npc,diff,build,body=value:match('^([MI]%d+)|(%d+)|(%d+)|(%d+)|([%d,]*)$')
      ids={};for id in (body or ''):gmatch('%d+') do ids[#ids+1]=tonumber(id) end
     elseif type(value)=='table' then context,npc,diff,build,ids=unpack(value) end
-    if context and npc and diff and build and type(ids)=='table' then Add(d,tostring(build),context,npc,diff,ids);Remember(d,guid) end
+    if context and npc and diff and build and type(ids)=='table' then Add(d,tostring(build),context,npc,diff,ids,true);Remember(d,guid) end
    end
   end
   B.DB.guildSamples=root
  end
  local d=root.guilds[guild]
- if not d then d={totals={},count=0,recent={},queue={},cursor=1};root.guilds[guild]=d end
+ if not d then
+  local count=0;for _ in pairs(root.guilds) do count=count+1 end
+  if count>=GUILDCAP then B.GuildCapacityReached=true;return end
+  d={totals={},count=0,recent={},queue={},cursor=1};root.guilds[guild]=d
+ end
  return d
 end
 function B.GuildRows(context,npc,difficulty)
@@ -67,7 +81,11 @@ function B.ReceiveGuild(message,channel,sender)
  local d=Store();if not d or d.recent[guid] then return false end
  local ids,seen={},{}
  for token in body:gmatch('[^,]+') do local id=tonumber(token);if not C.Number(id,1,10000000) or seen[id] then return false end;seen[id]=true;ids[#ids+1]=id;if #ids>64 then return false end end
- Add(d,build,context,npc,diff,ids);Remember(d,guid)
+ if not Add(d,build,context,npc,diff,ids) then
+  if not B.GuildCapacityWarned and B.Say then B.GuildCapacityWarned=true;B.Say('Guild sample storage is full for new entries. Existing data is kept; this sample was skipped.') end
+  return false
+ end
+ Remember(d,guid)
  B.DB.revision=B.DB.revision+1;B.Changed();return true
 end
 function B.ShareLoot(guid,context,difficulty,items)

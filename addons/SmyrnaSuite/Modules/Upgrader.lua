@@ -1,9 +1,9 @@
 local _,S=...
-local name='SmyrnaUpgrader';S.Versions[name]='0.1.0'
+local name='SmyrnaUpgrader';S.Versions[name]='0.2.0'
 if S.Config.features[name]==false then return end
 local U={};S.Modules[name]=U
 local G=S.Equipment
-local defaults={enabled=true,engine='standalone',profile='auto',classic=true}
+local defaults={enabled=true,engine='standalone',profile='auto',classic=true,allArmor=false}
 S.Config.upgrader=S.Config.upgrader or {}
 local cfg=S.Config.upgrader
 cfg.engine='standalone'
@@ -15,7 +15,7 @@ local slots={Head=1,Neck=2,Shoulder=3,Chest=5,Waist=6,Legs=7,Feet=8,Wrist=9,Hand
 local results,serial,busy={},0,nil
 local function Safe(value) return not (issecretvalue and issecretvalue(value)) end
 local function Number(value) return Safe(value) and type(value)=='number' and value==value end
-function U.Invalidate() results={};serial=serial+1;busy=nil end
+function U.Invalidate() results={};serial=serial+1;busy=nil;if U.HideSources then U.HideSources() end end
 function U.Profile()
  local _,_,class=UnitClass('player');if not Number(class) then return end
  local spec=tonumber(cfg.profile:match('^local:(%d+)$'))
@@ -30,7 +30,7 @@ function U.Profile()
  return {engine='Standalone Pawn '..S.PrivatePawn.Version,key=class..':'..spec,label=(classNames[class] or 'Class')..' / '..((specs[class] or {})[spec] or tostring(spec)),weights=weights,class=class}
 end
 local function Fingerprint(profile)
- local w=profile.weights or (PawnCommon and PawnCommon.Scales[profile.key] and PawnCommon.Scales[profile.key].Values) or {}
+ local w=profile.weights or {}
  local keys={};for k in pairs(w) do keys[#keys+1]=k end;table.sort(keys)
  local text={profile.engine,profile.key,G.build or ''}
  for _,k in ipairs(keys) do text[#text+1]=k..'='..tostring(w[k]) end
@@ -49,7 +49,7 @@ function U.Better(a,b)
 end
 function U.SelectSource(row,level)
  local out={}
- for _,src in ipairs(row.sources) do
+ for _,src in ipairs(G.Sources(row)) do
   local allowed=src.level<=level+3 and (cfg.classic or src.kind=='Crafted' or src.kind=='Quest' or src.kind=='AH')
   if src.kind=='Quest' then
    local faction=UnitFactionGroup and UnitFactionGroup('player')
@@ -92,27 +92,29 @@ function U.Hover(owner,slot,hoveredID,tooltip)
  local tip=tooltip or GameTooltip
  if not G.Ensure() then Notice(tip,'Enable Equipment DB; first load is deferred during combat.');return end
  local profile,reason=U.Profile();if not profile then Notice(tip,reason);return end
- local link=hoveredID and ('item:'..hoveredID) or GetInventoryItemLink('player',slot);local id=ItemID(link);local row=id and G.Get(id)
+ local link=hoveredID and ('item:'..hoveredID) or GetInventoryItemLink('player',slot);local id=ItemID(link);local row=id and G.Get(id,true)
  if not link then tip:SetOwner(owner,'ANCHOR_RIGHT');tip:SetText('Empty equipment slot') end
  if id and not row then Notice(tip,'Equipped item is not in the reference DB yet.');return end
  local level=UnitLevel('player');if not Number(level) then return end
  local currentScore=id and U.Score(row,profile,link) or 0
  if not Number(currentScore) then Notice(tip,'Equipped item score is not available yet.');return end
- local signature={Fingerprint(profile),tostring(level),tostring(slot),tostring(id),tostring(currentScore),tostring(cfg.classic)}
+ local context=G.Context(profile.class,level,cfg.allArmor)
+ local signature={Fingerprint(profile),context.key,tostring(slot),tostring(id),tostring(currentScore),tostring(cfg.classic)}
  for i=1,18 do signature[#signature+1]=GetInventoryItemLink('player',i) or '' end
  local key=table.concat(signature,'|')
- if results[slot] and results[slot].key==key then Append(tip,results[slot]);if U.RenderDetails then U.RenderDetails(results[slot]) end;return end
- if busy==key then Notice(tip,'Checking upgrades…');return end
+ if results[slot] and results[slot].key==key then Append(tip,results[slot]);if U.RenderDetails then U.RenderDetails(results[slot]) end;if not hoveredID and U.ShowSources then U.ShowSources(owner,slot,results[slot]) end;return end
+ if busy==key then Notice(tip,'Checking upgradesâ€¦');return end
  serial=serial+1;local token=serial;busy=key
- local ids=G.Candidates(slot,level);local index=1;local best={};local ranked={};local rankedAH={};local pending=0
+ local ids=G.Candidates(slot,level,profile.class,context);local index=1;local best={};local ranked={};local rankedAH={};local groups={Dungeon={},Quest={},Other={}};local pending=0
  local other=(slot==11 and 12) or (slot==12 and 11) or (slot==13 and 14) or (slot==14 and 13)
  local otherID=other and ItemID(GetInventoryItemLink('player',other))
  if slot==17 then local main=G.Get(ItemID(GetInventoryItemLink('player',16)));if main and main.inv==17 then Notice(tip,'Two-hand loadout occupies the off hand.');busy=nil;return end end
- Notice(tip,'Checking upgrades…')
+ Notice(tip,'Checking upgradesâ€¦')
  local function Finish()
   busy=nil
-  results[slot]={key=key,profile=profile,rows=best,ranked=ranked,rankedAH=rankedAH,pending=pending,slot=slot,baseID=id,baseName=row and row.name or 'Empty slot'}
+  results[slot]={key=key,profile=profile,context=context,rows=best,ranked=ranked,rankedAH=rankedAH,groups=groups,pending=pending,slot=slot,baseID=id,baseName=row and row.name or 'Empty slot'}
   U.LastResult=results[slot];if U.RenderDetails then U.RenderDetails(results[slot]) end
+  if not hoveredID and U.ShowSources and tip:IsShown() and tip:GetOwner()==owner then U.ShowSources(owner,slot,results[slot]) end
   if tip:IsShown() and tip:GetOwner()==owner then
    tip:ClearLines();tip:SetOwner(owner,'ANCHOR_RIGHT')
    U.Refreshing=true
@@ -128,24 +130,27 @@ function U.Hover(owner,slot,hoveredID,tooltip)
   for _=1,32 do
    local candidate=ids[index];index=index+1
    if not candidate then Finish();return end
-   local r=G.Get(candidate)
-   if candidate~=id and G.Eligible(r,profile.class,level,slot,row,otherID) and (cfg.classic or not r.estimated) then
-    local sourceRows=U.SelectSource(r,level)
-    if next(sourceRows) then
+   local r=G.Get(candidate,true)
+   if candidate~=id and G.Eligible(r,profile.class,level,slot,row,otherID,context) and (cfg.classic or not r.estimated) then
      local value,why=U.Score(r,profile)
      if Number(value) and value>currentScore and value>0 then
+      local sourceRows=U.SelectSource(r,level)
       local nearest
       for kind,source in pairs(sourceRows) do
        local c={row=r,source=source,score=value,percent=currentScore>0 and (value/currentScore-1)*100 or nil}
        if U.Better(c,best[kind]) then best[kind]=c end
+       U.Insert(groups[kind=='Dungeon' and 'Dungeon' or kind=='Quest' and 'Quest' or 'Other'],c)
        if not nearest or source.level<nearest.source.level then nearest=c end
       end
-      if nearest then U.Insert(ranked,nearest);if r.bind=='Binds when equipped' then U.Insert(rankedAH,nearest) end end
+      if nearest then U.Insert(ranked,nearest) end
+      -- Buying a BoE does not require reaching its original mob/quest source.
+      if r.bind=='Binds when equipped' then
+       U.Insert(rankedAH,{row=r,source={kind='AH',name='Tradable item; check listings',zone='',level=r.level,skill=0,reference='BoE reference'},score=value,percent=currentScore>0 and (value/currentScore-1)*100 or nil})
+      end
      elseif why=='pending' then
       pending=pending+1
       if C_Item and C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(candidate) end
      end
-    end
    end
   end
   C_Timer.After(.01,Batch)
@@ -157,6 +162,7 @@ local function HookSlots()
   local b=_G['Character'..label..'Slot']
   if b and not b.smyrnaUpgrader then
    b.smyrnaUpgrader=true;b:HookScript('OnEnter',function(self) U.Hover(self,slot) end)
+   b:HookScript('OnLeave',function() if U.HideSourcesSoon then U.HideSourcesSoon() end end)
    b:HookScript('OnMouseUp',function(self,button) if button=='LeftButton' and IsControlKeyDown() then U.OpenDetails(slot,nil,self) end end)
   end
  end
@@ -175,23 +181,26 @@ function U.Open()
   local classic=CreateFrame('CheckButton',nil,panel,'UICheckButtonTemplate');classic:SetPoint('TOPLEFT',18,-242);classic:SetChecked(cfg.classic)
   local ct=classic:CreateFontString(nil,'OVERLAY','GameFontHighlight');ct:SetPoint('LEFT',classic,'RIGHT',0,0);ct:SetText('Include labelled Classic source / estimated item references')
   classic:SetScript('OnClick',function(self) cfg.classic=not not self:GetChecked();U.Invalidate() end)
-  local button=CreateFrame('Button',nil,panel,'UIPanelButtonTemplate');button:SetPoint('TOPLEFT',20,-290);button:SetSize(650,27);S.StyleButton(button)
+  local armor=CreateFrame('CheckButton',nil,panel,'UICheckButtonTemplate');armor:SetPoint('TOPLEFT',18,-268);armor:SetChecked(cfg.allArmor)
+  local at=armor:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');at:SetPoint('LEFT',armor,'RIGHT',0,0);at:SetText('Include lighter wearable armor (default: current class armor tier)')
+  armor:SetScript('OnClick',function(self) cfg.allArmor=not not self:GetChecked();U.Invalidate() end)
+  local button=CreateFrame('Button',nil,panel,'UIPanelButtonTemplate');button:SetPoint('TOPLEFT',20,-310);button:SetSize(650,27);S.StyleButton(button)
   local function Choices()
    local _,_,class=UnitClass('player');local options={{key='auto',label='Automatic talent profile'}}
    for i,label in ipairs(specs[class] or {}) do options[#options+1]={key='local:'..i,label='Standalone: '..label} end
    return options
   end
-  local function Refresh() local p,err=U.Profile();button:SetText('Profile: '..(p and p.label or err or 'Select a profile')..'  — click to change') end
+  local function Refresh() local p,err=U.Profile();button:SetText('Profile: '..(p and p.label or err or 'Select a profile')..'  â€” click to change') end
   button:SetScript('OnClick',function()
    local choices=Choices();local index=1;for i,p in ipairs(choices) do if p.key==cfg.profile then index=i;break end end
    cfg.profile=choices[index%#choices+1].key;U.Invalidate();Refresh()
   end)
   panel:SetScript('OnShow',Refresh)
-  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-338);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Shared data: Equipment DB (optional AddOns package). No separate gear catalogs per feature.\nSource coverage is incomplete; dungeon lockouts, keys and quest prerequisites are not verified.')
+  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Hover the Dungeon, Quest (!) or AH circle for a scrollable list of upgrades.\nEquipment DB is optional; source coverage, quest access and special effects are incomplete.')
  end
  panel:Show();return panel
 end
-local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE')
+local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE');pcall(driver.RegisterEvent,driver,'SKILL_LINES_CHANGED');pcall(driver.RegisterEvent,driver,'SPELLS_CHANGED')
 driver:SetScript('OnEvent',function(_,event) if event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then HookSlots() else U.Invalidate() end end)
 SLASH_SMYRNAUPGRADER1='/su';SlashCmdList.SMYRNAUPGRADER=function() U.Open() end
 

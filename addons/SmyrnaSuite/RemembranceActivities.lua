@@ -39,7 +39,7 @@ function A.Add(person,kind,id,title,stamp)
  end
  local catalog=kind..':'..id
  db.activityNames[catalog]=title
- db.activities[person.key]=(db.activities[person.key] or '')..kind..','..id..','..stamp..';'
+ db.activities[person.key]=Suite.EventLog.Append(db.activities[person.key],kind..','..id..','..stamp..';')
  R.Revision=(R.Revision or 0)+1
  return true
 end
@@ -137,10 +137,11 @@ function A.Receive(prefix,message,channel,sender)
 end
 function A.Lines(key)
  local packed=R.DB.activities and R.DB.activities[key]
- if type(packed)~='string' or packed=='' then return {} end
+ if type(packed)~='string' and type(packed)~='table' then return {} end
  local groups={D={},C={},E={},B={},W={},Q={}}
  local count=0
- for kind,id,stamp in packed:gmatch('([DCEBWQ]),(%d+),(%d+);') do
+ for entry in Suite.EventLog.Entries(packed) do
+  local kind,id,stamp=entry:match('^([DCEBWQ]),(%d+),(%d+)$')
   id,stamp=tonumber(id),tonumber(stamp)
   if Number(id,10000000) and Number(stamp,10000000000) then
    local title=R.DB.activityNames[kind..':'..id] or (kind=='Q' and ('Quest #'..id) or ('Activity #'..id))

@@ -5,6 +5,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 if os.environ.get('SMYRNA_LUPA_PATH'):
     sys.path.insert(0, os.environ['SMYRNA_LUPA_PATH'])
+elif (ROOT/'.local/lua-runtime').is_dir():
+    sys.path.insert(0,str(ROOT/'.local/lua-runtime'))
 else:
     for parent in ROOT.parents:
         local = parent / '2026-11-17/pla/work/lua-runtime-map'
@@ -52,6 +54,8 @@ function CreateFrame(kind,name,parent,template)
  function f:GetFrameStrata() return self.strata or 'MEDIUM' end
  function f:SetAllPoints() end
  function f:SetColorTexture(...) self.color={...} end
+ function f:SetTexture(path) self.texture=path end
+ function f:EnableMouseWheel(enabled) self.wheel=enabled end
  function f:CreateTexture() return CreateFrame('Texture',nil,self) end
  function f:CreateFontString() return CreateFrame('FontString',nil,self) end
  function f:GetStringWidth() return #self.text*7 end
@@ -112,6 +116,6 @@ def upgrader_runtime():
     for file in ['addons/SmyrnaSuite/Equipment.lua', 'addons/SmyrnaSuite/PrivateScoring/PawnScore.lua',
                  'addons/SmyrnaEquipmentDB/Data.lua', 'addons/SmyrnaSuite/Modules/Upgrader.lua',
                  'addons/SmyrnaSuite/AuctioneerQuotes.lua', 'addons/SmyrnaSuite/Market.lua',
-                 'addons/SmyrnaSuite/UpgraderDetails.lua']:
+                 'addons/SmyrnaSuite/UpgraderDetails.lua','addons/SmyrnaSuite/UpgraderSources.lua']:
         load(l, file)
     return l

@@ -10,10 +10,24 @@ do local function chunk(...)
 local _,NS=...
 _G.SmyrnaWorkshop=NS
 local index,counts={},{}
+local usesCache,usesOrder={},{}
 local references={}
 NS.ReferenceLoaded={}
 local unavailable={}
 local loadingReferences,referenceDirty=false,false
+local function PackRecipe(r)
+ local mats={};for _,m in ipairs(r.mats) do mats[#mats+1]=m[1]..':'..m[2] end
+ return table.concat({r.spell or '',r.profession,r.name,table.concat(mats,',')},'\t')
+end
+local function ReadRecipe(value)
+ if type(value)=='table' then return value end
+ if type(value)~='string' then return end
+ local spell,profession,name,body=value:match('^(%d*)\t([^\t]*)\t([^\t]*)\t(.*)$')
+ if not profession then return end
+ local mats={};for id,n in body:gmatch('(%d+):(%d+)') do mats[#mats+1]={tonumber(id),tonumber(n)} end
+ return {spell=tonumber(spell),profession=profession,name=name,mats=mats,learned=true}
+end
+NS.PackRecipe,NS.ReadRecipe=PackRecipe,ReadRecipe
 function NS.Init()
     if type(SmyrnaWorkshopDB)~="table" then SmyrnaWorkshopDB={} end
     NS.DB=SmyrnaWorkshopDB
@@ -31,18 +45,24 @@ function NS.ID(link)
 end
 function NS.Reindex()
     wipe(index)
+    wipe(usesCache);wipe(usesOrder)
     local keys,seen={},{}
-    for key in pairs(NS.DB.recipes) do keys[#keys+1]=key end;table.sort(keys)
+    for key,value in pairs(NS.DB.recipes) do
+        if type(value)=='table' then NS.DB.recipes[key]=PackRecipe(value) end
+        keys[#keys+1]=key
+    end;table.sort(keys)
     NS.recipeCount=#keys
-    local function Add(r)
+    local function Add(r,key)
         for _,v in ipairs(r.mats) do
             local list=index[v[1]];if not list then list={};index[v[1]]=list end
-            list[#list+1]=r
+            list[#list+1]=key or r
         end
     end
     for _,key in ipairs(keys) do
-        local r=NS.DB.recipes[key];r.learned=true
-        seen[r.spell or (r.profession..":"..r.name)]=true;seen[r.profession..":"..r.name]=true;Add(r)
+        local r=ReadRecipe(NS.DB.recipes[key])
+        if r then
+        seen[r.spell or (r.profession..":"..r.name)]=true;seen[r.profession..":"..r.name]=true;Add(r,key)
+        end
     end
     for _,r in ipairs(references) do
         if not seen[r.spell] and not seen[r.profession..":"..r.name] then Add(r) end
@@ -55,11 +75,11 @@ function NS.Save(key,profession,name,mats,spell)
         if NS.recipeCount>=3000 then return end
         NS.recipeCount=NS.recipeCount+1
     end
-    local old=NS.DB.recipes[key]
+    local old=ReadRecipe(NS.DB.recipes[key])
     local same=old and old.profession==profession and old.name==name and old.spell==spell and #old.mats==#mats
     if same then for i,v in ipairs(mats) do if old.mats[i][1]~=v[1] or old.mats[i][2]~=v[2] then same=false;break end end end
     if same then return false end
-    NS.DB.recipes[key]={profession=profession,name=name,mats=mats,spell=spell,learned=true}
+    NS.DB.recipes[key]=PackRecipe({profession=profession,name=name,mats=mats,spell=spell})
     NS.ScanDirty=true;return true
 end
 function NS.Invalidate() wipe(counts) end
@@ -96,7 +116,18 @@ function NS.EnsureReference(id)
     if referenceDirty then referenceDirty=false;NS.Reindex() end
     return notice
 end
-function NS.Uses(id) return index[id] end
+function NS.Uses(id)
+ if usesCache[id] then return usesCache[id] end
+ if not index[id] then return end
+ local rows={}
+ for _,value in ipairs(index[id]) do
+  local row=type(value)=='table' and value or ReadRecipe(NS.DB.recipes[value])
+  if row then rows[#rows+1]=row end
+ end
+ usesCache[id]=rows;usesOrder[#usesOrder+1]=id
+ if #usesOrder>12 then usesCache[table.remove(usesOrder,1)]=nil end
+ return rows
+end
 function NS.Known(r)
     if r.learned then return true end
     if r.spell then
@@ -121,7 +152,7 @@ local function SortRecipes(rows)
 end
 function NS.ItemRecipes(id)
     local rows,seen={},{}
-    for _,recipe in ipairs(index[id] or {}) do if not seen[recipe] then rows[#rows+1]=recipe;seen[recipe]=true end end
+    for _,recipe in ipairs(NS.Uses(id) or {}) do if not seen[recipe] then rows[#rows+1]=recipe;seen[recipe]=true end end
     SortRecipes(rows)
     return rows
 end
@@ -135,7 +166,7 @@ end
 function NS.Tooltip(tip,id)
     if not NS.DB or not NS.DB.settings.enabled then return end
     local notice=NS.EnsureReference(id)
-    local list=index[id]
+    local list=NS.Uses(id)
     if not list then return end
     if notice then tip:AddLine("Smyrna Workshop: "..notice,1,.8,.3) end
     local seen,known,total={},0,0

@@ -1,6 +1,8 @@
 # Engineering record and current scope
 
 ## Verified release
+
+0.9.32 adds source pooling, lazy positive-upgrade source decoding, character armor/trained-weapon filters, Dungeon/Quest/AH scrollable hover menus, packed learned-recipe fallbacks with bounded decode caches, chunked activities and conservative guild-growth budgets. See STORAGE.md and RELEASE-0.9.32.md. Chat default is now 10x for an unset preference; explicit saved choices are preserved. These changes have regression/benchmark coverage, not new native gameplay confirmation.
 v0.9.31 combines the 0.9.30.4 hotfixes with Upgrader and its shared optional Equipment DB. The owner confirmed right-click message editor selection in 0.9.30 and loot interaction in 0.9.30.1. History selection, defense rendering and Upgrader/AH require native confirmation after this build. Do not claim all gameplay bugs are verified fixed.
 
 ## Current feature responsibilities

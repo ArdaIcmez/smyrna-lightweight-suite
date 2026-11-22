@@ -46,6 +46,31 @@ assert(not g.Eligible(r,2,30,11,nil,99))
 r.classMask=1;assert(not g.Eligible(r,2,30,11,nil))
 ''')
 
+    def test_armor_progression_trained_weapons_and_source_menus(self):
+        self.l.execute('''
+local g=Suite.Equipment
+assert(g.Context(2,39).tier=='Mail' and g.Context(2,40).tier=='Plate')
+assert(g.Context(7,39).tier=='Leather' and g.Context(7,40).tier=='Mail')
+for _,class in ipairs({5,8,9}) do assert(g.Context(class,60).tier=='Cloth') end
+IsPlayerSpell=function(id) return id==202 end
+local context=g.Context(2,30);assert(context.weapons['Two-Handed Sword'])
+local sword={id=1,level=1,quality=2,class='Weapon',subclass='Two-Handed Sword',inv=17,classMask=-1}
+assert(g.Eligible(sword,2,30,16,nil,nil,context))
+sword.subclass='Two-Handed Axe';assert(not g.Eligible(sword,2,30,16,nil,nil,context))
+assert(not g.Eligible(sword,2,30,17,nil,nil,context))
+local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','CharacterChestSlot');GameTooltip:SetOwner(owner)
+u.Hover(owner,5);RunTimers();local state=u.LastResult
+for _,c in ipairs(state.ranked) do assert(c.row.subclass=='Mail') end
+assert(u.SourceDock:IsShown())
+u.SourceDock.buttons[2].scripts.OnEnter();assert(u.SourceMenu:IsShown() and u.SourceMenu.filter=='Quest')
+u.SourceMenu.scroll.scripts.OnMouseWheel(nil,-100);assert(u.SourceMenu.scroll:GetVerticalScroll()<=u.SourceMenu.scroll:GetVerticalScrollRange())
+u.SourceDock.buttons[3].scripts.OnEnter();assert(u.SourceMenu.filter=='AH')
+for _,b in ipairs(u.SourceMenu.rows) do if b.candidate then assert(b.candidate.row.bind=='Binds when equipped') end end
+u.OpenDetails(5,nil,owner,'Quest');assert(u.Details.sourceFilter=='Quest')
+local list=u.Details.result.groups.Quest
+if #list>0 then assert(u.DetailRows[1].candidate==list[1]) end
+''')
+
     def test_hovered_bag_item_is_comparison_baseline(self):
         self.l.execute('''
 local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','BagItem')
@@ -54,6 +79,20 @@ u.ItemTooltip(GameTooltip);RunTimers()
 assert(u.LastResult.baseID==2870)
 local value=u.Score(Suite.Equipment.Get(2870),u.LastResult.profile)
 for _,c in ipairs(u.LastResult.ranked) do assert(c.score>value) end
+''')
+
+    def test_candidates_follow_every_class_armor_tier(self):
+        self.l.execute('''
+local g=Suite.Equipment
+for _,class in ipairs({1,2,3,4,5,7,8,9,11}) do
+ for _,level in ipairs({1,39,40,60}) do
+  local ctx=g.Context(class,level)
+  for _,id in ipairs(g.Candidates(5,level,class,ctx)) do
+   local row=g.Get(id,true)
+   assert(row.level<=level and row.subclass==ctx.tier)
+  end
+ end
+end
 ''')
 
     def test_profile_no_spell_usage_guess_and_cache(self):
