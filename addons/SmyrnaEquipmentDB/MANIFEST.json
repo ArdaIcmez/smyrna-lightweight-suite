@@ -34,10 +34,10 @@
     "proficiency.json": "6f3fe6dd3efbdd3507419be6eaede1fa62b9bee0f97fc850388b4b96176a8562",
     "quests.json": "c29988a03fa31e20e626a497a55ecc24e5a5f6475e86d7eaa66c1dc9a6554947"
   },
-  "equipment": 11525,
+  "equipment": 12680,
   "with_sources": 8006,
   "source_rows": 34800,
-  "lua_bytes": 2060583,
+  "lua_bytes": 2497754,
   "dungeon_names": [
     "Blackfathom Deeps",
     "Blackrock Depths",
@@ -75,5 +75,7 @@
     "Zul'Gurub"
   ],
   "format": "pooled acquisition source IDs",
-  "unique_sources": 4601
+  "unique_sources": 5878,
+  "base_equipment": 11525,
+  "supplement": "SUPPLEMENT.json"
 }

@@ -101,7 +101,7 @@ dest=ROOT/'addons/SmyrnaEquipmentDB';(dest/'Data.lua').write_text(text,encoding=
 ## Group: SmyrnaSuite
 ## Category: Smyrna
 ## Notes: Shared armor, weapon, jewelry, trinket and equipment acquisition references.
-## Version: 0.9.34
+## Version: 0.9.35
 ## Dependencies: SmyrnaSuite
 ## LoadOnDemand: 1
 Data.lua
@@ -122,3 +122,9 @@ from pool_equipment import pool
 pool(dest/'Data.lua',LuaRuntime)
 manifest={'source':meta,'files':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in cache.glob('*.json')},'equipment':len(records),'with_sources':len(byitem),'source_rows':sum(map(len,byitem.values())),'lua_bytes':(dest/'Data.lua').stat().st_size,'dungeon_names':sorted(dungeons),'raid_names_excluded':sorted(raids)}
 (dest/'MANIFEST.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8');print(json.dumps({k:manifest[k] for k in ['equipment','with_sources','source_rows','lua_bytes']}))
+supplement_cache=ROOT/'.local/equipment-supplement'
+if (supplement_cache/'assets_database_db.json').is_file():
+ from supplement_equipment import supplement
+ extra=supplement(ROOT,supplement_cache,LuaRuntime)
+ manifest['base_equipment']=len(records);manifest['equipment']=extra['total_equipment'];manifest['lua_bytes']=extra['lua_bytes'];manifest['supplement']='SUPPLEMENT.json'
+ (dest/'MANIFEST.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')

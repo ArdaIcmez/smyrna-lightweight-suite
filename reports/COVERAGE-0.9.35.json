@@ -1,0 +1,29 @@
+{
+  "scope": "Fresh Lua5.1 VM simulation; v0.9.34 versus current. Not native UI/FPS or total Suite RAM.",
+  "upgrader": [
+    {
+      "version": "before",
+      "loaded_KiB": 3564.99,
+      "after_recommendation_KiB": 4161.71,
+      "cold_total_work_ms": 6.796,
+      "equipment_records": 11525
+    },
+    {
+      "version": "after",
+      "loaded_KiB": 4052.42,
+      "after_recommendation_KiB": 4962.97,
+      "cold_total_work_ms": 8.437,
+      "equipment_records": 12680
+    }
+  ],
+  "references": [
+    {
+      "version": "before",
+      "all_packed_plus_shared_core_KiB": 6836.41
+    },
+    {
+      "version": "after",
+      "all_packed_plus_shared_core_KiB": 7313.69
+    }
+  ]
+}

@@ -24,6 +24,7 @@ function NS.OpenTab(index)
         hub:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=12});hub:SetBackdropColor(.035,.035,.04,.98)
         local title=hub:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOP",0,-16);title:SetText("Smyrna Lightweight Addon Suite")
         NS.StylePanel(hub)
+        NS.HeaderStrip(hub);title:SetTextColor(1,.83,.43)
         local close=NS.CloseButton(hub)
         content=CreateFrame("Frame",nil,hub);content:SetPoint("TOPLEFT",10,-116);content:SetSize(940,740)
         hub.tabs={}

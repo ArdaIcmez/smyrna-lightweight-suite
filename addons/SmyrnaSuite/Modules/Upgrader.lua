@@ -65,7 +65,7 @@ function U.Score(row,profile)
 end
 function U.Better(a,b)
  if not b then return true end
- local al,bl=math.max(a.row.level,a.source.level),math.max(b.row.level,b.source.level)
+ local al,bl=a.availableLevel or math.max(a.row.level,a.source.level),b.availableLevel or math.max(b.row.level,b.source.level)
  if al~=bl then return al<bl end
  if a.source.level~=b.source.level then return a.source.level<b.source.level end
  if a.score~=b.score then return a.score>b.score end
@@ -74,7 +74,7 @@ end
 function U.SelectSource(row,level)
  local out={}
  for _,src in ipairs(G.Sources(row)) do
-  local allowed=src.level<=level+3 and (cfg.classic or src.kind=='Crafted' or src.kind=='Quest' or src.kind=='AH')
+  local allowed=src.level<=level+3 and (cfg.classic or src.reference~='Classic source')
   if src.kind=='Quest' then
    local faction=UnitFactionGroup and UnitFactionGroup('player')
    if src.faction~='' and src.faction~='Both' and faction and src.faction~=faction then allowed=false end
@@ -103,7 +103,7 @@ end
 local function Append(tip,state)
  local c=state.ranked[1]
  if c then
-  tip:AddLine('Nearest upgrade: '..c.row.name..(c.percent and string.format(' (+%.1f%%)',c.percent) or ''),.47,.83,.61,true)
+  tip:AddLine((c.future and ('Next upgrade (Lv '..c.availableLevel..'): ') or 'Nearest upgrade: ')..c.row.name..(c.percent and string.format(' (+%.1f%%)',c.percent) or ''),.47,.83,.61,true)
   local src=c.source;tip:AddLine(U.SourceLabel(c)..': '..(src.zone~='' and (src.zone..' / ') or '')..src.name..(src.reference=='Classic source' and ' [Classic]' or ''),.55,.76,.94,true)
  else tip:AddLine('Nearest upgrade: none found in eligible reference data.',.65,.65,.7,true) end
  tip:AddLine('Ctrl + left-click: ranked upgrades',.94,.77,.35)
@@ -125,6 +125,11 @@ local function Scan(owner,slot,hoveredID,tooltip)
  local currentScore=id and U.Score(row,profile,link) or 0
  if not Number(currentScore) then return Stop('This item cannot be scored with the selected profile.') end
  local context=G.Context(profile.class,level,cfg.allArmor)
+ local levelContexts={[level]=context}
+ local function ContextAt(n)
+  if not levelContexts[n] then levelContexts[n]=G.Context(profile.class,n,cfg.allArmor) end
+  return levelContexts[n]
+ end
  local signature={Fingerprint(profile),context.key,tostring(slot),tostring(id),tostring(currentScore),tostring(cfg.classic)}
  for i=1,18 do signature[#signature+1]=GetInventoryItemLink('player',i) or '' end
  local key=table.concat(signature,'|')
@@ -132,12 +137,17 @@ local function Scan(owner,slot,hoveredID,tooltip)
  if busy==key then Notice(tip,'Checking upgradesâ€¦');return end
  serial=serial+1;local token=serial;busy=key
  local ids=G.Candidates(slot,level,profile.class,context);local index=1;local best={};local ranked={};local rankedAH={};local groups={Dungeon={},Quest={},Other={}};local pending=0
+ local futurePhase,missing=false,{}
+ local future={Dungeon={},Quest={},Other={},AH={}}
  local other=(slot==11 and 12) or (slot==12 and 11) or (slot==13 and 14) or (slot==14 and 13)
  local otherID=other and ItemID(GetInventoryItemLink('player',other))
  if slot==17 then local main=G.Get(ItemID(GetInventoryItemLink('player',16)));if main and main.inv==17 then busy=nil;return Stop('Your two-handed weapon occupies the off-hand slot.') end end
  Notice(tip,'Checking upgradesâ€¦')
  local function Finish()
   busy=nil
+  for _,key in ipairs({'Dungeon','Quest','Other'}) do if #groups[key]==0 then groups[key]=future[key] end end
+  if #rankedAH==0 then rankedAH=future.AH end
+  if #ranked==0 then for _,key in ipairs({'Dungeon','Quest','Other'}) do for _,c in ipairs(future[key]) do U.Insert(ranked,c) end end end
   results[slot]={key=key,profile=profile,context=context,rows=best,ranked=ranked,rankedAH=rankedAH,groups=groups,pending=pending,slot=slot,baseID=id,baseName=row and row.name or 'Empty slot'}
   U.LastResult=results[slot];if U.RenderDetails then U.RenderDetails(results[slot]) end
   if not hoveredID and U.ShowSources and ((hoverOwner==owner and hoverSlot==slot) or (U.SourceMatches and U.SourceMatches(owner,slot)) or (tip:IsShown() and tip:GetOwner()==owner)) then U.ShowSources(owner,slot,results[slot]) end
@@ -156,23 +166,43 @@ local function Scan(owner,slot,hoveredID,tooltip)
   -- Bounded standalone scoring batches, not a whole-catalog hover scan.
   for _=1,32 do
    local candidate=ids[index];index=index+1
-   if not candidate then Finish();return end
+   if not candidate then
+    if not futurePhase and level<60 and (#groups.Dungeon==0 or #groups.Quest==0 or #rankedAH==0) then
+     missing.Dungeon=#groups.Dungeon==0;missing.Quest=#groups.Quest==0;missing.Other=#groups.Other==0;missing.AH=#rankedAH==0
+     futurePhase=true;ids=G.FutureCandidates(slot,level,profile.class,cfg.allArmor);index=1
+     C_Timer.After(.01,Schedule);return
+    end
+    Finish();return
+   end
    local r=G.Get(candidate,true)
-   if candidate~=id and G.Eligible(r,profile.class,level,slot,row,otherID,context) and (cfg.classic or not r.estimated) then
+   if candidate~=id and r and (futurePhase or G.Eligible(r,profile.class,level,slot,row,otherID,context)) and (cfg.classic or not r.estimated) then
      local value,why=U.Score(r,profile)
      if Number(value) and value>currentScore and value>0 then
-      local sourceRows=U.SelectSource(r,level)
+      local sourceRows=U.SelectSource(r,futurePhase and 60 or level)
       local nearest
       for kind,source in pairs(sourceRows) do
+       local group=kind=='Dungeon' and 'Dungeon' or kind=='Quest' and 'Quest' or 'Other'
        local c={row=r,source=source,score=value,percent=currentScore>0 and (value/currentScore-1)*100 or nil}
-       if U.Better(c,best[kind]) then best[kind]=c end
-       U.Insert(groups[kind=='Dungeon' and 'Dungeon' or kind=='Quest' and 'Quest' or 'Other'],c)
-       if not nearest or source.level<nearest.source.level then nearest=c end
+       if futurePhase then
+        local unlock=G.ArmorUnlock(r,profile.class);local needed=math.max(r.level,unlock,source.level-3)
+        if missing[group] and needed>level and needed<=60 and G.Eligible(r,profile.class,needed,slot,row,otherID,ContextAt(needed)) then
+         c.future=true;c.availableLevel=needed;c.training=unlock>level and (r.subclass..' training at level '..unlock) or nil
+         U.Insert(future[group],c)
+        end
+       else
+        if U.Better(c,best[kind]) then best[kind]=c end
+        U.Insert(groups[group],c)
+        if not nearest or source.level<nearest.source.level then nearest=c end
+       end
       end
       if nearest then U.Insert(ranked,nearest) end
       -- Buying a BoE does not require reaching its original mob/quest source.
       if r.bind=='Binds when equipped' then
-       U.Insert(rankedAH,{row=r,source={kind='AH',name='Tradable item; check listings',zone='',level=r.level,skill=0,reference='BoE reference'},score=value,percent=currentScore>0 and (value/currentScore-1)*100 or nil})
+       local c={row=r,source={kind='AH',name='Tradable item; check listings',zone='',level=r.level,skill=0,reference='BoE reference'},score=value,percent=currentScore>0 and (value/currentScore-1)*100 or nil}
+       if futurePhase then
+        local unlock=G.ArmorUnlock(r,profile.class);local needed=math.max(r.level,unlock)
+        if missing.AH and needed>level and needed<=60 and G.Eligible(r,profile.class,needed,slot,row,otherID,ContextAt(needed)) then c.future=true;c.availableLevel=needed;c.training=unlock>level and (r.subclass..' training at level '..unlock) or nil;U.Insert(future.AH,c) end
+       else U.Insert(rankedAH,c) end
       end
      elseif why=='pending' then
       pending=pending+1
@@ -241,7 +271,9 @@ function U.Open()
    cfg.profile=choices[index%#choices+1].key;U.Invalidate();Refresh()
   end)
   panel:SetScript('OnShow',Refresh)
-  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Ctrl reveals the circles; hover a circle for a scrollable list.\nEquipment DB is optional; source coverage, quest access and special effects are incomplete.')
+  local armorGuide=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');armorGuide:SetPoint('TOPLEFT',20,-185);armorGuide:SetWidth(655);armorGuide:SetJustifyH('LEFT');armorGuide:SetTextColor(1,.83,.43)
+  panel:HookScript('OnShow',function() local _,_,class=UnitClass('player');local level=UnitLevel('player');armorGuide:SetText(G.ArmorGuide(class,Number(level) and level or 1)) end)
+  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Ctrl reveals the circles; future gear is labelled with its level/training.\nData supplement: https://wowsims.com/forever/ (MIT).\nSource coverage, quest access and special effects remain incomplete.')
  end
  panel:Show();return panel
 end

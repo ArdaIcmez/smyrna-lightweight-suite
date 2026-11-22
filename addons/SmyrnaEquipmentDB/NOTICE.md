@@ -1,5 +1,7 @@
 # Equipment reference sources
 
+0.9.35 supplement: WoWSims Forever (https://github.com/wowsims/forever), MIT, pinned commit and input hashes in SUPPLEMENT.json; licence in Notices/WOWSIMS-MIT.txt. Adds missing supported equipment and replaces only rows previously marked Classic-estimated; existing verified rows and old source relationships are retained. Only the base scaling option is imported. New binding, drop probabilities and special proc values are not invented. Unknown availability/profession restrictions are excluded from recommendations. The Mana Devourer source's outdoor parent zone is normalized to City of Dalaran using the observed item tooltip and published item sources; its source level is not a verified dungeon entry level.
+
 Facts repacked from https://gblaku.github.io/wow-forever-kb/api/ (source https://github.com/gBlaku/wow-forever-kb).
 Forever client item facts: Blizzard Entertainment, exported through wago.tools. Client build and input hashes in MANIFEST.json. Estimated item records use Classic VMaNGOS values, not verified Forever stats.
 Creature/container loot: VMaNGOS Classic world database, GPLv2. These are Classic references, not Forever observations. Quest/vendor/crafting relations: QuestieDB/Forever, subject to its file-level licences and historical contributor caveat. See bundled QuestieDB licence/provenance.

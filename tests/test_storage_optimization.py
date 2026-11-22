@@ -48,11 +48,17 @@ W.Reindex();assert(#W.Uses(769)==2 and W.recipeCount==2)
         l.execute(old);original=dict(l.globals().Suite.Equipment.records.items())
         load(l,'addons/SmyrnaEquipmentDB/Data.lua')
         g=l.globals().Suite.Equipment
+        import json
+        manifest=json.loads((ROOT/'addons/SmyrnaEquipmentDB/SUPPLEMENT.json').read_text())
+        updated=set(manifest.get('updated_estimated_ids',[]))
         for id,raw in original.items():
             old_fields=raw.split('\t');new_fields=g.records[id].split('\t')
-            self.assertEqual(old_fields[:-1],new_fields[:-1])
-            rebuilt=';'.join(g.sourcePool[int(n)] for n in new_fields[-1].split(',') if n)
-            self.assertEqual(old_fields[-1],rebuilt)
+            if id in updated:
+                self.assertEqual(old_fields[7],'1');self.assertEqual(new_fields[7],'0')
+                self.assertEqual(new_fields[12],'WoWSims Forever')
+            else:self.assertEqual(old_fields[:11],new_fields[:11])
+            rebuilt={g.sourcePool[int(n)] for n in new_fields[11].split(',') if n}
+            self.assertTrue(set(filter(None,old_fields[11].split(';')))<=rebuilt)
         l.execute('local r=Suite.Equipment.Get(2870,true);assert(r.sourceIDs and #r.sources==0);Suite.Equipment.Sources(r);assert(not r.sourceIDs and #r.sources>0)')
 
     def test_guild_cap_skips_whole_sample_without_deleting_old_data(self):

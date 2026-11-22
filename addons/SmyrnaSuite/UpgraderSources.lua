@@ -30,10 +30,16 @@ local function Populate(reset)
  local rows=state and (filter=='AH' and state.rankedAH or state.groups[filter]) or {}
  for i,b in ipairs(menu.rows) do
   b.candidate=rows[i]
-  b:SetText(rows[i] and (i..'. '..rows[i].row.name) or (dock.status or 'No eligible upgrade found'))
+  local c=rows[i];local label=c and (i..'. '..c.row.name) or (dock.status or 'No eligible upgrade found')
+  b:SetText(label)
+  b.meta:SetText(c and ((c.future and ('Next: Lv '..c.availableLevel..(c.training and ' / armor training' or '')) or ('Lv '..c.row.level))..' - '..c.row.subclass) or '')
+  local icon=c and C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(c.row.id)
+  b.icon:SetTexture(icon or 'Interface\\Icons\\INV_Misc_QuestionMark')
+  local color=c and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[c.row.quality]
+  local font=b.GetFontString and b:GetFontString();if font then font:SetTextColor(color and color.r or 1,color and color.g or .83,color and color.b or .43) end
   b:SetEnabled(rows[i]~=nil);b:SetShown(rows[i]~=nil or i==1)
  end
- menu.canvas:SetHeight(math.max(28,#rows*28));menu.scroll:UpdateScrollChildRect()
+ menu.canvas:SetHeight(math.max(38,#rows*38));menu.scroll:UpdateScrollChildRect()
  menu.scroll:SetVerticalScroll(reset and 0 or math.min(menu.scroll:GetVerticalScroll(),menu.scroll:GetVerticalScrollRange()))
 end
 local function Ensure()
@@ -44,10 +50,13 @@ local function Ensure()
  menu.title=menu:CreateFontString(nil,'OVERLAY','GameFontNormal');menu.title:SetPoint('TOPLEFT',8,-9)
  local scroll=CreateFrame('ScrollFrame',nil,menu,'UIPanelScrollFrameTemplate');scroll:SetPoint('TOPLEFT',8,-32);scroll:SetSize(298,210);scroll:EnableMouse(true)
  local canvas=CreateFrame('Frame',nil,scroll);canvas:SetSize(294,280);canvas:EnableMouse(true);scroll:SetScrollChild(canvas);menu.scroll,menu.canvas=scroll,canvas
- scroll:EnableMouseWheel(true);scroll:SetScript('OnMouseWheel',function(_,delta) Stay();scroll:SetVerticalScroll(math.max(0,math.min(scroll:GetVerticalScrollRange(),scroll:GetVerticalScroll()-delta*28))) end)
+ scroll:EnableMouseWheel(true);scroll:SetScript('OnMouseWheel',function(_,delta) Stay();scroll:SetVerticalScroll(math.max(0,math.min(scroll:GetVerticalScrollRange(),scroll:GetVerticalScroll()-delta*38))) end)
  menu.rows={};dock.buttons={}
  for i=1,10 do
-  local b=CreateFrame('Button',nil,canvas,'UIPanelButtonTemplate');b:SetSize(294,25);b:SetPoint('TOPLEFT',0,-(i-1)*28);S.StyleButton(b);b.smyrnaUpgradeRow=true
+  local b=CreateFrame('Button',nil,canvas,'UIPanelButtonTemplate');b:SetSize(294,35);b:SetPoint('TOPLEFT',0,-(i-1)*38);S.StyleButton(b);b.smyrnaUpgradeRow=true
+  b.icon=b:CreateTexture(nil,'ARTWORK');b.icon:SetSize(26,26);b.icon:SetPoint('LEFT',4,0)
+  local font=b.GetFontString and b:GetFontString();if font then font:ClearAllPoints();font:SetPoint('TOPLEFT',35,-3);font:SetWidth(252);font:SetJustifyH('LEFT');font:SetMaxLines(1) end
+  b.meta=b:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');b.meta:SetPoint('TOPLEFT',35,-20);b.meta:SetWidth(252);b.meta:SetJustifyH('LEFT');b.meta:SetTextColor(.65,.67,.72)
   b:SetScript('OnClick',function() U.OpenDetails(slot,nil,owner,menu.filter);dock:Hide() end)
   b:SetScript('OnEnter',function(self) Stay();if self.candidate then GameTooltip:SetOwner(self,'ANCHOR_RIGHT');GameTooltip:SetHyperlink('item:'..self.candidate.row.id);GameTooltip:Show() end end)
   b:SetScript('OnLeave',function() GameTooltip:Hide();Leave() end);menu.rows[i]=b

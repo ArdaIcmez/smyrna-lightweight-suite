@@ -1,7 +1,11 @@
 local _,S=...
-local edge={bgFile='Interface\\Buttons\\WHITE8X8',edgeFile='Interface\\Buttons\\WHITE8X8',edgeSize=1}
+local edge={bgFile='Interface\\Buttons\\WHITE8X8',edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',edgeSize=12,insets={left=3,right=3,top=3,bottom=3}}
 function S.StylePanel(f)
- f:SetBackdrop(edge);f:SetBackdropColor(.035,.043,.06,1);f:SetBackdropBorderColor(.78,.81,.86,.7)
+ f:SetBackdrop(edge);f:SetBackdropColor(.065,.065,.075,1);f:SetBackdropBorderColor(.48,.42,.29,.95)
+end
+function S.HeaderStrip(f)
+ if f.smyrnaHeaderStrip then return end
+ local t=f:CreateTexture(nil,'BACKGROUND');t:SetPoint('TOPLEFT',5,-5);t:SetPoint('TOPRIGHT',-5,-5);t:SetHeight(33);t:SetColorTexture(.14,.115,.065,1);f.smyrnaHeaderStrip=t
 end
 local function ButtonState(b)
  local state=b.smyrnaButtonStyle
@@ -31,8 +35,8 @@ function S.StyleButton(b)
  -- Overlay the colored backgrounds, but stay below captions and icons.
  state.left=b:CreateTexture(nil,'OVERLAY',nil,-7);state.left:SetPoint('TOPLEFT');state.left:SetPoint('BOTTOMRIGHT',b,'BOTTOM',0,0)
  state.right=b:CreateTexture(nil,'OVERLAY',nil,-7);state.right:SetPoint('TOPLEFT',b,'TOP',0,0);state.right:SetPoint('BOTTOMRIGHT')
- state.center=b:CreateTexture(nil,'OVERLAY',nil,-6);state.center:SetPoint('TOPLEFT',1,-1);state.center:SetPoint('BOTTOMRIGHT',-1,1);state.center:SetColorTexture(.16,.16,.17,1)
- S.SetButtonAccent(b,.35,.55,.75)
+ state.center=b:CreateTexture(nil,'OVERLAY',nil,-6);state.center:SetPoint('TOPLEFT',1,-1);state.center:SetPoint('BOTTOMRIGHT',-1,1);state.center:SetColorTexture(.19,.16,.105,1)
+ S.SetButtonAccent(b,.74,.58,.25)
  b:HookScript('OnMouseDown',function(self,button) if button=='LeftButton' and self:IsEnabled() then self.smyrnaButtonStyle.down=true;ButtonState(self) end end)
  b:HookScript('OnMouseUp',ReleaseButton);b:HookScript('OnLeave',ReleaseButton);b:HookScript('OnHide',ReleaseButton);b:HookScript('OnDisable',ReleaseButton)
  ButtonState(b)

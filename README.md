@@ -1,6 +1,6 @@
 # Smyrna Lightweight Addon Suite
 
-Current private build: **0.9.34**. Hold **Ctrl while hovering character gear** for Dungeon, Quest (!) and AH circles with scrollable top-ten lists. Ctrl+left-click opens details. [Hover-menu fixes](docs/RELEASE-0.9.34.md) cover larger controls and stable dropdowns; [compatibility notes](docs/RELEASE-0.9.33.md) cover automatic profiles. Storage optimizations are covered in [0.9.32 notes](docs/RELEASE-0.9.32.md), [storage contracts](docs/STORAGE.md) and `reports/OPTIMIZATION-0.9.32.json`. Earlier sections describe their respective baselines.
+Current private build: **0.9.35**. Hold **Ctrl while hovering character gear** for Dungeon, Quest (!) and AH circles with scrollable top-ten lists. Ctrl+left-click opens details. [Coverage/menu update](docs/RELEASE-0.9.35.md) adds WoWSims Forever data, future level/training markers, icon cards and a charcoal/gold theme. [Hover fixes](docs/RELEASE-0.9.34.md), [compatibility notes](docs/RELEASE-0.9.33.md) and [storage contracts](docs/STORAGE.md) describe prior work. Earlier sections describe their respective baselines.
 
 ## 0.9.31 private test build
 
