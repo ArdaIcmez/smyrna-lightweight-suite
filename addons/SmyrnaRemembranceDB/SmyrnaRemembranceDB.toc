@@ -1,0 +1,11 @@
+## Interface: 16000, 16001
+## Category: Smyrna
+## Group: SmyrnaSuite
+## Title: Smyrna Remembrance DB
+## Notes: Optional encounter history storage. Disabling pauses Remembrance without deleting history.
+## Version: 0.9.28
+## Dependencies: SmyrnaSuite
+## LoadSavedVariablesFirst: 1
+## SavedVariablesPerCharacter: SmyrnaRemembranceData
+## LoadOnDemand: 1
+Store.lua

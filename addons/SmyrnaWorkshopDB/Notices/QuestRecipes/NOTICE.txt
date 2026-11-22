@@ -1,0 +1,1 @@
+Quest-reward recipe facts derived from NorgannonDB (GPL3; see existing Norgannon source/license notices). Additional single source fact: Recipe ProwlerSteak item238645 rewarded by quest89253 MainCourse, https://www.wowhead.com/classic/quest=89253/main-course . This is ClassicSoD source info, not proof of Forever acquisition. Import script work/add_quest_recipe_sources.py.

@@ -1,0 +1,19 @@
+# Local credentials, game state, downloads and generated artifacts
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+WTF/
+SavedVariables/
+Screenshots/
+Logs/
+.local/
+state/
+cache/
+dist/
+*.zip
+__pycache__/
+*.py[cod]
+.venv/

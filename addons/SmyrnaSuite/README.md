@@ -1,0 +1,151 @@
+Current release: **0.9.12**. Previous numbered release notes below are historical.
+
+# Smyrna Lightweight Addon Suite 1.6.1
+
+## AddOns layout
+
+Smyrna Lightweight Addon Suite - Main Core contains all shared utilities and the reagent/profession index. There is no separate SmyrnaDB addon. The internal SmyrnaDB Lua API remains for compatibility with reference block readers.
+
+The Main Core and its three optional packages share `Group: SmyrnaSuite`, matching DBM's installed grouping mechanism:
+- Smyrna Bestiary DB: bundled mob and loot reference data.
+- Smyrna Workshop DB: bundled recipes, item sources and recipe acquisition data.
+- Smyrna Remembrance DB: personal encounter-history storage.
+
+All optional packages depend only on SmyrnaSuite and are load-on-demand. This means enabled packages wait until requested; disabled packages are not forced on. Bestiary/Workshop load when their data is needed. Remembrance requests its history store at PLAYER_LOGIN, then installs tracking hooks only if loading succeeds. All packages may be enabled/disabled in WoW AddOns. Main Core disables the dependent packages. Emoty remains independent.
+
+Restart WoW to refresh addon folders after installing. Keep Remembrance DB enabled for the first migration login. Existing SmyrnaRemembranceData and legacy SmyrnaRemembranceDB records are preserved; the latter migrates by adopting the table, without duplicating records. Disabled storage preserves legacy variables until a later enabled login. No saved-variable files are edited by the installer.
+
+33/33 simulated test scripts pass. Native addon-list grouping and saved-history migration still need in-game verification. No additional repeating timers or per-frame handlers were added.
+
+# Smyrna Lightweight Addon Suite 1.3.16
+
+Install the two folders SmyrnaSuite and SmyrnaDB. SmyrnaSuite contains six internal features, controlled from one minimap button or /smyrna. SmyrnaDB is optional, load-on-demand reference data. No profession/style-specific addons are needed.
+
+## Features
+
+- Chat (/sc options): timestamps with selectable color and gray reset, copy, saved nicknames and local mute. Optional class icon, level, guild and last-known location use available roster or observed-player data. Hover or select a player to discover nearby metadata; only new chat lines are formatted. Guild professions require client-exposed data; unsupported/collapsed/unavailable lists are explained rather than guessed.
+- Field Diary (/sfd): your gathering and valuable-loot history, optional map/minimap markers and explicit sharing. Markers and receiving shares default off.
+- Bestiary (/sb): compact rarity-colored loot tooltip and creature browser with reference rates and own samples. Classic estimates and small samples remain marked.
+- Workshop (/sw): bag-material recipe uses and ingredient counts. Ctrl-click a bag material to open all recipes using it, across enabled reference sections and learned recipes. All recipes clears the item filter. References load only when needed.
+- Emoty (/se): transparent floating bar. Hover the picker, then Built-in (red), Custom (blue) or Characters (purple), then click a choice in its grid. Once sends once; circular arrows start repeating; X hides the bar. Right-click a row cancels that loop. Each new loop starts at 3s; its -/+ buttons adjust its own interval. Five active jobs maximum. The pin button targets and pins on a real click outside combat. Move with the labeled drag handle.
+- Remembrance (/sr): previous player/NPC encounter time, level and observer location. Dates display day/month/year, hour and minute. Existing saved timestamps remain compatible.
+
+Emoty includes nine variants (the original plus eight backups) per custom action, 100 original observational-comedy lines under Seinfeld, and 15 original sayings each for Thrall, Jaina, Arthas, Garrosh, Sylvanas, Illidan, Varian, Cairne, Vol'jin and Tyrande (not copied television jokes or official game quotations). Each character uses a shuffled full cycle: all 15 sayings play before reuse, with no repeat across the cycle boundary. These colors identify addon controls; outgoing chat is rendered using the game's emote colors.
+
+A directed Emoty loop retains its GUID when unpinned. It can continue while you select another player if a nameplate, group unit, target or focus still resolves the original player. Otherwise it stops. Availability is not a precise distance test. No timer executes a protected /target command. General emotes work with no target.
+
+## Resources
+
+Disabled modules do not initialize after reload. UI is lazy; reference DB tables decode by section. There is no idle Emoty polling timer, no permanent profiler and no chat-triggered /who/inspect requests. Nearby metadata is bounded to 128 observed entries plus current roster entries. Diary's optional minimap markers refresh at 2 Hz only while enabled/visible; sharing uses a finite manual queue.
+
+Tests use Lua 5.1 via Lupa, with mocked client APIs. Run tests/run.py from the workspace with the configured Python/Lupa dependency path. Test passing does not prove real-client API behavior, frame protection or server delivery. See the current engineering report and test results next to this package.
+
+## Distribution
+
+The testing archive includes developer tests/documentation. Prepare a clean release archive for public upload. Reference-data attribution and unresolved historical provenance are documented in SmyrnaDB/Notices; public release remains subject to resolving those issues. Historical Docs entries may describe older menus and are superseded by this README.
+
+
+
+
+AoE prototype: open Suite > AoE range or /saoe before combat. Hold a spell button to preview; release requests the spell through SecureActionButtonTemplate. /saoe hide closes it outside combat. Mage shows Arcane Explosion and Frost Nova together; Paladin shows Consecration. Preset radii (8/10/10 yards) require confirmation against Forever spell tooltips/talents. DBM RangeCheck supplies distance bands; unavailable distances remain uncertain. Counts cover exposed living attackable units, deduplicated by GUID, not all nearby enemies or guaranteed hits. No positioned radar yet. No startup timer; 4 updates/second only while preview is shown. Native casting/combat behavior remains unverified.
+
+Workshop 1.3.18: Ctrl + left-click supported item-tooltip widgets (including profession reagents and quest item buttons) opens matching recipe uses. Hooks are installed once per hovered widget, preserve native handlers, and reject stale hover/right clicks. Only items with known recipe associations expand. No polling added. Custom profession UIs without an item tooltip or clickable tooltip owner need separate integration.
+
+Chat 1.3.20: small Copy button at the top right of each hooked chat window opens its last 300 retained messages as selectable plain text. Drag-select and Ctrl+C, or Ctrl+A then Ctrl+C. Copy window is reused and cleared when closed; no extra message history or polling.
+
+1.3.22: Workshop recipe names with spell IDs open native spell details. Bestiary adds optional live guild samples, off by default, independent of personal/community data. Only new eligible loot windows are broadcast while enabled; online consenting peers receive them. No historical sync or relay. Build/guild scoped, corpse GUID deduplication, 2000 received-window cap; oversized payloads skipped. Guild percentages describe received windows only. Recipe-teaching item sources remain a pending database expansion; material vendors do not imply recipe vendors.
+
+1.3.23 / DB 1.0.3: recipe acquisition lines from NorgannonDB 1.9 facts for 1966 recipe IDs; trainer, automatically learned, teaching-item vendor and creature names, world objects and quests where available. Snapshot reference, not live verification. Up to six source names per category; missing sources remain unknown. Crafted output sources are never used as learning sources.
+
+1.3.25 / DB 1.0.4: nicknames removed from formatting, controls, commands and context menus; legacy nickname tables cleared on load. Local mute remains. Remembrance schema 5 trims existing history to first day + 10 recent days (11 total); first-seen timestamp unchanged. One snapshot per encounter day remains, to avoid same-day duplicates. Recipe reference expanded to 2524 IDs across 12 professions using LibProfessionDB v1.10.1 Forever build 70938 (MIT), retaining seven source-only IDs. Reagents/names for overlapping IDs refreshed from that snapshot; obtainable status of retained extras not verified. Sources still use the separate acquisition reference and may be inherited/unconfirmed.
+
+1.3.26: hostile creature tooltips with no visible notable loot now explain the empty state; Ctrl-click world handling uses GLOBAL_MOUSE_DOWN with world/nameplate focus guards instead of WorldFrame OnMouseUp. Target-frame hook retained; /sb target is a fallback. Expanded mob title always displays personal loot-window count, including filtered-empty tables. Carnivorous Weed local evidence: recorded, but only gray Grass Clippings, excluded by the notable-loot filter. No drop rates invented.
+
+1.3.27: removed Smyrna class icon/color, guild tag and location chat formatting, hover lines, commands and checkboxes. Legacy toggles cleared at startup. Timestamp, copy, mute and optional level/roster details remain. Native WoW class colors may still be controlled by the game.
+
+1.4.1: Emoty is independently packaged as SmyrnaEmoty 1.0.0, no Suite feature/tab/source loading. Suite retains the legacy Emoty saved-variable declaration for migration; standalone OptionalDeps loads Suite first if enabled, preserving old settings until standalone saves its own file. Native chat drag selection uses SetTextCopyable and clipboard callback; Copy selection appears after selection, History button sits above chat. Native retention expands 50x initial max lines, history is paged in 300-message batches. Move handle below chat, resize grip bottom right; native docking behavior needs verification. Chat history is session-only, not saved across reloads. See ../DESIGN.md for scope/acceptance status.
+
+1.4.2: alphabetized feature tabs (Bestiary, Chat, Field Diary, Remembrance, Workshop). Gear-labelled Settings button directly below Suite header opens shared feature/reference settings; removed Suite settings tab. Stable internal feature IDs preserved.
+
+1.4.3: Chat now focuses on timestamps, native text selection, History, move and resize. Removed People/Add target/mute/notes/level/roster hover controls and associated metadata cache/events/filters. Old person settings are cleared at initialization. Chat settings shortened to 230px with History button. Workshop guild-profession data is separate.
+
+1.4.4: Chat selection/copy toggle (on by default); right-click message editor with full plain-text string, drag selection, Copy button, Ctrl+C and Escape. Native click/motion explicitly enabled; reassert selection setting on enter. Dotted move grip beside resize replaces Move label. History uses opaque FULLSCREEN_DIALOG level 150 above Suite; message editor level 200. Native selection and mouse routing require live verification.
+
+1.5.0: Bestiary type-first/rarity-second sections, complete loot and percentages, reusable scroll rows, explicit close button. Shared dark/light-edge flat-button styling for hub, embedded page text buttons and Bestiary panels. Chat top-right resize and dotted move grip; History shifted left. See reports/UI-REDESIGN-REVIEW.md and UI-REDESIGN-BENCHMARK.json. Native rendering pending.
+
+1.5.1: Bestiary hover shows distinct-item rarity counts only (Legendary, Epic, Rare, Uncommon) and Ctrl-left-click hint. Zero-count tiers omitted; common/poor hidden on hover. Repeated item IDs across sources count once. Expanded loot remains complete.
+
+1.5.2: expanded loot category picker with recipe-prefix/subclass choices, scrollable full category lists instead of arrows, reused item/menu controls. Sources uses FULLSCREEN_DIALOG level 180, above loot level 120. Native item IDs/class/subclass retained in prepared rows. Recipe title prefixes come from actual names; missing metadata is not guessed.
+
+1.5.3: Field Diary records known recipe-ingredient drops from creature loot in a separate reagent category (default on), bypassing gray-only/value thresholds. Shared finite ingredient index works without loading Workshop or DB and is not copied per record. My finds shows quantities, professions and approximate observer cell coordinates; map reagent markers are blue with profession tooltip. /sfd data now opens readable current-zone results. Findings popup is above Suite. Marker switches remain independent. Prior missing drops cannot be reconstructed.
+
+1.5.4: chat item links append Workshop summaries to native ItemRefTooltip on normal left click; Ctrl-left-click expands recipe uses. Non-item/unrelated/disabled links add nothing. Original SetItemRef remains intact through a secure post-hook; per-tooltip duplicate guards keep bag and linked-item summaries independent. Recipe lookup uses existing lazy sections.
+
+1.5.5: Remembrance hover first-seen label says Today or date plus calendar days ago, including leap/year boundaries. No timer or saved-schema change. Includes 1.5.4 chat item-link Workshop summaries/expansion.
+
+1.5.6: Field Diary options preview always uses Stranglethorn Vale (1434) with labelled demonstration finds. No player-zone or saved-find substitution. Map tiles render above the panel backdrop using ARTWORK. Legacy native Stranglethorn tile paths are a fallback; failed textures show an explicit notice and hide markers. Textures and notice are reused. No new timers or observation-data changes.
+
+1.5.7: Remembrance player hover now shows first/last-seen summary plus Ctrl-left-click hint, without older level/location detail lines. Ctrl-left-click another player in world/tooltip/target frame opens saved history; ordinary/self/NPC/disabled paths excluded. History X has explicit hide handler.
+
+1.5.8: removed every addon clipboard API call and disabled native automatic text-copy path. Right-click chat resolves its actual visible message and opens a reusable compact auto-sized selectable popup; whole text selected, Ctrl+C handled by native EditBox, Escape/X closes, resize grip and title drag. Notepad enables one left-click message selection. No claim of automatic clipboard success; no Copy button. History remains separate. Tests reject any shipped Lua CopyToClipboard call.
+
+1.5.9: centered Suite title and compact 92x22 Settings control below it; feature tabs size to their labels (66-126px) and form a centered row with 5px gaps instead of stretching across the panel.
+
+1.5.10: explicitly anchors the message EditBox in its scroll child, enables mouse/keyboard input, raises its input layer above the scroll frame and focuses on click without resetting selection. Normal local editing allowed; Ctrl+C remains native. Native mouse drag/clipboard behavior requires user verification.
+
+1.5.11: Settings gear and custom label centered as a measured group; removed offset template-caption layout. DB temporary allocation experiment: 11.67 MiB before GC vs 5.23 MiB retained for all recipe decoding in Lua mocks, not native attribution; no forced GC added.
+
+1.5.12: Bestiary Sources popup is 400px wide and text-height fitted, with a restrained blue background/light-blue headers. Anchored above its invoking button so the X is away from the cursor. Source descriptions distinguish local, live guild and imported community samples. Reused popup; no timers.
+
+1.5.13: removed Workshop All recipes and Guild professions buttons. Unfiltered opening renders instructions only; removed unrestricted AllRecipes enumerator. Item-specific expansion stays available from bag/profession/chat links. This avoids building the entire recipe-library UI.
+
+1.5.14: Chat Time Zone selector, Add/Remove and clock-tooltip toggle. Defaults Turkiye and New York (label Arda's time); up to eight selected zones. Fixed offsets plus current US/EU seasonal rules, UTC-based conversion independent of PC time zone. Minute-cached rows; native clock tooltip hook only, no new timer/network/background queries. Rules are presets, not a complete historical IANA database. Sources: NIST daylight-saving rules, EU seasonal-time-change guidance, Turkiye DHMI AIP GEN 2.1.
+
+1.5.15: Workshop identifies 188 confirmed crafted reagents by profession while retaining other known sources.
+
+1.5.16 Workshop: replaces World find with Mining, Herbalism, Containers, and Other world objects for 154 source items. Categories use reviewed node names and explicit container words from NorgannonDB object records. An item can have multiple sources. No skinning inference from creature drops. About 5 KB extra Lua lookup data; no per-hover object scan.
+
+1.5.17 Workshop: object sources split into Mining, Herbalism, Fishing, Containers, World pickups and Unclassified objects (missing object names). Added missed mineral nodes and named caches. Hover source summary shows at most three source categories followed by ...; Ctrl-click item window displays the complete source list as individual rows. Merchant and crafted evidence preserved. Source lookup remains finite; no object scans on hover.
+
+## Database packages (1.6.0)
+
+SmyrnaDB is required by Suite and holds shared decoding utilities and the finite reagent/profession index. It contains no bulk recipe or creature references. Disable it and WoW cannot load Suite.
+
+SmyrnaBestiaryDB and SmyrnaWorkshopDB are independent load-on-demand addons with separate AddOns-screen checkboxes, no shared checkbox Group, and no dependency on each other. Disabling either leaves the corresponding Suite feature and personal observations available, but removes that reference database. Internal reference-data toggles remain additional filters. Enabling/disabling packages takes effect after reload; newly installed addon folders may require restarting WoW.
+
+SmyrnaRemembranceDB is an optional per-character saved-history package (SmyrnaRemembranceData). Its non-LoD startup store loads before Suite through OptionalDeps, avoiding a dependency cycle. When absent/disabled, Remembrance does not start; other features continue. History files are not deleted. An enabled store adopts legacy SmyrnaRemembranceDB by reference on first initialization, then clears the old Suite variable. Suite retains its old SavedVariables declaration for migration. Enable this package once and reload before expecting legacy records to stop loading from the old Suite save file. Disabling before migration preserves the legacy variable; no data is silently discarded. Existing destination history always wins over stale legacy data.
+
+Stored history is personal data, not a reference catalogue. This split does not impose a new history cap. Emoty remains standalone.
+
+Tests: 33 simulated scripts, including disabled packages, dependency declarations and saved-history adoption. Actual AddOns-screen load order/reload and account-specific history migration still require in-game verification. Memory report: reports/DB-SPLIT-MEMORY.json. Reference package bulk blocks are disjoint. Core/shared index moved out of Suite, so compare whole-Suite totals when assessing memory.
+
+1.6.2 Field Diary world-map fix: replaces XML/native AcquirePin path with up to 64 pooled frames parented directly to the map canvas, explicitly layered above map art. Refreshes on opening, zone/map changes, zoom, canvas resize and saved-data changes. Small colored markers with counts; optional area rings retained. Normalized positions use native canvas scaling convention. Existing map/minimap preferences and saved finds preserved. No extra repeating timer. /sfd diagnose now includes displayed map ID, eligible groups, drawn count and display reason. Native visual confirmation remains pending.
+Regression: diary_map.py checks saved groups produce shown markers at expected anchors/layer, zoom correction, map switching, close/reopen, disabled visibility, and no frame growth after 100 redraws. 34/34 test scripts pass under simulated APIs.
+
+1.6.3 Chat: removes the notepad/armed-left-click button beside History. Right-click selectable editor remains. History button/title/tooltip show configured retention. Chat settings offer 10x, 50x (default), 100x relative to each frame's pre-Smyrna native message limit, applied immediately to all installed frames, persisted in Chat settings. Switching values does not compound the multiplier; repeat installation is idempotent. Session-only messages; native lower-limit truncation cannot be undone. No additional chat-copy buffer or timer. 34/34 simulated tests pass including retention changes, invalid values and removed button.
+
+1.6.4 Chat retention: adds 1000x alongside 10x/50x/100x; default remains50x. Each option tooltip gives a full-buffer memory estimate; selected setting displays range, message capacity and number of tracked windows. Estimates sum original per-window limits and use rounded700-1050bytes/message from native PackageEntry/CircularBuffer code tested under Lua5.1 with unique80/180/400byte messages and3numeric extra arguments. Estimates exclude engine/render memory, may overcount shared interned strings across windows, and are not a hard upper bound for long messages or unusually large metadata. No large allocation is added by this estimator, no polling, no extra message copies. History still session-only. Report: reports/CHAT-RETENTION-MEMORY.json. 34/34 simulated tests pass, including128000message capacity at1000x for128base and estimate arithmetic.
+
+1.6.5: display name Smyrna Lightweight Addon Suite; stable addon folder IDs and saved-variable names retained. History button is History; tooltip reads "50x retention. Change: Chat > History retention." with the current selected multiplier.
+
+1.6.6 Bestiary details: Loot and Matchups tabs in the existing creature window, opened through Ctrl+left-click. Matchups lists Fire, Frost, Nature, Arcane, Holy and Shadow defenses, with physical armor/immunity separately; no additions to native hover tooltip. Damage-school guidance supports20damage-oriented spec profiles; mixed schools remain mixed, armor is not compared numerically with magic resistance, zero is not a vulnerability, and missing values remain unknown. Classic records obey the existing Classic toggle. Evidence carries scope/source/build. This is damage-type suitability, not a simulated DPS/class/tank/healer ranking.
+Coverage: zero verified creature-defense records bundled so far (Bestiary DB Defenses.lua intentionally empty). Live pages therefore show Unknown and no supported recommendation until a sourced defense import exists. No fictional mob facts or test fixtures shipped. Tests use synthetic records only. 35/35 simulated scripts pass including school classification, source filtering, no hover additions, tab/reset/close, and100switches with no frame growth. Matchup page built once on first open, no combat polling or timers.
+
+1.6.7 Remembrance history: no popup for zero saved snapshots; an existing popup closes instead of showing stale data. Width fits measured entries within380-560px; height fits summary and entry text, grows to560px (or available screen height), then scrolls. Returning to short history shrinks the reused window. No history truncation or storage changes. 36/36 simulated scripts pass including empty/no allocation, short/long sizing, shrink/reuse.
+
+0.9.8 Remembrance shared-activity timeline: stops NEW daily position snapshots while preserving legacy history and first/last seen. Detailed history now lists dated dungeon/raid visits, reported dungeon completions, successful boss kills, battleground participation/completion, and mutually confirmed quest turn-ins. No ten-entry activity cap. Meaningful repeated events keep their dates. Instance visits are not labeled clears. Requires group membership and same-instance position evidence or a locally visible unit when coordinates are unavailable. Session dedup persists across reload, resets on leaving/changing instance. Completion requires supported client events; unsupported events are safely skipped.
+Quests: both players must have this version with Confirm quests enabled; exchange quest IDs on PARTY/RAID/INSTANCE_CHAT only. Both must turn in the same quest within10minutes while grouped. Sender resolved against current roster; no GUIDs supplied by messages trusted. Incoming pending buffer capped256. No guild/global broadcast, no historical reconstruction. Activities and quest confirmation have separate toggles. First seen and player records remain GUID keyed; per-player activity log is one packed string and titles shared in a dictionary. No polling timers. Current tests: work/test_remembrance_activities.py and reports/REMEMBRANCE-ACTIVITIES-TESTS.json. Former full-suite test sources were absent after workspace cleanup, so no claim of rerunning those tests for this release. All runtime Lua syntax and TOC references validated. Native dungeon/BG/two-client verification remains pending.
+
+0.9.9 Field Diary: Worth at least is a reusable dropdown with Any value, 1/5/10/25/50 silver, 1/5 gold. Threshold applies to per-item vendor value for gray loot only; reagents/gathering unaffected. Validated finite option values; one lazy menu, reused across80tested selections. Remembrance activities tests also pass; all Lua syntax and TOC references checked.
+
+0.9.10 Bestiary: imports4399known creatures' base resistance, school-immunity mask and positive armor facts from CMaNGOS Classic1.12. Always marked Classic reference, never Forever verified; existing Classic estimates toggle applies. Replaces empty defense catalogue with129734bytes Lua source (~488KiB retained Lua heap in test),128entry bounded lazy decode cache. Zero armor is omitted because it can mean server-derived armor. Negative resistance retained as a number, not a fabricated extra-damage percentage. Source/GPL attribution and importer snapshot hash included.
+Matchups detail shows only sourced rows and nonempty recommendation groups. No Unknown/placeholder lists. Creatures without evidence have no Matchups tab. Native hover now includes only the current player's class/spec schools (Holy/physical for Ret, Frost for Frost Mage, etc.), cached on talent/spec/spell changes; no talent scans on hover. Reports immunity, positive/negative/zero base resistance and known armor, with Classic label. Missing values produce no hint; no fictional vulnerabilities. Modern spec API, legacy talent-tab fallback, class-school fallback when no dominant spec. Pure damage-school suitability; not a DPS ranking and does not model level/gear/poison/bleed/phase immunity mechanics.
+Tests: work/test_player_matchups.py checks imported masks/values, no placeholder text, player filtering, zero not weakness, Classic toggle, absent creature, bounded decode eviction. Remembrance activity regressions also pass. No claim of native hover verification yet.
+
+0.9.11 Chat History: replaces the overlapping message-row list plus bottom edit box with one multiline native EditBox as the sole scroll child. Text selection across messages and Ctrl+C remain native; no clipboard API calls. Both textbox and scroll frame handle mouse-wheel scrolling with clamped bounds; scroll bar and caret scrolling remain. Height reflows for wrapping and uses at least the viewport size. Clicking only focuses, preserving partial selections. Each page loads at most300messages; Older/Newer retain bounded access to1000xretention. Opening/paging resets scrolling after focus/highlight callbacks. X/Escape clears copied text/focus and source reference. Opening History hides the single-message editor, and vice versa. No per-row controls, duplicate text area, new timers or saved-data changes.
+Tests: work/test_chat_history_editor.py and reports/CHAT-HISTORY-EDITOR-TESTS.json cover empty/1/301/650message boundaries, exact page contents, wheel/cursor bounds, wrapping, partial-selection focus behavior, cleanup, editor exclusivity and100cycles with no new controls. Native mouse selection and OS Ctrl+C still need in-game confirmation.
+
+0.9.12: fixes all3reviewed correctness defects: guild reception no longer stops at2000; personal hit comparisons are applied to guild rows; disabled tracking still clears exited instance sessions. Guild schema2 migrates old windows into packed build/context/difficulty/NPC totals with per-item hits and loot-window denominator, preserving guild/build partitions. Counts keep growing without a lifetime event cap; only8192recentGUIDs retained for cross-player duplicate rejection. A replay older than that bounded horizon can be counted again: exact forever dedup would require unbounded IDs. No relaying imported aggregates as new player samples. Tested100000uniquewindows oneNPC/item:851.37KiB retained in Lua simulation, not native client memory. All Remembrance activity dates remain unchanged.
+Bestiary uses class labels/schools (Paladin/Mage/etc), no unreliable highest-tree spec labels. Hover omits normal0values and shows only relevant resistances, immunities, vulnerabilities; armor/all schools stay detailed. Full Classic source label remains.
+Performance first pass: sightings no longer invalidate loot tables for unrelated mobs; per-mob own window count plus loot revision keys. Workshop unchanged learned scans preserve recipe objects and avoid reindex; per-recipe blocks measured incrementally instead of repeated prefix concatenation. Remaining review proposals (Remembrance paging/chunks, deeper DB/layout restructuring) are not claimed implemented in this release.
+Workshop adds72named quest-recipe sources from NorgannonDB rewardOf (previous importer checked nonexistent quests field), retaining existing trainer/vendor/drop sources. ProwlerSteak spell1225758 uses item238645 mapping and Wowhead quest89253 MainCourse, explicitly labeled ClassicSoD source; not confirmed Forever availability. Source: https://www.wowhead.com/classic/quest=89253/main-course . No browser access at game runtime. Tests work/test_release_0912.py, work/test_aggregation_fixes.py, work/test_workshop_optimization.py; existing Remembrance/Diary tests run through those fixtures. Native UI still needs player confirmation.

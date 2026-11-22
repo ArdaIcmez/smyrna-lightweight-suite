@@ -1,0 +1,4 @@
+Creature template resistance/immunity/armor facts derived from CMaNGOS classic-db, GPL-3.0.
+https://github.com/cmangos/classic-db
+Full_DB/ClassicDB_1_12_1_z2815.sql.gz, commit28ef6259c782928b08a8dc9cacf6bc02e64f2b29.
+This is Classic 1.12 baseline data, not measured Forever data. Zero armor may be server-derived; omitted. Scripted/phase-based defenses may differ. Original Smyrna importer and bounded lazy decoder.

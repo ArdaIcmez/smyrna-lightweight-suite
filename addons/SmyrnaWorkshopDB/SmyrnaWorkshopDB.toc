@@ -1,0 +1,12 @@
+## Interface: 16000, 16001
+## Category: Smyrna
+## Group: SmyrnaSuite
+## Title: Smyrna Workshop DB
+## Notes: Optional Workshop reference data. Disable here to skip this database.
+## Version: 0.9.28
+## Dependencies: SmyrnaSuite
+## LoadOnDemand: 1
+ItemSources.lua
+Blocks.lua
+RecipeAcquisition.lua
+QuestRecipeSources.lua
