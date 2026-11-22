@@ -32,3 +32,7 @@ User reports autoloot succeeds while mouse hover/manual loot fails. This does no
 ## 0.9.30.2 history scrolling
 
 History now uses the native UIPanelScrollFrameTemplate and a plain mouse-enabled EditBox, as tested successfully in isolated configuration 3. Removed cursor/focus scrolling and typing-triggered geometry changes. Mouse wheel handlers clamp offset; Top/Bottom/Page up/Page down remain. Users can select and Ctrl+C; no restricted clipboard calls. Simulated scrolling/paging/text-preservation tests pass, native history confirmation pending.
+
+## 0.9.30.3 player-relative defenses
+
+Armor calculations use the player level and Classic armor/(armor+400+85*attackerLevel), capped 75%, supported by CMaNGOS mangos-classic Unit::CalcArmorReducedDamage. Estimates are explicitly not verified Forever formula/current debuffed armor. Same-level/rank Classic reference quartiles classify armor low/typical/high (minimum ten comparison records). The UI uses the current UnitDamage or Hunter UnitRangedDamage for an estimated normal-hit range. UnitAttackBothHands skill is compared with creature-level*5 estimated defense when available, without inventing an exact miss rate. Weapon skill does not change armor mitigation. Mages only see Arcane/Fire/Frost status; no melee/armor section. No-resistance, resistant, immune and known vulnerabilities are shown only for the current class damage schools.
