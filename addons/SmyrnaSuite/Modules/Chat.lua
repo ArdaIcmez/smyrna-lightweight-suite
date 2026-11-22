@@ -117,9 +117,6 @@ local function CreateCopyWindow()
     frame:SetClampedToScreen(true)
     frame:SetMovable(true)
     frame:EnableMouse(true)
-    local drag=CreateFrame("Button",nil,frame);drag:SetPoint("TOPLEFT",0,0);drag:SetSize(260,32);drag:RegisterForDrag("LeftButton")
-    drag:SetScript("OnDragStart",function() frame:StartMoving() end)
-    drag:SetScript("OnDragStop",function() frame:StopMovingOrSizing() end)
     Suite.StylePanel(frame)
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 16, -14);title:SetWidth(260);title:SetMaxLines(1)
@@ -128,7 +125,12 @@ local function CreateCopyWindow()
     help:SetPoint("TOPLEFT", 16, -40)
     help:SetText("Select text, then Ctrl+C. Ctrl+A selects this page. Escape closes.")
     frame.close=Suite.CloseButton(frame)
-    local scroll,edit = Suite.CreateChatTextViewport(frame)
+    -- Native configuration 3 selected successfully in the five-way in-game test.
+    local scroll=CreateFrame("ScrollFrame",nil,frame,"UIPanelScrollFrameTemplate")
+    local edit=CreateFrame("EditBox",nil,scroll)
+    edit:SetMultiLine(true);edit:SetAutoFocus(false);edit:SetFontObject(ChatFontNormal);edit:SetMaxLetters(0)
+    edit:EnableMouse(true);edit:SetFrameLevel(scroll:GetFrameLevel()+2)
+    scroll:SetScrollChild(edit);edit:SetPoint("TOPLEFT",scroll,"TOPLEFT",0,0)
     scroll:SetPoint("TOPLEFT", 16, -65)
     scroll:SetPoint("BOTTOMRIGHT", -34, 16)
     local measure=frame:CreateFontString(nil,"BACKGROUND","ChatFontNormal");measure:Hide()
@@ -145,7 +147,6 @@ local function CreateCopyWindow()
     -- re-highlighting here would destroy a partial or cross-message selection.
     -- Let the native EditBox own focus, caret and drag selection.
     edit:SetScript("OnEscapePressed",function() frame:Hide() end)
-    edit:SetScript("OnTextChanged",Reflow)
     scroll:SetScript("OnSizeChanged",Reflow)
     local function Wheel(_,delta)
         local current,maximum=scroll:GetVerticalScroll(),scroll:GetVerticalScrollRange()
@@ -155,15 +156,8 @@ local function CreateCopyWindow()
     end
     scroll:EnableMouseWheel(true);edit:EnableMouseWheel(true)
     scroll:SetScript("OnMouseWheel",Wheel);edit:SetScript("OnMouseWheel",Wheel)
-    edit:SetScript("OnCursorChanged",function(_,_,y,_,height)
-        local offset=scroll:GetVerticalScroll()
-        if type(offset)~="number" or type(y)~="number" or type(height)~="number" then return end
-        local position=-y;local visible=scroll:GetHeight()
-        if position<offset then scroll:SetVerticalScroll(math.max(0,position))
-        elseif type(visible)=="number" and position+height>offset+visible then
-            scroll:SetVerticalScroll(position+height-visible)
-        end
-    end)
+    -- No focus/caret-driven scrolling: those callbacks can undo wheel scrolling
+    -- and interfere with mouse selection. Reflow only when a page/size changes.
     frame:SetScript("OnHide",function()
         edit:ClearFocus();edit:SetText("");measure:SetText("")
         frame.source=nil;frame.offset=nil
@@ -225,7 +219,6 @@ local function Copy(index,sourceFrame,offset)
     copyWindow:Show()
     copyWindow.edit:SetText(table.concat(lines,"\n"))
     copyWindow.Reflow()
-    copyWindow.edit:SetFocus()
     -- No automatic selection: native mouse drag and Ctrl+A own highlighting.
     -- Focusing can move the native caret; open the page at the top.
     copyWindow.scroll:SetVerticalScroll(0)

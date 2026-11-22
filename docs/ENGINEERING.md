@@ -27,4 +27,8 @@ Mock tests cover logic/layout calls and cannot establish engine hit testing, OS 
 
 ## 0.9.30.1 loot-input hotfix
 
-User reports autoloot succeeds while mouse hover/manual loot fails. This does not establish a single root cause. Added a shared active-loot/loot-owner guard: Workshop does not augment item tooltips or hook item owners during looting; Bestiary does not augment tooltips then. Opening loot closes Suite dialogs that could cover the loot window. Original Blizzard loot scripts are never replaced. Mock checks verify owner/ancestor rejection, original click retention and dialog closure; native confirmation is pending. Unfinished Upgrader changes are excluded from this release.
+User reports autoloot succeeds while mouse hover/manual loot fails. This does not establish a single root cause. Added a shared active-loot/loot-owner guard: Workshop does not augment item tooltips or hook item owners during looting; Bestiary does not augment tooltips then. Opening loot closes Suite dialogs that could cover the loot window. Original Blizzard loot scripts are never replaced. Mock checks verify owner/ancestor rejection, original click retention and dialog closure; owner confirmed native loot hover/clicks work. Unfinished Upgrader changes are excluded from this release.
+
+## 0.9.30.2 history scrolling
+
+History now uses the native UIPanelScrollFrameTemplate and a plain mouse-enabled EditBox, as tested successfully in isolated configuration 3. Removed cursor/focus scrolling and typing-triggered geometry changes. Mouse wheel handlers clamp offset; Top/Bottom/Page up/Page down remain. Users can select and Ctrl+C; no restricted clipboard calls. Simulated scrolling/paging/text-preservation tests pass, native history confirmation pending.
