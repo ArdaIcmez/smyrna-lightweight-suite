@@ -120,4 +120,3 @@ import urllib.request
 (notice/'VMANGOS-GPL-2.0.txt').write_bytes(urllib.request.urlopen('https://raw.githubusercontent.com/vmangos/core/development/LICENSE').read())
 manifest={'source':meta,'files':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in cache.glob('*.json')},'equipment':len(records),'with_sources':len(byitem),'source_rows':sum(map(len,byitem.values())),'lua_bytes':len(text.encode()),'dungeon_names':sorted(dungeons),'raid_names_excluded':sorted(raids)}
 (dest/'MANIFEST.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8');print(json.dumps({k:manifest[k] for k in ['equipment','with_sources','source_rows','lua_bytes']}))
-

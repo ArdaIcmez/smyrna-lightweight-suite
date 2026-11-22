@@ -51,4 +51,3 @@ for n in [100000,1000000]:
  r['remembrance'].append({'players':n,'retained_MiB':round((after-before)/1024,3),'bytes_per_player':round((after-before)*1024/n,1),'build_ms':round(ms,2),'lookup_100k_ms':round(lookup,2),'scope':'Actual PackRecord and unique keys; no activities, histories, UI or other indexes.'})
  l.execute('records=nil;collectgarbage("collect")')
 out=ROOT/'reports/PERFORMANCE-2026-11-22.json';out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(r,indent=2));print(json.dumps(r,indent=2))
-
