@@ -24,3 +24,7 @@ Everloot provides licensed observed Forever data through documented APIs; data c
 
 ## Testing and release truthfulness
 Mock tests cover logic/layout calls and cannot establish engine hit testing, OS clipboard, protected actions or actual native rendering. Record user-confirmed gameplay distinctly. Preserve previous ZIPs/manifests for rollback. Make no guarantees of complete recipes, complete loot, exact spawn coordinates or verified current resistances where sources do not establish them.
+
+## 0.9.30.1 loot-input hotfix
+
+User reports autoloot succeeds while mouse hover/manual loot fails. This does not establish a single root cause. Added a shared active-loot/loot-owner guard: Workshop does not augment item tooltips or hook item owners during looting; Bestiary does not augment tooltips then. Opening loot closes Suite dialogs that could cover the loot window. Original Blizzard loot scripts are never replaced. Mock checks verify owner/ancestor rejection, original click retention and dialog closure; native confirmation is pending. Unfinished Upgrader changes are excluded from this release.

@@ -854,6 +854,7 @@ function NS.MobClick(unit,button)
     local id=C.NPC(guid);if id then NS.OpenDrops(id) end
 end
 local function AddTooltip(tooltip)
+    if Suite.IsLootInteraction and Suite.IsLootInteraction(tooltip.GetOwner and tooltip:GetOwner()) then return end
     if not NS.DB or not NS.DB.settings.enabled or not NS.DB.settings.tooltip then return end
     local _,unit=tooltip:GetUnit()
     if not C.Public(unit) or type(unit)~="string" then return end

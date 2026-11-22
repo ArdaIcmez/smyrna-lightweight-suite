@@ -2,13 +2,14 @@
 ## Title: Smyrna Lightweight Addon Suite - Main Core
 ## Group: SmyrnaSuite
 ## Notes: Chat, Diary, Bestiary, Workshop and Remembrance in one addon.
-## Version: 0.9.30
+## Version: 0.9.30.1
 ## Category: Smyrna
 ## LoadSavedVariablesFirst: 1
 ## Dependencies: Blizzard_MapCanvas
 ## SavedVariables: SmyrnaChatDB, SmyrnaFieldDiaryDB, SmyrnaBestiaryDB
 ## SavedVariablesPerCharacter: SmyrnaSuiteDB, SmyrnaWorkshopDB, SmyrnaEmotyDB, SmyrnaRemembranceDB
 Bootstrap.lua
+LootInteraction.lua
 Database.lua
 DatabaseReagents.lua
 ReagentProfessions.lua
