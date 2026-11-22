@@ -2,7 +2,7 @@
 ## Title: Smyrna Lightweight Addon Suite - Main Core
 ## Group: SmyrnaSuite
 ## Notes: Chat, Diary, Bestiary, Workshop and Remembrance in one addon.
-## Version: 0.9.28
+## Version: 0.9.29
 ## Category: Smyrna
 ## LoadSavedVariablesFirst: 1
 ## Dependencies: Blizzard_MapCanvas
@@ -17,6 +17,7 @@ ChatTextViewport.lua
 Modules/Chat.lua
 ChatSelection.lua
 ChatMessageEditor.lua
+ChatSelectionTest.lua
 ChatTimeZones.lua
 Modules/FieldDiary.lua
 DiaryDataColors.lua

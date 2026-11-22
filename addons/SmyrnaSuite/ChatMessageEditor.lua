@@ -9,6 +9,7 @@ local function Reflow()
  editor.edit:SetWidth(width);editor.edit:SetHeight(math.max(36,editor.measure:GetStringHeight()+12));editor.scroll:UpdateScrollChildRect()
 end
 function Chat.OpenMessageEditor(owner,text)
+ if Chat.OpenSelectionTest then return Chat.OpenSelectionTest(owner,text) end
  if not Chat.GetDB().directCopy or not Chat.Core.Readable(text) or text=='' then return end
  if Chat.CloseHistory then Chat.CloseHistory() end
  local plain=Chat.Core.Plain(text)
