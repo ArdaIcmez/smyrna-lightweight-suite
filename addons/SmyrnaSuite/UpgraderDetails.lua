@@ -42,7 +42,7 @@ function U.RenderStatus(message,slot,id)
  for _,row in ipairs(rows) do row:Hide() end
  subtitle:SetText('Upgrade recommendations');status:SetText(message);status:Show()
  profileButton:SetShown(message:find('profile',1,true)~=nil)
- footer:SetText('Ctrl + Shift while hovering character gear shows the source circles.');scan:SetEnabled(false)
+ footer:SetText('Ctrl while hovering character gear shows the source circles.');scan:SetEnabled(false)
  panel.canvas:SetHeight(180);panel.scroll:UpdateScrollChildRect()
 end
 local function OpenPanel()
@@ -89,6 +89,7 @@ local function OpenPanel()
  UISpecialFrames[#UISpecialFrames+1]='SmyrnaUpgraderDetails';U.Details=panel;U.DetailRows=rows
 end
 function U.OpenDetails(slot,id,owner,sourceFilter)
+ if U.HideSources then U.HideSources() end
  OpenPanel()
  panel.sourceFilter=sourceFilter
  request={slot=slot,id=id or tonumber((GetInventoryItemLink('player',slot) or ''):match('item:(%d+)'))}

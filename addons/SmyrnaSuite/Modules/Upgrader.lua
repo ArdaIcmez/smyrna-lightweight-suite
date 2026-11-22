@@ -17,7 +17,13 @@ local hoverOwner,hoverSlot
 local function Safe(value) return not (issecretvalue and issecretvalue(value)) end
 local function Number(value) return Safe(value) and type(value)=='number' and value==value end
 function U.Invalidate() results={};serial=serial+1;busy=nil;if U.HideSources then U.HideSources() end;if U.RenderStatus then U.RenderStatus('Character data changed. Ctrl + left-click the slot again to refresh.') end end
-function U.ActivationDown() return IsControlKeyDown and IsControlKeyDown() and IsShiftKeyDown and IsShiftKeyDown() end
+function U.ActivationDown() return IsControlKeyDown and IsControlKeyDown() end
+local function Reveal(frame,slot)
+ if not cfg.enabled then return end
+ if U.BeginSources then U.BeginSources(frame,slot) end
+ local _,reason=U.Hover(frame,slot)
+ if reason and U.SourceStatus then U.SourceStatus(reason) end
+end
 function U.Profile()
  local _,_,class=UnitClass('player');if not Number(class) then return nil,'Your class is not available yet.' end
  local spec=type(cfg.profile)=='string' and tonumber(cfg.profile:match('^local:(%d+)$'))
@@ -134,7 +140,7 @@ local function Scan(owner,slot,hoveredID,tooltip)
   busy=nil
   results[slot]={key=key,profile=profile,context=context,rows=best,ranked=ranked,rankedAH=rankedAH,groups=groups,pending=pending,slot=slot,baseID=id,baseName=row and row.name or 'Empty slot'}
   U.LastResult=results[slot];if U.RenderDetails then U.RenderDetails(results[slot]) end
-  if not hoveredID and U.ShowSources and ((hoverOwner==owner and hoverSlot==slot) or (tip:IsShown() and tip:GetOwner()==owner)) then U.ShowSources(owner,slot,results[slot]) end
+  if not hoveredID and U.ShowSources and ((hoverOwner==owner and hoverSlot==slot) or (U.SourceMatches and U.SourceMatches(owner,slot)) or (tip:IsShown() and tip:GetOwner()==owner)) then U.ShowSources(owner,slot,results[slot]) end
   if tip:IsShown() and tip:GetOwner()==owner then
    tip:ClearLines();tip:SetOwner(owner,'ANCHOR_RIGHT')
    U.Refreshing=true
@@ -181,6 +187,7 @@ local function Scan(owner,slot,hoveredID,tooltip)
   if not ok and token==serial then
    busy=nil;serial=serial+1;U.LastError=tostring(err)
    if U.RenderStatus then U.RenderStatus('Upgrade scan stopped: '..U.LastError,slot,id) end
+   if U.SourceStatus then U.SourceStatus('Upgrade scan stopped. Click a circle for details.') end
    Notice(tip,'Upgrade scan stopped. Open ranked upgrades for the error details.')
   end
  end
@@ -196,7 +203,10 @@ local function HookSlots()
  for label,slot in pairs(slots) do
   local b=_G['Character'..label..'Slot']
   if b and not b.smyrnaUpgrader then
-   b.smyrnaUpgrader=true;b:HookScript('OnEnter',function(self) hoverOwner,hoverSlot=self,slot;if U.ActivationDown() then U.Hover(self,slot) end end)
+   b.smyrnaUpgrader=true;b:HookScript('OnEnter',function(self)
+    if U.SourcesOwnMouse and U.SourcesOwnMouse() then return end
+    hoverOwner,hoverSlot=self,slot;if U.ActivationDown() then Reveal(self,slot) end
+   end)
    b:HookScript('OnLeave',function(self) if hoverOwner==self then hoverOwner,hoverSlot=nil,nil end;if U.HideSourcesSoon then U.HideSourcesSoon() end end)
    b:HookScript('OnMouseUp',function(self,button) if button=='LeftButton' and IsControlKeyDown() then U.OpenDetails(slot,nil,self) end end)
   end
@@ -209,9 +219,9 @@ function U.Open()
   panel.SuiteCloseButton=S.CloseButton(panel)
   local title=panel:CreateFontString(nil,'OVERLAY','GameFontNormalLarge');title:SetPoint('TOPLEFT',20,-20);title:SetText('Upgrader')
   local help=panel:CreateFontString(nil,'OVERLAY','GameFontHighlight');help:SetPoint('TOPLEFT',20,-55);help:SetWidth(655);help:SetJustifyH('LEFT')
-  help:SetText('Press C, then hold Ctrl + Shift while hovering equipped gear to show Dungeon, Quest and AH circles. Ctrl + left-click opens ranked details.\n\nNo Pawn dependency. Select the profile you want; automatic selection reads talent points, never spell usage.\n\nPercentages are stat-score changes, not DPS or healing predictions. Weapons keep the same one-hand/two-hand configuration.')
+  help:SetText('Press C, then hold Ctrl while hovering equipped gear to show Dungeon, Quest and AH circles. Ctrl + left-click opens ranked details.\n\nNo Pawn dependency. Select the profile you want; automatic selection reads talent points, never spell usage.\n\nPercentages are stat-score changes, not DPS or healing predictions. Weapons keep the same one-hand/two-hand configuration.')
   local enabled=CreateFrame('CheckButton',nil,panel,'UICheckButtonTemplate');enabled:SetPoint('TOPLEFT',18,-210);enabled:SetChecked(cfg.enabled)
-  local label=enabled:CreateFontString(nil,'OVERLAY','GameFontHighlight');label:SetPoint('LEFT',enabled,'RIGHT',0,0);label:SetText('Enable Ctrl + Shift gear-hover upgrades')
+  local label=enabled:CreateFontString(nil,'OVERLAY','GameFontHighlight');label:SetPoint('LEFT',enabled,'RIGHT',0,0);label:SetText('Enable Ctrl gear-hover upgrades')
   enabled:SetScript('OnClick',function(self) cfg.enabled=not not self:GetChecked();U.Invalidate() end)
   local classic=CreateFrame('CheckButton',nil,panel,'UICheckButtonTemplate');classic:SetPoint('TOPLEFT',18,-242);classic:SetChecked(cfg.classic)
   local ct=classic:CreateFontString(nil,'OVERLAY','GameFontHighlight');ct:SetPoint('LEFT',classic,'RIGHT',0,0);ct:SetText('Include labelled Classic source / estimated item references')
@@ -231,14 +241,14 @@ function U.Open()
    cfg.profile=choices[index%#choices+1].key;U.Invalidate();Refresh()
   end)
   panel:SetScript('OnShow',Refresh)
-  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Ctrl + Shift reveals the circles; hover a circle for a scrollable list.\nEquipment DB is optional; source coverage, quest access and special effects are incomplete.')
+  local status=panel:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');status:SetPoint('TOPLEFT',20,-355);status:SetWidth(655);status:SetJustifyH('LEFT');status:SetText('Ctrl reveals the circles; hover a circle for a scrollable list.\nEquipment DB is optional; source coverage, quest access and special effects are incomplete.')
  end
  panel:Show();return panel
 end
 local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('MODIFIER_STATE_CHANGED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE');pcall(driver.RegisterEvent,driver,'SKILL_LINES_CHANGED');pcall(driver.RegisterEvent,driver,'SPELLS_CHANGED')
-driver:SetScript('OnEvent',function(_,event)
+driver:SetScript('OnEvent',function(_,event,key,state)
  if event=='MODIFIER_STATE_CHANGED' then
-  if hoverOwner and U.ActivationDown() then U.Hover(hoverOwner,hoverSlot) end
+  if (not key or ((key=='LCTRL' or key=='RCTRL') and state==1)) and hoverOwner and U.ActivationDown() then Reveal(hoverOwner,hoverSlot) end
  elseif event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then HookSlots()
  else U.Invalidate() end
 end)

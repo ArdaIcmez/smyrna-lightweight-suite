@@ -1,62 +1,105 @@
 local _,S=...
 local U=S.Modules.SmyrnaUpgrader;if not U then return end
--- One reusable source dock, three buttons and one pooled dropdown. No polling.
-local dock,menu,owner,slot,revision
-local kinds={{'Dungeon','Dungeon','Interface\\Icons\\INV_Misc_Key_03'},{'Quest','Quest','Interface\\GossipFrame\\AvailableQuestIcon'},{'AH','Auction House','Interface\\Icons\\INV_Misc_Coin_01'}}
+local dock,menu,owner,slot,revision= nil,nil,nil,nil,0
+local ticker,lastInside
+local media='Interface\\AddOns\\SmyrnaSuite\\Media\\'
+local kinds={{'Dungeon','Dungeon','Interface\\Icons\\INV_Misc_Key_03'},{'Quest','Quest','Interface\\GossipFrame\\AvailableQuestIcon'},{'AH','AH','Interface\\Icons\\INV_Misc_Coin_01'}}
+local function Now() return GetTime and GetTime() or time() end
+local function Over(frame) return frame and frame:IsShown() and MouseIsOver and MouseIsOver(frame) end
+function U.SourcesOwnMouse() return dock and dock:IsShown() and (Over(dock) or Over(menu)) end
+function U.SourceMatches(frame,equipmentSlot) return dock and dock:IsShown() and owner==frame and slot==equipmentSlot end
+local function Inside() return U.SourcesOwnMouse() or Over(owner) end
+local function Stay() revision=revision+1;lastInside=Now() end
 local function Leave()
  local token=revision
- C_Timer.After(.2,function()
-  if token~=revision then return end
-  if MouseIsOver and (MouseIsOver(dock) or MouseIsOver(menu) or (owner and MouseIsOver(owner))) then return end
-  if dock then dock:Hide() end
+ C_Timer.After(.65,function()
+  if token==revision and dock and dock:IsShown() and not Inside() then dock:Hide() end
  end)
+end
+local function Track()
+ if ticker or not MouseIsOver or not C_Timer.NewTicker then return end
+ -- Ten cheap geometry checks/second only while this popup is visible. This
+ -- covers scrollbar descendants and the travel gap, which have their own mouse focus.
+ ticker=C_Timer.NewTicker(.1,function()
+  if Inside() then lastInside=Now()
+  elseif Now()-(lastInside or 0)>=.65 then dock:Hide() end
+ end)
+end
+local function Populate(reset)
+ local state=dock.state;local filter=menu.filter
+ local rows=state and (filter=='AH' and state.rankedAH or state.groups[filter]) or {}
+ for i,b in ipairs(menu.rows) do
+  b.candidate=rows[i]
+  b:SetText(rows[i] and (i..'. '..rows[i].row.name) or (dock.status or 'No eligible upgrade found'))
+  b:SetEnabled(rows[i]~=nil);b:SetShown(rows[i]~=nil or i==1)
+ end
+ menu.canvas:SetHeight(math.max(28,#rows*28));menu.scroll:UpdateScrollChildRect()
+ menu.scroll:SetVerticalScroll(reset and 0 or math.min(menu.scroll:GetVerticalScroll(),menu.scroll:GetVerticalScrollRange()))
 end
 local function Ensure()
  if dock then return end
- dock=CreateFrame('Frame','SmyrnaUpgradeSources',UIParent);dock:SetSize(96,30);dock:SetFrameStrata('TOOLTIP');dock:SetFrameLevel(210)
- menu=CreateFrame('Frame',nil,dock,'BackdropTemplate');menu:SetSize(334,240);menu:SetPoint('TOPLEFT',dock,'BOTTOMLEFT',0,-2);S.StylePanel(menu);menu:Hide()
- menu.title=menu:CreateFontString(nil,'OVERLAY','GameFontNormal');menu.title:SetPoint('TOPLEFT',8,-8)
- local scroll=CreateFrame('ScrollFrame',nil,menu,'UIPanelScrollFrameTemplate');scroll:SetPoint('TOPLEFT',8,-29);scroll:SetSize(298,200)
- local canvas=CreateFrame('Frame',nil,scroll);canvas:SetSize(294,280);scroll:SetScrollChild(canvas);menu.scroll,menu.canvas=scroll,canvas
- scroll:EnableMouseWheel(true);scroll:SetScript('OnMouseWheel',function(_,delta) scroll:SetVerticalScroll(math.max(0,math.min(scroll:GetVerticalScrollRange(),scroll:GetVerticalScroll()-delta*28))) end)
- menu.rows={}
- dock.buttons={}
+ dock=CreateFrame('Frame','SmyrnaUpgradeSources',UIParent,'BackdropTemplate');dock:SetSize(158,66);dock:SetFrameStrata('TOOLTIP');dock:SetFrameLevel(210);dock:SetClampedToScreen(true);dock:EnableMouse(true)
+ S.StylePanel(dock)
+ menu=CreateFrame('Frame',nil,dock,'BackdropTemplate');menu:SetSize(334,252);menu:SetPoint('TOPLEFT',dock,'BOTTOMLEFT',0,0);menu:SetClampedToScreen(true);menu:EnableMouse(true);S.StylePanel(menu);menu:Hide()
+ menu.title=menu:CreateFontString(nil,'OVERLAY','GameFontNormal');menu.title:SetPoint('TOPLEFT',8,-9)
+ local scroll=CreateFrame('ScrollFrame',nil,menu,'UIPanelScrollFrameTemplate');scroll:SetPoint('TOPLEFT',8,-32);scroll:SetSize(298,210);scroll:EnableMouse(true)
+ local canvas=CreateFrame('Frame',nil,scroll);canvas:SetSize(294,280);canvas:EnableMouse(true);scroll:SetScrollChild(canvas);menu.scroll,menu.canvas=scroll,canvas
+ scroll:EnableMouseWheel(true);scroll:SetScript('OnMouseWheel',function(_,delta) Stay();scroll:SetVerticalScroll(math.max(0,math.min(scroll:GetVerticalScrollRange(),scroll:GetVerticalScroll()-delta*28))) end)
+ menu.rows={};dock.buttons={}
  for i=1,10 do
   local b=CreateFrame('Button',nil,canvas,'UIPanelButtonTemplate');b:SetSize(294,25);b:SetPoint('TOPLEFT',0,-(i-1)*28);S.StyleButton(b);b.smyrnaUpgradeRow=true
-  b:SetScript('OnClick',function() local filter=menu.filter;U.OpenDetails(slot,nil,owner,filter);dock:Hide() end)
-  b:SetScript('OnEnter',function(self) if self.candidate then GameTooltip:SetOwner(self,'ANCHOR_RIGHT');GameTooltip:SetHyperlink('item:'..self.candidate.row.id);GameTooltip:Show() end end)
-  b:SetScript('OnLeave',function() GameTooltip:Hide();Leave() end)
-  menu.rows[i]=b
+  b:SetScript('OnClick',function() U.OpenDetails(slot,nil,owner,menu.filter);dock:Hide() end)
+  b:SetScript('OnEnter',function(self) Stay();if self.candidate then GameTooltip:SetOwner(self,'ANCHOR_RIGHT');GameTooltip:SetHyperlink('item:'..self.candidate.row.id);GameTooltip:Show() end end)
+  b:SetScript('OnLeave',function() GameTooltip:Hide();Leave() end);menu.rows[i]=b
  end
  for i,entry in ipairs(kinds) do
   local key,title,icon=unpack(entry)
-  local b=CreateFrame('Button',nil,dock);b:SetSize(28,28);b:SetPoint('LEFT',(i-1)*32,0)
-  dock.buttons[i]=b
-  local t=b:CreateTexture(nil,'ARTWORK');t:SetSize(23,23);t:SetPoint('CENTER');t:SetTexture(icon)
-  if b.CreateMaskTexture and t.AddMaskTexture then local mask=b:CreateMaskTexture();mask:SetAllPoints(t);mask:SetTexture('Interface\\CHARACTERFRAME\\TempPortraitAlphaMask');t:AddMaskTexture(mask) end
-  local border=b:CreateTexture(nil,'OVERLAY');border:SetAllPoints();border:SetTexture('Interface\\Minimap\\MiniMap-TrackingBorder')
+  local b=CreateFrame('Button',nil,dock);b:SetSize(44,44);b:SetPoint('TOPLEFT',9+(i-1)*48,-5);dock.buttons[i]=b
+  local bg=b:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints();bg:SetTexture(media..'UpgradeCircle')
+  local t=b:CreateTexture(nil,'ARTWORK');t:SetSize(32,32);t:SetPoint('CENTER');t:SetTexture(icon)
+  if b.CreateMaskTexture and t.AddMaskTexture then local mask=b:CreateMaskTexture();mask:SetAllPoints(t);mask:SetTexture(media..'UpgradeMask');t:AddMaskTexture(mask) end
+  local caption=b:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');caption:SetPoint('TOP',b,'BOTTOM',0,-2);caption:SetText(title)
   b:SetScript('OnClick',function() U.OpenDetails(slot,nil,owner,key);dock:Hide() end)
   b:SetScript('OnEnter',function()
-   revision=revision+1;menu.filter=key;menu.title:SetText(title)
-   local state=dock.state;local rows=state and (key=='AH' and state.rankedAH or state.groups[key]) or {}
-   for j,row in ipairs(menu.rows) do row.candidate=rows[j];row:SetText(rows[j] and (j..'. '..rows[j].row.name) or 'No eligible upgrade found');row:SetEnabled(#rows>0);row:SetShown(rows[j]~=nil or j==1) end
-   menu.canvas:SetHeight(math.max(28,#rows*28));menu.scroll:SetVerticalScroll(0);menu.scroll:UpdateScrollChildRect()
-   menu:Show()
+   Stay();local changed=menu.filter~=key;menu.filter=key;menu.title:SetText(title=='AH' and 'Auction House' or title);Populate(changed);menu:Show()
   end)
   b:SetScript('OnLeave',Leave)
  end
- menu:SetScript('OnLeave',Leave);dock:SetScript('OnLeave',Leave)
- dock:SetScript('OnHide',function() revision=revision+1;menu:Hide();dock.state=nil end)
+ for _,f in ipairs({dock,menu,scroll,canvas}) do f:SetScript('OnEnter',Stay);f:SetScript('OnLeave',Leave) end
+ dock:SetScript('OnHide',function()
+  revision=revision+1;if ticker then ticker:Cancel();ticker=nil end
+  menu:Hide();dock.state=nil;dock.status=nil;GameTooltip:Hide()
+ end)
  U.SourceDock,U.SourceMenu=dock,menu
  if CharacterFrame and CharacterFrame.HookScript then CharacterFrame:HookScript('OnHide',function() dock:Hide() end) end
 end
+local function Position(frame)
+ dock:ClearAllPoints()
+ if frame.GetEffectiveScale and UIParent.GetEffectiveScale then dock:SetScale(frame:GetEffectiveScale()/UIParent:GetEffectiveScale()) end
+ local x=frame.GetCenter and frame:GetCenter();local center=CharacterFrame and CharacterFrame.GetCenter and CharacterFrame:GetCenter()
+ local name=frame.GetName and frame:GetName()
+ local right=x and center and x>center
+ if not x or not center then right=name and (name:find('Finger') or name:find('Trinket') or name:find('Waist') or name:find('Legs') or name:find('Feet') or name:find('Hands')) end
+ -- Place into the model side of the column, not on the next equipment button.
+ dock:SetPoint(right and 'TOPRIGHT' or 'TOPLEFT',frame,right and 'BOTTOMLEFT' or 'BOTTOMRIGHT',right and -4 or 4,0)
+end
+function U.BeginSources(frame,equipmentSlot)
+ if (U.Details and U.Details:IsShown()) or (S.IsLootInteraction and S.IsLootInteraction(frame)) then return end
+ Ensure()
+ if owner~=frame then menu:Hide();dock.state=nil end
+ owner,slot=frame,equipmentSlot;dock.status='Checking upgrades...';Position(frame);Stay();dock:Show();Track()
+end
+function U.SourceStatus(message)
+ if dock and dock:IsShown() then dock.status=message;if menu:IsShown() then Populate(false) end end
+end
 function U.ShowSources(frame,equipmentSlot,state)
- if not state or (S.IsLootInteraction and S.IsLootInteraction(frame)) then return end
- if U.Details and U.Details:IsShown() then return end
- Ensure();revision=(revision or 0)+1;owner,slot=frame,equipmentSlot;dock.state=state
- dock:ClearAllPoints();dock:SetPoint('TOPLEFT',frame,'BOTTOMLEFT',0,-2);dock:Show()
+ if not state or (S.IsLootInteraction and S.IsLootInteraction(frame)) or (U.Details and U.Details:IsShown()) then return end
+ Ensure()
+ if owner~=frame then menu:Hide() end
+ owner,slot=frame,equipmentSlot;dock.state=state;dock.status=nil;Position(frame);Stay();dock:Show();Track()
+ if menu:IsShown() then Populate(false) end
 end
 function U.HideSourcesSoon() if dock then Leave() end end
 function U.HideSources() if dock then dock:Hide() end end
 local driver=CreateFrame('Frame');driver:RegisterEvent('LOOT_OPENED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
-driver:SetScript('OnEvent',function() if dock then dock:Hide() end end)
+driver:SetScript('OnEvent',function() U.HideSources() end)

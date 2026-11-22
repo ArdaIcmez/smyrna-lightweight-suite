@@ -95,13 +95,13 @@ GetTalentTabInfo=function(i) return 60+i,'Tree','Description',123,i==3 and 20 or
 assert(u.Profile().key=='2:3')
 ''')
 
-    def test_ctrl_shift_hover_and_stationary_modifier_press(self):
+    def test_ctrl_hover_and_stationary_modifier_press(self):
         self.l.execute('''
 local u=Suite.Modules.SmyrnaUpgrader;local owner=CreateFrame('Button','CharacterChestSlot');GameTooltip:SetOwner(owner)
-local shift=false;IsShiftKeyDown=function() return shift end
+local ctrl=false;IsControlKeyDown=function() return ctrl end;IsShiftKeyDown=function() return false end
 u.Driver.scripts.OnEvent(nil,'PLAYER_LOGIN')
 owner.scripts.OnEnter(owner);assert(#timers==0 and not u.SourceDock)
-shift=true;u.Driver.scripts.OnEvent(nil,'MODIFIER_STATE_CHANGED');RunTimers()
+ctrl=true;u.Driver.scripts.OnEvent(nil,'MODIFIER_STATE_CHANGED','LCTRL',1);RunTimers()
 assert(u.SourceDock:IsShown() and u.SourceDock.anchor[2]==owner)
 owner.scripts.OnLeave(owner);RunTimers();assert(not u.SourceDock:IsShown())
 ''')

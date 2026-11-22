@@ -56,6 +56,7 @@ function CreateFrame(kind,name,parent,template)
  function f:SetColorTexture(...) self.color={...} end
  function f:SetTexture(path) self.texture=path end
  function f:EnableMouseWheel(enabled) self.wheel=enabled end
+ function f:EnableMouse(enabled) self.mouse=enabled end
  function f:CreateTexture() return CreateFrame('Texture',nil,self) end
  function f:CreateFontString() return CreateFrame('FontString',nil,self) end
  function f:GetStringWidth() return #self.text*7 end

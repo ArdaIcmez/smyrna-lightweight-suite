@@ -36,7 +36,7 @@ Read docs/STORAGE.md before changing data formats, ownership or caches. The 0.9.
 
 ## Queue regression rules
 - Upgrader automatic profiles must support namespace-only Forever specialization APIs (pointsSpent return 7) and the deprecated shim (return 5), not just the old return-3 layout. Test the automatic saved preference, not only a hardcoded manual profile. Missing prerequisites and asynchronous failures must terminate the detail-window loading state visibly.
-- Upgrader source circles activate on Ctrl+Shift character hover or a modifier press while stationary over a slot. Ordinary hover does no upgrade scan. Do not derive paired ring/trinket slots from the generic item type when the character button already identifies the slot.
+- Upgrader source circles activate on Ctrl character hover or a Ctrl press while stationary over a slot; Shift is not required. Ordinary hover does no upgrade scan. Use the popup's whole hover family, not only individual circle/row leave events, when deciding to close. Do not derive paired ring/trinket slots from generic item type when the character button identifies the slot.
 - LootFrame/LootButton owners and ancestors bypass Workshop/Bestiary/Upgrader augmentation; LOOT_OPENED hides Suite dialogs. Never override Blizzard loot clicks. Owner confirmed this fix in 0.9.30.1.
 - History uses InputScrollFrameTemplate with native text/cursor/update handlers, one selectable buffer, no page/top/bottom controls and no forced focus/caret on open. Automated checks cannot prove native mouse selection.
 - Bestiary defenses use player class/level. Mage gets Fire/Frost/Arcane without melee information; Hunter uses ranged damage/skill. Armor mitigation remains a labelled Classic estimate.
