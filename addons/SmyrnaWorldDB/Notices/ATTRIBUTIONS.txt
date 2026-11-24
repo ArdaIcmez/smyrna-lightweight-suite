@@ -1,0 +1,22 @@
+SmyrnaWorldDB - Upstream Data & Asset Attributions
+==================================================
+
+SmyrnaWorldDB is a compiled, TOC-backed reference package for WoW Forever (client 16001)
+assembled from the following upstream community datasets and projects:
+
+1. QuestieDB (Questie Project)
+   - Scope: Classic & Forever quest metadata, NPC spawn coordinates, quest-item drop
+     sources, world object coordinates, zone area-to-uiMapID tables, and quest XP tables.
+   - License: GNU General Public License v3.0 (GPL-3.0).
+
+2. pfQuest (Shagu / pfQuest contributors)
+   - Scope: Supplemental Classic entity/spawn reference data cross-referenced in QuestieDB.
+   - License: MIT License.
+
+3. ForeverDungeonJournal
+   - Scope: Classic & WoW Forever dungeon/boss/rare listings, dungeon quest rewards,
+     encounter IDs, entrance coordinates, and custom Forever interior dungeon map layouts.
+   - Attribution preserved for all ForeverDungeonJournal contributors.
+
+All compiled data is stored read-only in SmyrnaWorldDB.toc and loaded on demand by
+SmyrnaSuite (WorldDB.lua).

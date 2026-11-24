@@ -19,7 +19,8 @@ function A.Group()
  for i=1,math.min(count,40) do
   local unit=(raid and 'raid' or 'party')..i
   local guid=UnitGUID(unit)
-  if Public(guid) and type(guid)=='string' and guid:match('^Player%-%d+%-%x+$') and not (UnitIsUnit and UnitIsUnit(unit,'player')) then
+  local sameMe=UnitIsUnit and UnitIsUnit(unit,'player')
+  if Public(guid) and type(guid)=='string' and guid:match('^Player%-%d+%-%x+$') and not (Public(sameMe) and sameMe) then
    local first,last=UnitFullName(unit);local name=Suite.PlayerName(Text(first),Text(last))
    if name then result[#result+1]={unit=unit,guid=guid,key='P:'..guid,name=name,first=first} end
   end
@@ -36,6 +37,7 @@ function A.Add(person,kind,id,title,stamp)
   local level=UnitLevel and UnitLevel(person.unit);if not Number(level,1000) then level=nil end
   db.records[person.key]=R.PackRecord(person.name,stamp*1000,0,level,nil)
   R.Count=R.Count+1
+  if R.EnforceCap then R.EnforceCap() end
  end
  local catalog=kind..':'..id
  db.activityNames[catalog]=title
@@ -46,7 +48,7 @@ end
 local function Instance()
  if not GetInstanceInfo then return end
  local name,kind,difficulty,_,_,_,_,id=GetInstanceInfo()
- if not Text(name) or not Number(id,10000000) or (kind~='party' and kind~='raid' and kind~='pvp') then return end
+ if not Text(name) or not Public(kind) or not Number(id,10000000) or (kind~='party' and kind~='raid' and kind~='pvp') then return end
  return {name=name,kind=kind,id=id,difficulty=Number(difficulty,10000) and difficulty or 0}
 end
 local function SameInstance(unit)
@@ -124,8 +126,9 @@ function A.Receive(prefix,message,channel,sender)
  if not Text(sender) or not Public(message) or type(message)~='string' or #message>24 or message:find('[%c]') then return false end
  local id=tonumber(message:match('^Q|(%d+)$'));if not Number(id,10000000) then return false end
  local match
+ local short=sender:match('^([^-]+)')
  for _,person in ipairs(A.Group()) do
-  if sender==person.name or sender==person.first then if match then return false end;match=person end
+  if sender==person.name or sender==person.first or (short and (short==person.name or short==person.first)) then if match then return false end;match=person end
  end
  if not match then return false end
  Prune()
@@ -135,27 +138,99 @@ function A.Receive(prefix,message,channel,sender)
  Confirm(match,id)
  return true
 end
-function A.Lines(key)
- local packed=R.DB.activities and R.DB.activities[key]
- if type(packed)~='string' and type(packed)~='table' then return {} end
- local groups={D={},C={},E={},B={},W={},Q={}}
- local count=0
+local activitySections={{'D','Dungeons / raids together'},{'C','Dungeon completions confirmed'},{'E','Bosses defeated together'},{'B','Battlegrounds together'},{'W','Battlegrounds completed'}}
+
+function A.Summary(key)
+ local packed=R.DB and R.DB.activities and R.DB.activities[key]
+ local out={dgCount=0,bgCount=0,questCount=0,bossCount=0,total=0,dungeons={},bgs={}}
+ if type(packed)~='string' and type(packed)~='table' then return out end
+ local dgMap,bgMap,dgOrder,bgOrder={},{},{},{}
+ local cCount,wCount=0,0
  for entry in Suite.EventLog.Entries(packed) do
   local kind,id,stamp=entry:match('^([DCEBWQ]),(%d+),(%d+)$')
   id,stamp=tonumber(id),tonumber(stamp)
   if Number(id,10000000) and Number(stamp,10000000000) then
    local title=R.DB.activityNames[kind..':'..id] or (kind=='Q' and ('Quest #'..id) or ('Activity #'..id))
-   groups[kind][#groups[kind]+1]=R.Format(stamp*1000)..'  -  '..title;count=count+1
+   if kind=='D' then
+    out.dgCount=out.dgCount+1
+    if not dgMap[title] then dgMap[title]=0; dgOrder[#dgOrder+1]=title end
+    dgMap[title]=dgMap[title]+1
+   elseif kind=='C' then
+    cCount=cCount+1
+    if not dgMap[title] then dgMap[title]=0; dgOrder[#dgOrder+1]=title end
+    if dgMap[title]==0 then dgMap[title]=1 end
+   elseif kind=='E' then
+    out.bossCount=out.bossCount+1
+   elseif kind=='B' then
+    out.bgCount=out.bgCount+1
+    if not bgMap[title] then bgMap[title]=0; bgOrder[#bgOrder+1]=title end
+    bgMap[title]=bgMap[title]+1
+   elseif kind=='W' then
+    wCount=wCount+1
+    if not bgMap[title] then bgMap[title]=0; bgOrder[#bgOrder+1]=title end
+    if bgMap[title]==0 then bgMap[title]=1 end
+   elseif kind=='Q' then
+    out.questCount=out.questCount+1
+   end
+  end
+ end
+ if out.dgCount==0 and cCount>0 then out.dgCount=cCount end
+ if out.bgCount==0 and wCount>0 then out.bgCount=wCount end
+ for i=#dgOrder,1,-1 do
+  local nm=dgOrder[i]
+  out.dungeons[#out.dungeons+1]={name=nm,count=dgMap[nm]}
+ end
+ for i=#bgOrder,1,-1 do
+  local nm=bgOrder[i]
+  out.bgs[#out.bgs+1]={name=nm,count=bgMap[nm]}
+ end
+ out.total=out.dgCount+out.bgCount+out.questCount
+ return out
+end
+
+function A.FormatNamedList(items,maxShow)
+ if type(items)~='table' or #items==0 then return '' end
+ local parts={}
+ local limit=math.min(#items,maxShow or 6)
+ for i=1,limit do
+  local it=items[i]
+  parts[#parts+1]=it.count>1 and (it.name..' x'..it.count) or it.name
+ end
+ if #items>limit then parts[#parts+1]='+'..(#items-limit)..' more' end
+ return table.concat(parts,', ')
+end
+
+function A.Lines(key)
+ local packed=R.DB.activities and R.DB.activities[key]
+ if type(packed)~='string' and type(packed)~='table' then return {},0 end
+ local groups={D={},C={},E={},B={},W={}}
+ local questCount,count=0,0
+ for entry in Suite.EventLog.Entries(packed) do
+  local kind,id,stamp=entry:match('^([DCEBWQ]),(%d+),(%d+)$')
+  id,stamp=tonumber(id),tonumber(stamp)
+  if Number(id,10000000) and Number(stamp,10000000000) then
+   count=count+1
+   if kind=='Q' then
+    questCount=questCount+1
+   elseif groups[kind] then
+    local title=R.DB.activityNames[kind..':'..id] or ('Activity #'..id)
+    groups[kind][#groups[kind]+1]=R.Format(stamp*1000)..'  -  '..title
+   end
   end
  end
  local lines={}
- for _,section in ipairs({{'D','Dungeons / raids visited together'},{'C','Dungeon completions confirmed'},{'E','Bosses defeated together'},{'B','Battlegrounds entered together'},{'W','Battlegrounds completed together'},{'Q','Quests completed together'}}) do
+ for _,section in ipairs(activitySections) do
   local rows=groups[section[1]]
   if #rows>0 then
    if #lines>0 then lines[#lines+1]='' end
    lines[#lines+1]=Suite.UIText(section[2],'heading')
    for i=#rows,1,-1 do lines[#lines+1]=rows[i] end
   end
+ end
+ if questCount>0 then
+  if #lines>0 then lines[#lines+1]='' end
+  lines[#lines+1]=Suite.UIText('Quests completed together','heading')
+  lines[#lines+1]=questCount..(questCount==1 and ' quest completed together' or ' quests completed together')
  end
  return lines,count
 end
@@ -178,10 +253,16 @@ driver:SetScript('OnEvent',function(_,event,...)
  end
  if event=='QUEST_TURNED_IN' then A.Quest(...)
  elseif event=='CHAT_MSG_ADDON' then A.Receive(...)
- elseif event=='LFG_COMPLETION_REWARD' then A.Complete('C')
- elseif event=='ENCOUNTER_END' then local id,name,_,_,success=...;if success==1 and Number(id,10000000) and Text(name) then A.Complete('E',id,name) end
- elseif event=='PVP_MATCH_COMPLETE' then A.Complete('W')
+ elseif event=='LFG_COMPLETION_REWARD' then A.Complete('C');if R.DB and R.DB.activitySession then R.DB.activitySession.finished=true end
+ elseif event=='ENCOUNTER_END' then local id,name,_,_,success=...;if Public(success) and success==1 and Number(id,10000000) and Text(name) then A.Complete('E',id,name) end
+ elseif event=='PVP_MATCH_COMPLETE' then A.Complete('W');if R.DB and R.DB.activitySession then R.DB.activitySession.finished=true end
  elseif event=='UPDATE_BATTLEFIELD_STATUS' then
-  local winner=GetBattlefieldWinner and GetBattlefieldWinner();if Public(winner) and (winner==0 or winner==1) then A.Complete('W') else A.Scan() end
+  local winner=GetBattlefieldWinner and GetBattlefieldWinner();if Public(winner) and (winner==0 or winner==1) then A.Complete('W');if R.DB and R.DB.activitySession then R.DB.activitySession.finished=true end else A.Scan() end
+ elseif event=='PLAYER_ENTERING_WORLD' then
+  local isLogin,isReload=...
+  if Public(isLogin) and Public(isReload) and not isLogin and not isReload and R.DB and R.DB.activitySession and R.DB.activitySession.finished then
+   R.DB.activitySession=nil
+  end
+  Prune();A.Scan()
  else Prune();A.Scan() end
 end)

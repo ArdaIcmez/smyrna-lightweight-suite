@@ -2,33 +2,32 @@
 ## Title: Smyrna Lightweight Addon Suite - Main Core
 ## Group: SmyrnaSuite
 ## Notes: Chat, Diary, Bestiary, Workshop and Remembrance in one addon.
-## Version: 0.9.35
+## Version: 0.9.36
 ## Category: Smyrna
 ## LoadSavedVariablesFirst: 1
 ## Dependencies: Blizzard_MapCanvas
 ## SavedVariables: SmyrnaChatDB, SmyrnaFieldDiaryDB, SmyrnaBestiaryDB, SmyrnaMarketDB
-## SavedVariablesPerCharacter: SmyrnaSuiteDB, SmyrnaWorkshopDB, SmyrnaEmotyDB, SmyrnaRemembranceDB
+## SavedVariablesPerCharacter: SmyrnaSuiteDB, SmyrnaWorkshopDB, SmyrnaRemembranceDB
 Bootstrap.lua
 Compatibility.lua
 Storage.lua
 LootInteraction.lua
 Database.lua
 DatabaseReagents.lua
-ReagentProfessions.lua
+WorldDB.lua
 Style.lua
 Equipment.lua
 PrivateScoring/PawnScore.lua
-ChatTextViewport.lua
 Modules/Chat.lua
 ChatSelection.lua
 ChatMessageEditor.lua
-ChatSelectionTest.lua
 ChatTimeZones.lua
 Modules/FieldDiary.lua
 DiaryDataColors.lua
+DiaryGuild.lua
+DiaryManager.lua
 Modules/Bestiary.lua
 BestiaryMatchups.lua
-BestiaryPlayerMatchups.lua
 BestiaryDefenseImpact.lua
 Modules/Workshop.lua
 WorkshopSources.lua
@@ -37,28 +36,21 @@ BestiaryGuild.lua
 Modules/Remembrance.lua
 RemembranceActivities.lua
 Modules/Upgrader.lua
-AuctioneerQuotes.lua
 Market.lua
+Modules/MarketUI.lua
+Modules/Journal.lua
+Modules/Quests.lua
+Modules/AggroMate.lua
+Modules/Bagger.lua
 UpgraderDetails.lua
 UpgraderSources.lua
 Suite.lua
+Benchmark.lua
 VersionCheck.lua
+Tutorial.lua
+GuildDiscoveries.lua
+GuildHub.lua
+Taylan.lua
 Hub.lua
 Settings.lua
-
-
-
-
-
-
-
-
-
-
-
-
 AoE.lua
-
-
-
-

@@ -17,3 +17,8 @@ dist/
 __pycache__/
 *.py[cod]
 .venv/
+
+# Personal local image assets
+addons/SmyrnaSuite/Media/Taylan.tga
+addons/SmyrnaSuite/Media/TaylanFrown.tga
+addons/SmyrnaSuite/Media/TaylanSmile.tga

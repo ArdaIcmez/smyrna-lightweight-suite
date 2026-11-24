@@ -4,10 +4,11 @@ local PREFIX="SmyrnaVer1"
 local frame=CreateFrame("Frame")
 local channels={GUILD=true,PARTY=true,RAID=true,INSTANCE_CHAT=true}
 local sent,waiting,notified={},{},{}
-local queued=false
+local queued,guildQueued=false,false
 local epoch=0
 local ownSuite,ownDB
-local function Public(value) return not issecretvalue or not issecretvalue(value) end
+local EVENTS={"PLAYER_ENTERING_WORLD","GROUP_ROSTER_UPDATE","GUILD_ROSTER_UPDATE","CHAT_MSG_ADDON"}
+local Public=Suite.Public or function(value) return not issecretvalue or not issecretvalue(value) end
 local function Parse(value)
     if not Public(value) or type(value)~="string" or #value>17 then return end
     local a,b,c,d=value:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")
@@ -48,6 +49,7 @@ local function Send(kind,channel)
 end
 local function Queue()
     if queued or Suite.Config.versionChecks==false or not ownSuite then return end
+    if not (C_Timer and C_Timer.After) then return end
     queued=true;local token=epoch
     C_Timer.After(3,function()
         if token~=epoch then return end;queued=false
@@ -71,10 +73,10 @@ function Check.Receive(prefix,message,channel,sender)
     local first,last
     if UnitFullName then first,last=UnitFullName("player") elseif UnitName then first,last=UnitName("player") end
     local ownName=Suite.PlayerName(first,last)
-    if sender==ownName then return end
+    local short=sender:match("^([^-]+)")
+    if (ownName and (sender==ownName or short==ownName)) or (Public(first) and type(first)=="string" and (sender==first or short==first)) then return end
     Notice("Smyrna Lightweight Addon Suite",suite,ownSuite)
-    if ownDB and ownDB~="-" then Notice("Smyrna DB",db,ownDB) end
-    if kind=="Q" and not waiting[channel] then
+    if kind=="Q" and not waiting[channel] and C_Timer and C_Timer.After then
         local key="V"..channel
         if sent[key] and GetTime()-sent[key]<60 then return end
         waiting[channel]=true;local token=epoch
@@ -86,22 +88,28 @@ function Check.Receive(prefix,message,channel,sender)
 end
 function Suite.SetVersionChecks(enabled)
     Suite.Config.versionChecks=not not enabled
-    epoch=epoch+1;queued=false;wipe(waiting)
-    for _,event in ipairs({"PLAYER_ENTERING_WORLD","GROUP_ROSTER_UPDATE","GUILD_ROSTER_UPDATE","CHAT_MSG_ADDON"}) do frame:UnregisterEvent(event) end
+    epoch=epoch+1;queued=false;guildQueued=false;wipe(waiting)
+    for _,event in ipairs(EVENTS) do frame:UnregisterEvent(event) end
     if not enabled then return end
     ownSuite=Metadata(addon);ownDB="-" -- Core is bundled with Suite; retain legacy wire field.
     local register=(C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix) or RegisterAddonMessagePrefix
     if not ownSuite or not register then return end
     local ok,result=pcall(register,PREFIX)
     if not ok or result==false then return end
-    for _,event in ipairs({"PLAYER_ENTERING_WORLD","GROUP_ROSTER_UPDATE","GUILD_ROSTER_UPDATE","CHAT_MSG_ADDON"}) do frame:RegisterEvent(event) end
+    for _,event in ipairs(EVENTS) do frame:RegisterEvent(event) end
     Queue()
 end
 frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent",function(self,event,...)
     if event=="ADDON_LOADED" then
-        if (...)~=addon then return end
+        local loadedName=...
+        if not Public(loadedName) or loadedName~=addon then return end
         self:UnregisterEvent(event);Suite.SetVersionChecks(Suite.Config.versionChecks~=false)
     elseif event=="CHAT_MSG_ADDON" then Check.Receive(...)
+    elseif event=="GUILD_ROSTER_UPDATE" then
+        if guildQueued then return end
+        guildQueued=true;Queue()
+    elseif event=="PLAYER_ENTERING_WORLD" then
+        guildQueued=false;Queue()
     else Queue() end
 end)

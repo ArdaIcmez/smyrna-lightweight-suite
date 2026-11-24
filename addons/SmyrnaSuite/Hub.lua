@@ -1,14 +1,18 @@
 local _,NS=...
-local hub,content,active,opening,preview
+local hub,content,active,opening,preview,tabWidths,tabTotal
 local pages={}
 local texture="Interface\\AddOns\\SmyrnaSuite\\Media\\Smyrna35"
-local openers={"OpenSettings","OpenOptions","OpenOptions","Open","Open","Open"}
+local openers={"OpenSettings","OpenOptions","OpenOptions","Open","Open","Open","Open","Open","Open","Open","Open"}
 local original={}
 -- Keep stable feature IDs for existing module callers; sort only navigation.
 local tabOrder={}
 for i in ipairs(NS.Features) do tabOrder[#tabOrder+1]=i end
 table.sort(tabOrder,function(a,b) return NS.Features[a][2]<NS.Features[b][2] end)
+tabOrder[#tabOrder+1]=-2 -- Dedicated Guild sharing & live map tab
 NS.TabOrder=tabOrder
+local function TabLabel(tabIndex)
+    return tabIndex==-2 and "Guild" or NS.Features[tabIndex][2]
+end
 for i,entry in ipairs(NS.Features) do
     local module=NS.Modules[entry[1]]
     if module then
@@ -21,31 +25,47 @@ function NS.OpenTab(index)
     if not hub then
         hub=CreateFrame("Frame","SmyrnaSuiteHub",UIParent,"BackdropTemplate")
         hub:SetSize(960,850);hub:SetPoint("CENTER");hub:SetClampedToScreen(true);hub:SetFrameStrata("DIALOG")
-        hub:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=12});hub:SetBackdropColor(.035,.035,.04,.98)
-        local title=hub:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOP",0,-16);title:SetText("Smyrna Lightweight Addon Suite")
-        NS.StylePanel(hub)
-        NS.HeaderStrip(hub);title:SetTextColor(1,.83,.43)
-        local close=NS.CloseButton(hub)
-        content=CreateFrame("Frame",nil,hub);content:SetPoint("TOPLEFT",10,-116);content:SetSize(940,740)
+        hub:SetMovable(true);hub:EnableMouse(true);hub:RegisterForDrag("LeftButton")
+        hub:SetScript("OnDragStart",function(self) if not (InCombatLockdown and InCombatLockdown()) then self:StartMoving() end end)
+        hub:SetScript("OnDragStop",function(self) self:StopMovingOrSizing() end)
+        NS.StylePanel(hub,true)
+        NS.HeaderStrip(hub,44)
+        local emblem=NS.CreateIconTile(hub,26);emblem:SetPoint("TOPLEFT",14,-10);emblem.icon:SetTexture(texture);emblem:SetBackdropBorderColor(.78,.63,.32,.95)
+        local title=hub:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("LEFT",emblem,"RIGHT",10,1);title:SetText("Smyrna Suite");title:SetTextColor(1,.86,.48)
+        local ver=hub:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");ver:SetPoint("LEFT",title,"RIGHT",8,-1);ver:SetText("Lightweight Addon Suite");ver:SetTextColor(.58,.62,.70)
+        local close=NS.CloseButton(hub);close:ClearAllPoints();close:SetPoint("TOPRIGHT",-10,-10)
+        local navStrip=hub:CreateTexture(nil,"BACKGROUND",nil,1)
+        navStrip:SetPoint("TOPLEFT",2,-46);navStrip:SetPoint("TOPRIGHT",-2,-46);navStrip:SetHeight(38);navStrip:SetColorTexture(.042,.048,.065,1)
+        local navRule=hub:CreateTexture(nil,"BORDER",nil,2)
+        navRule:SetPoint("TOPLEFT",navStrip,"BOTTOMLEFT",0,0);navRule:SetPoint("TOPRIGHT",navStrip,"BOTTOMRIGHT",0,0);navRule:SetHeight(1);navRule:SetColorTexture(.25,.28,.36,.75)
+        content=CreateFrame("Frame",nil,hub);content:SetPoint("TOPLEFT",10,-90);content:SetSize(940,740)
         hub.tabs={}
-        local settings=CreateFrame("Button",nil,hub);settings:SetSize(92,22);settings:SetPoint("TOP",0,-42)
-        local gear=settings:CreateTexture(nil,"OVERLAY",nil,1);gear:SetSize(18,18);gear:SetTexture("Interface\\Icons\\INV_Misc_Gear_01")
+        local tutorial=CreateFrame("Button",nil,hub,"UIPanelButtonTemplate");tutorial:SetSize(88,24);tutorial:SetPoint("RIGHT",close,"LEFT",-8,0);tutorial:SetText("|TInterface\\GossipFrame\\AvailableQuestIcon:14:14|t Guide");NS.StyleButton(tutorial)
+        tutorial:SetScript("OnClick",function() NS.OpenTab(-1) end);hub.tabs[-1]=tutorial;hub.tutorialButton=tutorial
+        local settings=CreateFrame("Button",nil,hub);settings:SetSize(92,24);settings:SetPoint("RIGHT",tutorial,"LEFT",-6,0)
+        local gear=settings:CreateTexture(nil,"OVERLAY",nil,2);gear:SetSize(15,15);gear:SetTexture("Interface\\Icons\\INV_Misc_Gear_01");gear:SetTexCoord(.08,.92,.08,.92)
         local caption=settings:CreateFontString(nil,"OVERLAY","GameFontNormal");caption:SetText("Settings")
+        if settings.SetFontString then settings:SetFontString(caption) end
         local captionWidth=caption:GetStringWidth();if type(captionWidth)~="number" then captionWidth=49 end
-        local groupWidth=18+6+captionWidth
+        local groupWidth=15+6+captionWidth
         gear:SetPoint("LEFT",settings,"CENTER",-groupWidth/2,0)
-        caption:SetPoint("LEFT",gear,"RIGHT",6,0)
+        caption:ClearAllPoints();caption:SetPoint("LEFT",gear,"RIGHT",6,0)
         NS.StyleButton(settings);settings:SetScript("OnClick",function() NS.OpenTab(0) end);hub.tabs[0]=settings;hub.settingsButton=settings
         for position,tabIndex in ipairs(tabOrder) do
-            local b=CreateFrame("Button",nil,hub,"UIPanelButtonTemplate");b:SetSize(90,24);b:SetPoint("TOPLEFT",16+(position-1)*132,-77)
-            NS.StyleButton(b);b:SetText(NS.Features[tabIndex][2]);b:SetScript("OnClick",function() NS.OpenTab(tabIndex) end);hub.tabs[tabIndex]=b
+            local b=CreateFrame("Button",nil,hub,"UIPanelButtonTemplate");b:SetSize(96,26);b:SetPoint("TOPLEFT",16+(position-1)*104,-52)
+            NS.StyleButton(b);b:SetText(TabLabel(tabIndex));b:SetScript("OnClick",function() NS.OpenTab(tabIndex) end)
+            local indicator=b:CreateTexture(nil,"OVERLAY",nil,2);indicator:SetPoint("BOTTOMLEFT",2,0);indicator:SetPoint("BOTTOMRIGHT",-2,0);indicator:SetHeight(2);indicator:SetColorTexture(.96,.80,.38,1);indicator:Hide()
+            b.smyrnaTabIndicator=indicator
+            hub.tabs[tabIndex]=b
         end
         UISpecialFrames[#UISpecialFrames+1]="SmyrnaSuiteHub"
     end
     if active then active:Hide() end
     opening=true
     local ok,page
-    if index==0 then ok,page=pcall(NS.OpenOverview)
+    if index==-2 then ok,page=pcall(NS.OpenGuildTab)
+    elseif index==-1 then ok,page=pcall(NS.OpenTutorial)
+    elseif index==0 then ok,page=pcall(NS.OpenOverview)
     elseif original[index] then ok,page=pcall(original[index])
     else
         page=pages[index]
@@ -58,30 +78,43 @@ function NS.OpenTab(index)
     opening=false
     if not ok then error(page) end
     if page then
-        local width=math.max(800,page:GetWidth()+20)
-        local height=page:GetHeight()+130
-        hub:SetSize(width,height);content:SetSize(width-20,page:GetHeight())
-        local widths,total={},0
-        for position,index in ipairs(tabOrder) do
-            local label=hub.tabs[index]:GetFontString()
-            local measured=label and label:GetStringWidth()
-            if type(measured)~="number" then measured=#NS.Features[index][2]*7 end
-            local w=math.max(66,math.min(126,measured+24));widths[position]=w;total=total+w
+        if not tabWidths then
+            tabWidths={};tabTotal=0
+            for position,tabIndex in ipairs(tabOrder) do
+                local label=hub.tabs[tabIndex]:GetFontString()
+                local measured=label and label:GetStringWidth()
+                if type(measured)~="number" then measured=#TabLabel(tabIndex)*7 end
+                local w=math.max(58,math.min(104,measured+16));tabWidths[position]=w;tabTotal=tabTotal+w
+            end
+            tabTotal=tabTotal+(#tabOrder-1)*4
         end
-        total=total+(#tabOrder-1)*5
-        local left=(width-total)/2
-        for position,index in ipairs(tabOrder) do
-            local b=hub.tabs[index];b:SetSize(widths[position],24);b:ClearAllPoints();b:SetPoint("TOPLEFT",left,-77);left=left+widths[position]+5
+        local pw,ph=page:GetWidth() or 920,page:GetHeight() or 600
+        local width=math.max(940,tabTotal+24,pw+20)
+        local height=ph+104
+        hub:SetSize(width,height);content:SetSize(width-20,ph)
+        local left=(width-tabTotal)/2
+        for position,tabIndex in ipairs(tabOrder) do
+            local b=hub.tabs[tabIndex];b:SetSize(tabWidths[position],26);b:ClearAllPoints();b:SetPoint("TOPLEFT",left,-52);left=left+tabWidths[position]+4
         end
-        if UIParent and UIParent.GetHeight then hub:SetScale(math.min(1,(UIParent:GetWidth()-30)/width,(UIParent:GetHeight()-30)/height)) end
+        if UIParent and UIParent.GetHeight then
+            local uw,uh=UIParent:GetWidth(),UIParent:GetHeight()
+            if NS.Public(uw) and NS.Public(uh) and type(uw)=="number" and type(uh)=="number" and uw>60 and uh>60 then
+                hub:SetScale(math.min(1,(uw-30)/width,(uh-30)/height))
+            end
+        end
         if page.SetBackdrop then page:SetBackdrop(nil) end
+        if page.smyrnaInnerLine then page.smyrnaInnerLine:Hide() end
         local close=page.SuiteCloseButton
         if type(close)=="table" or type(close)=="userdata" then close:Hide() end
-        NS.StyleTree(page)
+        if not page.smyrnaTreeStyled then NS.StyleTree(page);page.smyrnaTreeStyled=true end
         pages[index]=page;page:SetParent(content);page:SetScale(1);page:ClearAllPoints();page:SetPoint("TOP",content,"TOP",0,0)
         page:SetMovable(false);page:SetScript("OnDragStart",nil);page:SetScript("OnDragStop",nil);page:Show();active=page
     end
-    for n,b in pairs(hub.tabs) do NS.SetButtonSelected(b,n==index);b:SetEnabled(n~=index) end
+    for n,b in pairs(hub.tabs) do
+        local isCurrent=(n==index)
+        NS.SetButtonSelected(b,isCurrent);b:SetEnabled(not isCurrent)
+        if b.smyrnaTabIndicator then b.smyrnaTabIndicator:SetShown(isCurrent) end
+    end
     hub:Show()
     return page
 end
@@ -109,17 +142,22 @@ local function Launcher()
         if math.atan2 then a=math.atan2(dy,dx) elseif dx~=0 then a=math.atan(dy/dx)+(dx<0 and math.pi or 0) else a=dy>=0 and math.pi/2 or -math.pi/2 end
         config.angle=math.deg(a)%360;Place()
     end
-    b:SetScript("OnDragStart",function() dragging=true;suppress=true;if preview then preview:Hide() end;GameTooltip:Hide();b:SetScript("OnUpdate",Drag) end)
+    b:SetScript("OnDragStart",function()
+        dragging=true;suppress=true;if preview then preview:Hide() end
+        if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then GameTooltip:Hide() end
+        b:SetScript("OnUpdate",Drag)
+    end)
     b:SetScript("OnDragStop",function() Drag();dragging=false;b:SetScript("OnUpdate",nil);C_Timer.After(0,function() suppress=false end) end)
+    b:SetScript("OnHide",function() dragging=false;b:SetScript("OnUpdate",nil) end)
     b:SetScript("OnClick",function() if not dragging and not suppress then if hub and hub:IsShown() then hub:Hide() else NS.Open() end end end)
     b:SetScript("OnEnter",function()
         if dragging then return end
         if not preview then
-            preview=CreateFrame("Frame",nil,b,"BackdropTemplate");preview:SetSize(112,112);preview:SetFrameStrata("TOOLTIP");preview:SetClampedToScreen(true)
-            preview:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=12});preview:SetBackdropColor(.03,.03,.03,.98)
-            local photo=preview:CreateTexture(nil,"ARTWORK");photo:SetPoint("TOP",0,-8);photo:SetSize(45,45);photo:SetTexture(texture)
-            local label=preview:CreateFontString(nil,"OVERLAY","GameFontNormal");label:SetPoint("TOPLEFT",10,-60);label:SetText("Smyrna Lightweight Addon Suite")
-            local hint=preview:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");hint:SetPoint("TOPLEFT",10,-80);hint:SetText("Click to open\nDrag to move")
+            preview=CreateFrame("Frame",nil,b,"BackdropTemplate");preview:SetSize(166,104);preview:SetFrameStrata("TOOLTIP");preview:SetClampedToScreen(true)
+            NS.StylePanel(preview,true)
+            local tile=NS.CreateIconTile(preview,38);tile:SetPoint("TOP",0,-10);tile.icon:SetTexture(texture);tile:SetBackdropBorderColor(.78,.63,.32,.95)
+            local label=preview:CreateFontString(nil,"OVERLAY","GameFontNormal");label:SetPoint("TOP",tile,"BOTTOM",0,-6);label:SetText("Smyrna Suite");label:SetTextColor(1,.86,.48)
+            local hint=preview:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");hint:SetPoint("TOP",label,"BOTTOM",0,-4);hint:SetText("Click to open  -  Drag to move");hint:SetTextColor(.72,.76,.84)
         end
         preview:ClearAllPoints();preview:SetPoint("TOPRIGHT",b,"BOTTOMLEFT",0,-3);preview:Show()
     end)
@@ -127,4 +165,3 @@ local function Launcher()
     Minimap:HookScript("OnSizeChanged",Place);Place()
 end
 local driver=CreateFrame("Frame");driver:RegisterEvent("PLAYER_LOGIN");driver:SetScript("OnEvent",function(self) self:UnregisterEvent("PLAYER_LOGIN");Launcher() end)
-

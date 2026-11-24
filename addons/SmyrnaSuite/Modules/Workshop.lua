@@ -1,6 +1,6 @@
 local _,Suite=...
 local name="SmyrnaWorkshop"
-Suite.Versions[name]="0.2.0"
+Suite.Versions[name]="0.3.0"
 if Suite.Config.features[name]==false then return end
 local Module={}
 Suite.Modules[name]=Module
@@ -8,10 +8,12 @@ Suite.Modules[name]=Module
 -- Internal module source: Core.lua
 do local function chunk(...)
 local _,NS=...
-_G.SmyrnaWorkshop=NS
 local index,counts={},{}
-local usesCache,usesOrder={},{}
+local decodedRecipes={}
+local usesCache,usesRing,usesCursor,USES_CAP={},{},1,64
+local visualCache,visualRing,visualCursor,VISUAL_CAP={},{},1,512
 local references={}
+NS.References=references;NS.Index=index
 NS.ReferenceLoaded={}
 local unavailable={}
 local loadingReferences,referenceDirty=false,false
@@ -19,13 +21,24 @@ local function PackRecipe(r)
  local mats={};for _,m in ipairs(r.mats) do mats[#mats+1]=m[1]..':'..m[2] end
  return table.concat({r.spell or '',r.profession,r.name,table.concat(mats,',')},'\t')
 end
-local function ReadRecipe(value)
+local function ReadRecipe(value,cacheKey)
  if type(value)=='table' then return value end
  if type(value)~='string' then return end
+ if cacheKey and decodedRecipes[cacheKey] then return decodedRecipes[cacheKey] end
  local spell,profession,name,body=value:match('^(%d*)\t([^\t]*)\t([^\t]*)\t(.*)$')
  if not profession then return end
  local mats={};for id,n in body:gmatch('(%d+):(%d+)') do mats[#mats+1]={tonumber(id),tonumber(n)} end
- return {spell=tonumber(spell),profession=profession,name=name,mats=mats,learned=true}
+ local row={spell=tonumber(spell),profession=profession,name=name,mats=mats,learned=true}
+ if cacheKey then decodedRecipes[cacheKey]=row end
+ return row
+end
+local function ReadRef(value)
+ if type(value)=='table' then return value end
+ if type(value)~='string' then return end
+ local spell,profession,name,skill,body=value:match('^(%d*)\t([^\t]*)\t([^\t]*)\t([^\t]*)\t(.*)$')
+ if not profession then return end
+ local mats={};for id,n in body:gmatch('(%d+):(%d+)') do mats[#mats+1]={tonumber(id),tonumber(n)} end
+ return {spell=tonumber(spell),profession=profession,name=name,skill=tonumber(skill),mats=mats}
 end
 NS.PackRecipe,NS.ReadRecipe=PackRecipe,ReadRecipe
 function NS.Init()
@@ -45,7 +58,8 @@ function NS.ID(link)
 end
 function NS.Reindex()
     wipe(index)
-    wipe(usesCache);wipe(usesOrder)
+    wipe(decodedRecipes)
+    wipe(usesCache);wipe(usesRing);usesCursor=1
     local keys,seen={},{}
     for key,value in pairs(NS.DB.recipes) do
         if type(value)=='table' then NS.DB.recipes[key]=PackRecipe(value) end
@@ -59,13 +73,27 @@ function NS.Reindex()
         end
     end
     for _,key in ipairs(keys) do
-        local r=ReadRecipe(NS.DB.recipes[key])
+        local r=ReadRecipe(NS.DB.recipes[key],key)
         if r then
-        seen[r.spell or (r.profession..":"..r.name)]=true;seen[r.profession..":"..r.name]=true;Add(r,key)
+            seen[r.spell or (r.profession..":"..r.name)]=true;seen[r.profession..":"..r.name]=true;Add(r,key)
         end
     end
     for _,r in ipairs(references) do
-        if not seen[r.spell] and not seen[r.profession..":"..r.name] then Add(r) end
+        if type(r)=="string" then
+            local spell,profession,rname,_,matStr=r:match("^(%d*)\t([^\t]*)\t([^\t]*)\t([^\t]*)\t(.*)$")
+            local spellNum=spell and tonumber(spell)
+            if profession and not (spellNum and seen[spellNum]) and not seen[profession..":"..rname] then
+                for matID in matStr:gmatch("(%d+):%d+") do
+                    local id=tonumber(matID)
+                    if id then
+                        local list=index[id];if not list then list={};index[id]=list end
+                        if list[#list]~=r then list[#list+1]=r end
+                    end
+                end
+            end
+        elseif not seen[r.spell] and not seen[r.profession..":"..r.name] then
+            Add(r)
+        end
     end
     wipe(counts)
 end
@@ -75,11 +103,12 @@ function NS.Save(key,profession,name,mats,spell)
         if NS.recipeCount>=3000 then return end
         NS.recipeCount=NS.recipeCount+1
     end
-    local old=ReadRecipe(NS.DB.recipes[key])
+    local old=ReadRecipe(NS.DB.recipes[key],key)
     local same=old and old.profession==profession and old.name==name and old.spell==spell and #old.mats==#mats
     if same then for i,v in ipairs(mats) do if old.mats[i][1]~=v[1] or old.mats[i][2]~=v[2] then same=false;break end end end
     if same then return false end
     NS.DB.recipes[key]=PackRecipe({profession=profession,name=name,mats=mats,spell=spell})
+    decodedRecipes[key]=nil
     NS.ScanDirty=true;return true
 end
 function NS.Invalidate() wipe(counts) end
@@ -116,17 +145,28 @@ function NS.EnsureReference(id)
     if referenceDirty then referenceDirty=false;NS.Reindex() end
     return notice
 end
+function NS.HasUses(id) return index[id]~=nil end
 function NS.Uses(id)
  if usesCache[id] then return usesCache[id] end
  if not index[id] then return end
  local rows={}
  for _,value in ipairs(index[id]) do
-  local row=type(value)=='table' and value or ReadRecipe(NS.DB.recipes[value])
+  local row
+  if type(value)=='table' then row=value
+  elseif NS.DB.recipes[value] then row=ReadRecipe(NS.DB.recipes[value],value)
+  else row=ReadRef(value) end
   if row then rows[#rows+1]=row end
  end
- usesCache[id]=rows;usesOrder[#usesOrder+1]=id
- if #usesOrder>12 then usesCache[table.remove(usesOrder,1)]=nil end
+ local evicted=usesRing[usesCursor]
+ if evicted then usesCache[evicted]=nil end
+ usesRing[usesCursor]=id;usesCursor=usesCursor%USES_CAP+1
+ usesCache[id]=rows
  return rows
+end
+function NS.ClearCaches()
+ wipe(usesCache);wipe(usesRing);usesCursor=1
+ wipe(decodedRecipes);wipe(counts)
+ wipe(visualCache);wipe(visualRing);visualCursor=1
 end
 function NS.Known(r)
     if r.learned then return true end
@@ -137,7 +177,7 @@ function NS.Known(r)
 end
 function NS.Ready(r)
     local times=math.huge
-    for _,v in ipairs(r.mats) do times=math.min(times,math.floor(NS.Count(v[1])/v[2])) end
+    for _,v in ipairs(r.mats) do if v[2] and v[2]>0 then times=math.min(times,math.floor(NS.Count(v[1])/v[2])) end end
     return times==math.huge and 0 or times
 end
 local function SortRecipes(rows)
@@ -160,9 +200,76 @@ function NS.ItemName(id)
     local fn=C_Item and C_Item.GetItemInfo or GetItemInfo
     local name=fn and fn(id)
     if NS.Public(name) and type(name)=="string" then return name end
-    local gear=Suite.Equipment and Suite.Equipment.Get(id)
+    local gear=Suite.Equipment and Suite.Equipment.records and Suite.Equipment.Get(id,true)
     return gear and gear.name or ("Item #"..id)
 end
+function NS.ItemVisual(id)
+    if not NS.Public(id) or type(id)~="number" then return nil,nil end
+    local get=C_Item and C_Item.GetItemInfo or GetItemInfo
+    local quality,icon
+    if get then
+        local name,_,q,_,_,_,_,_,_,tex=get(id)
+        if NS.Public(name) and type(name)=="string" then
+            if NS.Public(q) and type(q)=="number" then quality=q end
+            if NS.Public(tex) and tex then icon=tex end
+        end
+    end
+    if not icon and C_Item and C_Item.GetItemIconByID then
+        local tex=C_Item.GetItemIconByID(id)
+        if NS.Public(tex) and tex then icon=tex end
+    end
+    if quality==nil and Suite.Equipment and Suite.Equipment.records then
+        local gear=Suite.Equipment.Get(id,true)
+        if gear and type(gear.quality)=="number" then quality=gear.quality end
+    end
+    return icon,quality
+end
+function NS.RecipeVisual(r,pendingItems)
+    local key=r.spell or (r.profession..":"..r.name)
+    local cached=visualCache[key]
+    if cached and (cached.resolved or (cached.quality~=nil and cached.icon)) then return cached.icon,cached.quality,cached.itemID end
+    local icon,quality,itemID=cached and cached.icon,cached and cached.quality,cached and cached.itemID
+    local waiting=false
+    if r.spell and not itemID and C_TradeSkillUI and C_TradeSkillUI.GetRecipeSchematic then
+        local ok,schema=pcall(C_TradeSkillUI.GetRecipeSchematic,r.spell,false)
+        if ok and type(schema)=="table" then
+            if NS.Public(schema.outputItemID) and type(schema.outputItemID)=="number" and schema.outputItemID>0 then itemID=schema.outputItemID end
+            if not icon and NS.Public(schema.icon) and schema.icon then icon=schema.icon end
+        end
+    end
+    if itemID then
+        local iIcon,iQuality=NS.ItemVisual(itemID)
+        if iIcon then icon=iIcon end
+        if iQuality~=nil then quality=iQuality
+        elseif pendingItems then
+            waiting=true
+            pendingItems[itemID]=true
+            if C_Item and C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(itemID) end
+        end
+    elseif type(r.name)=="string" and r.name~="" then
+        local get=C_Item and C_Item.GetItemInfo or GetItemInfo
+        if get then
+            local iname,_,q,_,_,_,_,_,_,tex=get(r.name)
+            if NS.Public(iname) and type(iname)=="string" then
+                if NS.Public(q) and type(q)=="number" then quality=q end
+                if not icon and NS.Public(tex) and tex then icon=tex end
+            end
+        end
+    end
+    if not icon and r.spell then
+        local spTex=(C_Spell and C_Spell.GetSpellTexture) or GetSpellTexture
+        if spTex then local ok,tex=pcall(spTex,r.spell);if ok and NS.Public(tex) and tex then icon=tex end end
+    end
+    local entry={icon=icon or "Interface\\Icons\\INV_Misc_QuestionMark",quality=quality,itemID=itemID,resolved=not waiting}
+    if not visualCache[key] then
+        local evicted=visualRing[visualCursor]
+        if evicted then visualCache[evicted]=nil end
+        visualRing[visualCursor]=key;visualCursor=visualCursor%VISUAL_CAP+1
+    end
+    visualCache[key]=entry
+    return entry.icon,entry.quality,entry.itemID
+end
+function NS.ClearVisualCache() wipe(visualCache);wipe(visualRing);visualCursor=1 end
 function NS.Tooltip(tip,id)
     if not NS.DB or not NS.DB.settings.enabled then return end
     local notice=NS.EnsureReference(id)
@@ -180,7 +287,9 @@ function NS.Tooltip(tip,id)
     tip:AddLine(NS.SourceLabel and NS.SourceLabel(id) or "Source unknown",.72,.46,.95,true)
     tip:AddLine("Known in "..known..(known==1 and " recipe" or " recipes"),.47,.83,.61)
     tip:AddLine("Used in "..total..(total==1 and " recipe" or " recipes"),.55,.8,1)
-    tip:AddLine("Ctrl + left-click to expand",.7,.7,.7,true)
+    if not (Suite.IsLootInteraction and Suite.IsLootInteraction(tip.GetOwner and tip:GetOwner())) then
+        Suite.OptionalHint(tip,"Ctrl + left-click to expand")
+    end
 end
 
 end chunk(name,Module) end
@@ -264,40 +373,202 @@ end chunk(name,Module) end
 -- Internal module source: UI.lua
 do local function chunk(...)
 local _,NS=...
-local panel,listing,measure,scroll,icon,canvas
-local sections={}
-function NS.Open()
-    if not panel then
-        panel=CreateFrame("Frame","SmyrnaWorkshopPanel",UIParent,"BackdropTemplate")
-        panel:SetSize(600,450);panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG")
-        panel:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=12});panel:SetBackdropColor(.04,.04,.04,.98)
-        local title=panel:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOPLEFT",20,-18);title:SetText("Smyrna Workshop")
-        local close=CreateFrame("Button",nil,panel,"UIPanelCloseButton");close:SetPoint("TOPRIGHT");panel.SuiteCloseButton=close
-        for i,entry in ipairs({{"enabled","Show recipe summary in bag tooltips"}}) do
-            local key,label=entry[1],entry[2]
-            local b=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate");b:SetPoint("TOPLEFT",18,-44-i*28);b:SetChecked(NS.DB.settings[key])
-            local t=b:CreateFontString(nil,"OVERLAY","GameFontHighlight");t:SetPoint("LEFT",b,"RIGHT",0,0);t:SetText(label)
-            b:SetScript("OnClick",function(self) NS.DB.settings[key]=self:GetChecked();NS.Configure() end)
-        end
-        scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate");scroll:SetPoint("TOPLEFT",20,-125);scroll:SetPoint("BOTTOMRIGHT",-42,20)
-        canvas=CreateFrame("Frame",nil,scroll);canvas:SetSize(515,235);scroll:SetScrollChild(canvas)
-        listing=CreateFrame("EditBox",nil,canvas);listing:SetPoint("TOPLEFT",0,0);listing:SetMultiLine(true);listing:SetAutoFocus(false);listing:SetFontObject(ChatFontNormal);listing:SetWidth(515);listing:SetHeight(235);listing:SetScript("OnEscapePressed",function(self) self:ClearFocus() end);
-        measure=panel:CreateFontString(nil,"BACKGROUND","ChatFontNormal");measure:SetWidth(515);measure:Hide()
-        UISpecialFrames[#UISpecialFrames+1]="SmyrnaWorkshopPanel"
-    end
+local panel,scroll,canvas,measure,heroCard
+local sections,cardPool={},{}
+local pendingItems,refreshGeneration,refreshQueued={},0,false
+local CONTENT_W=694
+local CARD_W=686
+
+local professionIcons={
+ Alchemy="Interface\\Icons\\Trade_Alchemy",
+ Blacksmithing="Interface\\Icons\\Trade_BlackSmithing",
+ Cooking="Interface\\Icons\\INV_Misc_Food_15",
+ Enchanting="Interface\\Icons\\Trade_Engraving",
+ Engineering="Interface\\Icons\\Trade_Engineering",
+ ["First Aid"]="Interface\\Icons\\Spell_Holy_SealOfSacrifice",
+ FirstAid="Interface\\Icons\\Spell_Holy_SealOfSacrifice",
+ Fishing="Interface\\Icons\\Trade_Fishing",
+ Herbalism="Interface\\Icons\\Trade_Herbalism",
+ Leatherworking="Interface\\Icons\\Trade_LeatherWorking",
+ Mining="Interface\\Icons\\Trade_Mining",
+ Skinning="Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
+ Tailoring="Interface\\Icons\\Trade_Tailoring",
+}
+local fallbackQualityRGB={
+ [0]={.62,.62,.62},
+ [1]={.92,.92,.95},
+ [2]={.12,1.0,.00},
+ [3]={.00,.44,.87},
+ [4]={.64,.21,.93},
+ [5]={1.0,.50,.00},
+}
+local function QualityRGB(q)
+ if type(q)=="number" then
+  local c=ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q]
+  if c then return c.r,c.g,c.b end
+  local f=fallbackQualityRGB[q]
+  if f then return f[1],f[2],f[3] end
+ end
+ return .84,.67,.31 -- Subtle brushed-gold default for spells without item rarity
+end
+local function GlowIntensity(q)
+ if type(q)=="number" then
+  if q>=4 then return .20 end
+  if q==3 then return .18 end
+  if q==2 then return .15 end
+  if q==1 then return .08 end
+  return .06
+ end
+ return .08
+end
+
+local function FormatCoins(copper)
+ if type(copper)~="number" or copper~=copper then return "-" end
+ local neg=copper<0
+ copper=math.floor(math.abs(copper)+.5)
+ local g=math.floor(copper/10000)
+ local s=math.floor(copper/100)%100
+ local c=copper%100
+ local parts={}
+ if g>0 then parts[#parts+1]=g.."|TInterface\\MoneyFrame\\UI-GoldIcon:11:11:1:0|t" end
+ if s>0 or g>0 then parts[#parts+1]=s.."|TInterface\\MoneyFrame\\UI-SilverIcon:11:11:1:0|t" end
+ parts[#parts+1]=c.."|TInterface\\MoneyFrame\\UI-CopperIcon:11:11:1:0|t"
+ return (neg and "-" or "")..table.concat(parts," ")
+end
+
+local function MatUnitCost(matID)
+ local ahP,venP=nil,nil
+ if Suite.Market and Suite.Market.Price then
+  local q=Suite.Market.Price(matID)
+  if q and type(q.minimum)=="number" and q.minimum>0 then ahP=q.minimum end
+ end
+ local vList=Suite.ItemVendors and Suite.ItemVendors[matID]
+ if vList and #vList>0 then
+  local getInfo=(C_Item and C_Item.GetItemInfo) or GetItemInfo
+  local sp=getInfo and select(11,getInfo(matID))
+  if NS.Public(sp) and type(sp)=="number" and sp>0 then venP=sp*4 end -- Classic vendor buy = 4x sell
+ end
+ if venP and ahP then
+  if venP<=ahP then return venP,"V" else return ahP,"AH" end
+ elseif venP then return venP,"V"
+ elseif ahP then return ahP,"AH"
+ end
+ return nil,nil
+end
+NS.FormatCoins=FormatCoins
+NS.MatUnitCost=MatUnitCost
+
+local function CreateRecipeCard()
+ local card=CreateFrame("Button",nil,canvas,"BackdropTemplate")
+ card:SetSize(CARD_W,84)
+ Suite.StyleCard(card,.082,.094,.128)
+ local hl=card:CreateTexture(nil,"HIGHLIGHT")
+ hl:SetPoint("TOPLEFT",1,-1);hl:SetPoint("BOTTOMRIGHT",-1,1)
+ hl:SetColorTexture(.40,.58,.86,.10)
+ card.tile=Suite.CreateIconTile(card,40)
+ card.tile:SetPoint("TOPLEFT",11,-11)
+ card.name=card:CreateFontString(nil,"OVERLAY","GameFontNormal")
+ card.name:SetPoint("TOPLEFT",60,-10);card.name:SetWidth(415);card.name:SetJustifyH("LEFT");card.name:SetMaxLines(1)
+ card.badges=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+ card.badges:SetPoint("TOPRIGHT",-12,-11);card.badges:SetJustifyH("RIGHT")
+ card.learn=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+ card.learn:SetPoint("TOPLEFT",60,-28);card.learn:SetWidth(CARD_W-74);card.learn:SetJustifyH("LEFT");card.learn:SetMaxLines(1)
+ card.learn:SetTextColor(.68,.76,.88)
+ card.econ=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+ card.econ:SetPoint("TOPLEFT",60,-44);card.econ:SetWidth(CARD_W-74);card.econ:SetJustifyH("LEFT");card.econ:SetMaxLines(1)
+ card.econ:SetTextColor(.88,.90,.94)
+ card.tray=CreateFrame("Frame",nil,card,"BackdropTemplate")
+ card.tray:SetPoint("TOPLEFT",60,-62);card.tray:SetPoint("TOPRIGHT",-10,-62)
+ card.tray:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
+ card.tray:SetBackdropColor(.048,.055,.076,.92);card.tray:SetBackdropBorderColor(.17,.20,.27,.85)
+ card.mats=card.tray:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+ card.mats:SetPoint("TOPLEFT",8,-5);card.mats:SetPoint("TOPRIGHT",-8,-5);card.mats:SetJustifyH("LEFT")
+ card:SetScript("OnEnter",function(self)
+  if self.qr then self:SetBackdropBorderColor(self.qr,self.qg,self.qb,.72) end
+  if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return end
+  if self.itemID then
+   GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetHyperlink("item:"..self.itemID);GameTooltip:Show()
+  elseif self.spell then
+   GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetSpellByID(self.spell);GameTooltip:Show()
+  end
+ end)
+ card:SetScript("OnLeave",function(self)
+  self:SetBackdropBorderColor(.22,.25,.33,.88)
+  if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then GameTooltip:Hide() end
+ end)
+ card:SetScript("OnClick",function(self)
+  if not SetItemRef then return end
+  if self.itemID then SetItemRef("item:"..self.itemID,self.recipeName or "","LeftButton")
+  elseif self.spell then SetItemRef("spell:"..self.spell,self.recipeName or "","LeftButton") end
+ end)
+ return card
+end
+
+local function CreateSectionHeader()
+ local h=CreateFrame("Button",nil,canvas,"UIPanelButtonTemplate")
+ h:SetSize(CONTENT_W,30)
+ Suite.StyleButton(h)
+ h.profTile=Suite.CreateIconTile(h,20)
+ h.profTile:SetPoint("LEFT",8,0)
+ h.titleText=h:CreateFontString(nil,"OVERLAY","GameFontNormal")
+ h.titleText:SetPoint("LEFT",h.profTile,"RIGHT",8,0);h.titleText:SetJustifyH("LEFT")
+ h.countText=h:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+ h.countText:SetPoint("RIGHT",-12,0);h.countText:SetJustifyH("RIGHT")
+ h:SetText("")
+ h:SetScript("OnClick",function(self)
+  NS.DB.collapsedProfessions[self.profession]=not NS.DB.collapsedProfessions[self.profession] or nil
+  local offset=scroll:GetVerticalScroll()
+  NS.Refresh(true)
+  scroll:SetVerticalScroll(math.min(offset,scroll:GetVerticalScrollRange()))
+ end)
+ return h
+end
+
+function NS.Refresh(preserveScroll)
+    if not panel or not NS.DB then return end
+    local prevScroll=preserveScroll and scroll:GetVerticalScroll() or 0
+    refreshGeneration=refreshGeneration+1;refreshQueued=false;wipe(pendingItems)
     local id=NS.FilterItem
     local rows=id and NS.ItemRecipes(id) or {}
     NS.DB.collapsedProfessions=NS.DB.collapsedProfessions or {}
-    local lines={Suite.UIText(id and ("Uses for "..NS.ItemName(id).." - "..#rows.." recipes") or "Choose an item to see its recipe uses","heading"),Suite.UIText("Ctrl + left-click an item or profession reagent to see its recipes.","detail"),Suite.UIText("Bag counts only. Open a profession to confirm learned recipes.","muted"),Suite.UIText("Tools, skill requirements and cooldowns are not checked.","muted")}
-    if id and NS.SourceEntries then
-        lines[#lines+1]=Suite.UIText("Sources","heading")
-        for _,source in ipairs(NS.SourceEntries(id)) do lines[#lines+1]="  "..Suite.UIText(source,"detail") end
+
+    -- Populate Hero Card
+    if id then
+        local hIcon,hQuality=NS.ItemVisual(id)
+        local qr,qg,qb=QualityRGB(hQuality)
+        heroCard.tile.icon:SetTexture(hIcon or "Interface\\Icons\\INV_Misc_QuestionMark")
+        heroCard.tile:SetBackdropBorderColor(qr,qg,qb,.92)
+        Suite.SetCornerGlow(heroCard,qr,qg,qb,GlowIntensity(hQuality))
+        heroCard.title:SetText(NS.ItemName(id));heroCard.title:SetTextColor(qr,qg,qb)
+        heroCard.count:SetText(Suite.UIText(#rows..(#rows==1 and " recipe" or " recipes"),"heading"))
+        local detailLines={}
+        local hPrice,hSrc=MatUnitCost(id)
+        if hPrice then
+            detailLines[#detailLines+1]=Suite.UIText("Market: ","detail")..FormatCoins(hPrice).." ("..(hSrc=="V" and "Vendor" or "AH")..")"
+        end
+        if NS.SourceEntries then
+            detailLines[#detailLines+1]=Suite.UIText("Sources: ","detail")..table.concat(NS.SourceEntries(id),"  /  ")
+        end
+        if NS.FilterNotice then detailLines[#detailLines+1]=Suite.UIText(NS.FilterNotice,"warning") end
+        if #rows==0 then detailLines[#detailLines+1]=Suite.UIText("No recipes found using this item.","muted")
+        else detailLines[#detailLines+1]=Suite.UIText("Counts items in your bags. Open a profession window to update learned recipes.","muted") end
+        local dText=table.concat(detailLines,"\n")
+        heroCard.detail:SetText(dText)
+        measure:SetWidth(CONTENT_W-76);measure:SetText(dText)
+        heroCard:SetHeight(math.max(68,42+measure:GetStringHeight()+10))
+    else
+        heroCard.tile.icon:SetTexture("Interface\\Icons\\INV_Hammer_20")
+        heroCard.tile:SetBackdropBorderColor(.74,.58,.29,.9)
+        Suite.SetCornerGlow(heroCard,.84,.67,.31,.10)
+        heroCard.title:SetText("Choose an item to inspect");heroCard.title:SetTextColor(1,.86,.48)
+        heroCard.count:SetText(Suite.UIText(NS.recipeCount.." learned","good"))
+        heroCard.detail:SetText(Suite.UIText("Ctrl + left-click any crafting material in your bags, chat, or profession window to see every recipe that uses it.","detail").."\n"..Suite.UIText("Open your profession windows once so Workshop knows what you can craft.","muted"))
+        heroCard:SetHeight(76)
     end
-    if NS.FilterNotice then lines[#lines+1]=Suite.UIText(NS.FilterNotice,"warning") end
-    if #rows==0 then lines[#lines+1]=id and "No uses found in learned recipes or enabled reference data." or "Open a profession to add your learned recipes." end
-    local text=table.concat(lines,"\n");listing:SetText(text);measure:SetText(text)
-    local top=measure:GetStringHeight()+16;listing:SetHeight(top)
-    if NS.RenderVendors then top=NS.RenderVendors(canvas,top,id,measure) end
+
+    local top=heroCard:GetHeight()+12
+    if NS.RenderVendors then top=NS.RenderVendors(canvas,top,id,measure,CONTENT_W) end
+
     local groups={}
     for _,r in ipairs(rows) do
         local group=groups[#groups]
@@ -305,59 +576,153 @@ function NS.Open()
         group.recipes[#group.recipes+1]=r
         if NS.Known(r)==true then group.learned=group.learned+1 end
     end
+
+    local cardIndex=0
     for i,group in ipairs(groups) do
         local section=sections[i]
         if not section then
-            section={recipeButtons={}};sections[i]=section
-            section.header=CreateFrame("Button",nil,canvas,"UIPanelButtonTemplate");section.header:SetSize(515,25)
-            section.header:SetScript("OnClick",function(self)
-                NS.DB.collapsedProfessions[self.profession]=not NS.DB.collapsedProfessions[self.profession] or nil
-                local offset=scroll:GetVerticalScroll();NS.Open();scroll:SetVerticalScroll(offset)
-            end)
-            section.body=CreateFrame("EditBox",nil,canvas);section.body:SetMultiLine(true);section.body:SetAutoFocus(false);section.body:SetFontObject(ChatFontNormal);section.body:SetWidth(505);section.body:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+            section={header=CreateSectionHeader()};sections[i]=section
         end
-        for _,button in ipairs(section.recipeButtons) do button:Hide() end
         local profession=group.profession
         if NS.ExpandFiltered then NS.DB.collapsedProfessions[profession]=nil end
         local collapsed=NS.DB.collapsedProfessions[profession]
-        section.header.profession=profession;section.header:ClearAllPoints();section.header:SetPoint("TOPLEFT",0,-top)
-        section.header:SetText(Suite.UIText((collapsed and "[+] " or "[-] ")..profession,"heading").."  "..Suite.UIText(#group.recipes.." recipes  /  "..group.learned.." learned","muted"));section.header:Show();top=top+31
-        if collapsed then section.body:SetText("");section.body:Hide()
-        else
-            local body={};local offset=0
-            for recipeIndex,r in ipairs(group.recipes) do
-                local blockStart=#body+1
-                if r.spell then
-                    local button=section.recipeButtons[recipeIndex]
-                    if not button then
-                        button=CreateFrame("Button",nil,canvas);button:SetSize(505,17)
-                        button:SetScript("OnEnter",function(self) GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetSpellByID(self.spell);GameTooltip:Show() end)
-                        button:SetScript("OnLeave",function() GameTooltip:Hide() end)
-                        button:SetScript("OnClick",function(self) if SetItemRef then SetItemRef("spell:"..self.spell,self.recipeName,"LeftButton") end end)
-                        section.recipeButtons[recipeIndex]=button
-                    end
-                    button.spell=r.spell;button.recipeName=r.name;button:ClearAllPoints();button:SetPoint("TOPLEFT",10,-top-offset);button:Show()
-                end
-                local known=NS.Known(r);local state=known==true and "Learned" or known==false and "Not learned" or "Learning status unknown"
-                body[#body+1]=Suite.UIText(r.name,"heading")..Suite.UIText(r.skill and (" (skill "..r.skill..")") or "","detail")
-                body[#body+1]="  "..Suite.UIText("Learn via: "..((Suite.RecipeAcquisition and Suite.RecipeAcquisition[r.spell]) or "Source unknown"),"detail")
+        local h=section.header
+        h.profession=profession;h:ClearAllPoints();h:SetPoint("TOPLEFT",0,-top)
+        h.profTile.icon:SetTexture(professionIcons[profession] or "Interface\\Icons\\INV_Misc_Gear_01")
+        h.profTile:SetBackdropBorderColor(.74,.58,.29,.88)
+        h.titleText:SetText(Suite.UIText((collapsed and "+  " or "-  ")..profession,"heading"))
+        h.countText:SetText(Suite.UIText(#group.recipes..(#group.recipes==1 and " recipe" or " recipes"),"detail").."   "..Suite.UIText(group.learned.." learned",group.learned>0 and "good" or "muted"))
+        Suite.SetButtonSelected(h,not collapsed)
+        h:Show()
+        top=top+36
+
+        if not collapsed then
+            for _,r in ipairs(group.recipes) do
+                cardIndex=cardIndex+1
+                local card=cardPool[cardIndex]
+                if not card then card=CreateRecipeCard();cardPool[cardIndex]=card end
+                local rIcon,rQuality,rItemID=NS.RecipeVisual(r,pendingItems)
+                local qr,qg,qb=QualityRGB(rQuality)
+                card.qr,card.qg,card.qb=qr,qg,qb
+                card.spell,card.itemID,card.recipeName=r.spell,rItemID,r.name
+                card.tile.icon:SetTexture(rIcon)
+                card.tile:SetBackdropBorderColor(qr,qg,qb,.92)
+                Suite.SetCornerGlow(card,qr,qg,qb,GlowIntensity(rQuality))
+
+                local skillTag=r.skill and Suite.UIText("  (Skill "..r.skill..")","muted") or ""
+                card.name:SetText(r.name..skillTag)
+                card.name:SetTextColor(qr,qg,qb)
+
+                local known=NS.Known(r)
                 local ready=NS.Ready(r)
-                body[#body+1]="  "..Suite.UIText(state,known==true and "good" or "muted").."  "..Suite.UIText(ready>0 and ("Materials for "..ready) or "Missing materials",ready>0 and "good" or "warning")
-                for _,v in ipairs(r.mats) do local have=NS.Count(v[1]);body[#body+1]="    "..NS.ItemName(v[1]).."  "..Suite.UIText(have.." / "..v[2],have>=v[2] and "good" or "warning") end
-                body[#body+1]=""
-                measure:SetWidth(505);measure:SetText(table.concat(body,"\n",blockStart,#body))
-                offset=offset+measure:GetStringHeight()
+                local knownPill=known==true and Suite.UIText("Learned","good") or known==false and Suite.UIText("Not learned","muted") or Suite.UIText("Status unknown","muted")
+                local readyPill=ready>0 and Suite.UIText("Craft x"..ready,"good") or Suite.UIText("Missing mats","warning")
+                card.badges:SetText(knownPill.."   |cff444c5e/|r   "..readyPill)
+
+                local matParts={}
+                local totalCost,costComplete=0,true
+                for _,v in ipairs(r.mats) do
+                    local have=NS.Count(v[1])
+                    local uCost,uSrc=MatUnitCost(v[1])
+                    local priceTag=""
+                    if uCost then
+                        totalCost=totalCost+(uCost*v[2])
+                        priceTag=" |cff98a4b8("..FormatCoins(uCost).." "..uSrc..")|r"
+                    else
+                        costComplete=false
+                    end
+                    matParts[#matParts+1]=NS.ItemName(v[1]).." "..Suite.UIText(have.."/"..v[2],have>=v[2] and "good" or "warning")..priceTag
+                end
+                local outQ=rItemID and Suite.Market and Suite.Market.Price and Suite.Market.Price(rItemID)
+                local outAH=outQ and type(outQ.minimum)=="number" and outQ.minimum>0 and outQ.minimum or nil
+                local econ=""
+                if totalCost>0 or outAH then
+                    local parts={}
+                    if outAH then parts[#parts+1]="|cffdfb66bSell (AH):|r "..FormatCoins(outAH) end
+                    if totalCost>0 then parts[#parts+1]="|cff9aa6b8Mats:|r "..FormatCoins(totalCost)..(costComplete and "" or "+") end
+                    if outAH and totalCost>0 and costComplete then
+                        local prof=outAH-totalCost
+                        local pCol=prof>=0 and "|cff78d49b+" or "|cffff7a66"
+                        parts[#parts+1]="|cffdfb66bProfit:|r "..pCol..FormatCoins(prof).."|r"
+                    end
+                    econ=table.concat(parts,"   |cff444c5e·|r   ")
+                end
+                local acq=(Suite.RecipeAcquisition and r.spell and Suite.RecipeAcquisition[r.spell]) or "Source unknown"
+                card.learn:SetText("Learn: "..acq)
+                card.econ:SetText(econ)
+                local trayTop=econ~="" and -62 or -46
+                card.tray:ClearAllPoints()
+                card.tray:SetPoint("TOPLEFT",60,trayTop);card.tray:SetPoint("TOPRIGHT",-10,trayTop)
+                local matText=table.concat(matParts,"   |cff444c5e/|r   ")
+                card.mats:SetText(matText)
+                measure:SetWidth(CARD_W-86);measure:SetText(matText)
+                local trayH=math.max(24,measure:GetStringHeight()+10)
+                card.tray:SetHeight(trayH)
+                local cardH=math.max(76,(-trayTop)+trayH+8)
+                card:SetHeight(cardH)
+                card:ClearAllPoints();card:SetPoint("TOPLEFT",4,-top)
+                card:Show()
+                top=top+cardH+6
             end
-            local value=table.concat(body,"\n");section.body:SetText(value);section.body:ClearAllPoints();section.body:SetPoint("TOPLEFT",10,-top)
-            measure:SetWidth(505);measure:SetText(value);local height=measure:GetStringHeight()+12;measure:SetWidth(515)
-            section.body:SetHeight(height);section.body:Show();top=top+height+6
+            top=top+6
         end
     end
     NS.ExpandFiltered=nil
-    for i=#groups+1,#sections do sections[i].header:Hide();sections[i].body:Hide();for _,button in ipairs(sections[i].recipeButtons) do button:Hide() end end
+    for i=#groups+1,#sections do sections[i].header:Hide() end
+    for i=cardIndex+1,#cardPool do cardPool[i]:Hide() end
     NS.Sections=sections
-    canvas:SetHeight(math.max(235,top));measure:SetText("")
-    scroll:UpdateScrollChildRect();scroll:SetVerticalScroll(0);panel:Show()
+    NS.RecipeCards=cardPool
+    canvas:SetHeight(math.max(410,top+10));measure:SetText("")
+    scroll:UpdateScrollChildRect()
+    scroll:SetVerticalScroll(preserveScroll and math.min(prevScroll,scroll:GetVerticalScrollRange()) or 0)
+end
+
+function NS.Open(preserveScroll)
+    if not panel then
+        panel=CreateFrame("Frame","SmyrnaWorkshopPanel",UIParent,"BackdropTemplate")
+        panel:SetSize(760,540);panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:SetClampedToScreen(true)
+        Suite.StylePanel(panel,true)
+        local title=panel:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOPLEFT",20,-16);title:SetText("Workshop");title:SetTextColor(1,.86,.48)
+        local sub=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");sub:SetPoint("TOPLEFT",112,-20);sub:SetText("Ctrl + left-click any reagent to explore its recipes and sources.");sub:SetTextColor(.68,.73,.82)
+        local close=Suite.CloseButton(panel);panel.SuiteCloseButton=close
+        local b=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate");b:SetPoint("TOPLEFT",18,-42);b:SetChecked(NS.DB.settings.enabled)
+        local t=b:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");t:SetPoint("LEFT",b,"RIGHT",2,0);t:SetText("Show recipe summary in bag tooltips")
+        b:SetScript("OnClick",function(self) NS.DB.settings.enabled=self:GetChecked();NS.Configure() end)
+        Suite.OptionSection(panel,"Recipes & Sources",20,-74,720)
+        scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate");scroll:SetPoint("TOPLEFT",20,-94);scroll:SetPoint("BOTTOMRIGHT",-38,16)
+        canvas=CreateFrame("Frame",nil,scroll);canvas:SetSize(CONTENT_W,420);scroll:SetScrollChild(canvas)
+        scroll:EnableMouseWheel(true)
+        scroll:SetScript("OnMouseWheel",function(self,delta)
+            local cur,max=self:GetVerticalScroll(),self:GetVerticalScrollRange()
+            if type(cur)=="number" and type(max)=="number" then self:SetVerticalScroll(math.max(0,math.min(max,cur-delta*48))) end
+        end)
+        heroCard=CreateFrame("Frame",nil,canvas,"BackdropTemplate")
+        heroCard:SetSize(CONTENT_W,76);heroCard:SetPoint("TOPLEFT",0,0);Suite.StyleCard(heroCard,.072,.084,.114)
+        heroCard.tile=Suite.CreateIconTile(heroCard,40);heroCard.tile:SetPoint("TOPLEFT",12,-14)
+        heroCard.title=heroCard:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");heroCard.title:SetPoint("TOPLEFT",62,-12);heroCard.title:SetWidth(460);heroCard.title:SetJustifyH("LEFT");heroCard.title:SetMaxLines(1)
+        heroCard.count=heroCard:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");heroCard.count:SetPoint("TOPRIGHT",-12,-14);heroCard.count:SetJustifyH("RIGHT")
+        heroCard.detail=heroCard:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");heroCard.detail:SetPoint("TOPLEFT",62,-34);heroCard.detail:SetWidth(CONTENT_W-76);heroCard.detail:SetJustifyH("LEFT")
+        measure=panel:CreateFontString(nil,"BACKGROUND","GameFontHighlightSmall");measure:SetWidth(CARD_W-86);measure:Hide()
+        panel:SetScript("OnEvent",function(_,_,itemID,success)
+            if not NS.Public(itemID) or not NS.Public(success) or success==false or not pendingItems[itemID] then return end
+            pendingItems[itemID]=nil
+            if refreshQueued then return end
+            refreshQueued=true
+            local token=refreshGeneration
+            C_Timer.After(.15,function()
+                refreshQueued=false
+                if token==refreshGeneration and panel and panel:IsShown() then NS.Refresh(true) end
+            end)
+        end)
+        panel:SetScript("OnShow",function(self) self:RegisterEvent("GET_ITEM_INFO_RECEIVED") end)
+        panel:SetScript("OnHide",function(self)
+            self:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
+            refreshGeneration=refreshGeneration+1;refreshQueued=false;wipe(pendingItems)
+        end)
+        UISpecialFrames[#UISpecialFrames+1]="SmyrnaWorkshopPanel"
+    end
+    NS.Refresh(preserveScroll)
+    panel:Show()
     return panel
 end
 function NS.OpenUses(id)
@@ -405,7 +770,6 @@ function NS.HookItemOwner(tip,id)
     entry.id=id
 end
 local function ItemTip(tip,id)
-    if Suite.IsLootInteraction and Suite.IsLootInteraction(tip.GetOwner and tip:GetOwner()) then return end
     if (tip~=GameTooltip and tip~=ItemRefTooltip) or not NS.DB or not NS.DB.settings.enabled then return end
     if tip.IsForbidden and tip:IsForbidden() then return end
     if not NS.Public(id) or type(id)~="number" or id<=0 then return end
@@ -452,9 +816,10 @@ local function BagTip(tip,bag,slot)
     local id=fn and NS.ID(fn(bag,slot))
     if id then ItemTip(tip,id);tip:Show() end
 end
-f:SetScript("OnEvent",function(_,event,name)
+f:SetScript("OnEvent",function(self,event,name)
     if event=="ADDON_LOADED" then
-        if name~="SmyrnaSuite" then return end
+        if not NS.Public(name) or name~="SmyrnaSuite" then return end
+        self:UnregisterEvent("ADDON_LOADED")
         NS.Init();NS.Configure()
         if ItemRefTooltip then
             ItemRefTooltip:HookScript("OnTooltipCleared",function(tip) shownIDs[tip]=nil end)
@@ -469,12 +834,13 @@ f:SetScript("OnEvent",function(_,event,name)
             -- Append after item processing so native rendering cannot erase our lines.
             NS.hookMode="item post-processing"
             TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item,function(tip,data)
-                if (tip~=GameTooltip and tip~=ItemRefTooltip) or not NS.DB.settings.enabled then return end
+                if not tip or (tip.IsForbidden and tip:IsForbidden()) then return end
+                if (tip~=GameTooltip and tip~=ItemRefTooltip) or not NS.DB or not NS.DB.settings.enabled then return end
                 local id=data and data.id
-                if id==nil then
+                if not NS.Public(id) or id==nil then
                     if TooltipUtil and TooltipUtil.GetDisplayedItem then
                         local _,link,displayed=TooltipUtil.GetDisplayedItem(tip)
-                        id=displayed or NS.ID(link)
+                        id=(NS.Public(displayed) and displayed) or NS.ID(link)
                     elseif tip.GetItem then local _,link=tip:GetItem();id=NS.ID(link) end
                 end
                 ItemTip(tip,id)
@@ -495,8 +861,95 @@ f:SetScript("OnEvent",function(_,event,name)
         end
         SLASH_SMYRNAWORKSHOP1="/sw";SLASH_SMYRNAWORKSHOP2="/smyrnaworkshop";SlashCmdList.SMYRNAWORKSHOP=function(input) if input=="status" then NS.Status() else NS.Open() end end
     elseif event=="BAG_UPDATE_DELAYED" then NS.Invalidate()
-    else NS.QueueScan(event=="CRAFT_SHOW" or event=="CRAFT_UPDATE") end
+    else
+        NS.QueueScan(event=="CRAFT_SHOW" or event=="CRAFT_UPDATE")
+        if NS.HookProfessionProfit then NS.HookProfessionProfit() end
+    end
 end)
+
+-- ============================================================
+-- Live Craft Cost & Profit Strip on Blizzard Professions / TradeSkill UI
+-- ============================================================
+local profStrip,profHooked=nil,false
+local function EnsureProfStrip(parent)
+    if not parent then return nil end
+    if not profStrip then
+        local f=CreateFrame("Frame",nil,parent,"BackdropTemplate")
+        f:SetSize(330,24); f:SetFrameLevel(parent:GetFrameLevel()+6)
+        f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
+        f:SetBackdropColor(.055,.065,.092,.94); f:SetBackdropBorderColor(.82,.67,.33,.88)
+        f.txt=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        f.txt:SetPoint("LEFT",8,0); f.txt:SetPoint("RIGHT",-8,0); f.txt:SetJustifyH("LEFT"); f.txt:SetMaxLines(1)
+        profStrip=f
+    end
+    profStrip:SetParent(parent)
+    profStrip:ClearAllPoints()
+    profStrip:SetPoint("BOTTOMLEFT",parent,"BOTTOMLEFT",12,8)
+    return profStrip
+end
+
+local function RenderProfitStrip(parent,outItemID,mats)
+    local f=EnsureProfStrip(parent)
+    if not f then return end
+    if not mats or #mats==0 then f:Hide(); return end
+    local cost,complete=0,true
+    for i=1,#mats do
+        local u=NS.MatUnitCost and NS.MatUnitCost(mats[i][1])
+        if u then cost=cost+(u*mats[i][2]) else complete=false end
+    end
+    local q=outItemID and Suite.Market and Suite.Market.Price and Suite.Market.Price(outItemID)
+    local ah=q and type(q.minimum)=="number" and q.minimum>0 and q.minimum or nil
+    if cost<=0 and not ah then f:Hide(); return end
+    local parts={}
+    if cost>0 then parts[#parts+1]="|cffc8d2e2Cost:|r "..NS.FormatCoins(cost)..(complete and "" or "+") end
+    if ah then parts[#parts+1]="|cffc8d2e2AH:|r "..NS.FormatCoins(ah) end
+    if ah and cost>0 and complete then
+        local p=ah-cost
+        local col=p>=0 and "|cff78d49b+" or "|cffff7a66"
+        parts[#parts+1]="|cffdfb66bProfit:|r "..col..NS.FormatCoins(p).."|r"
+    end
+    f.txt:SetText(table.concat(parts,"   ·   "))
+    f:Show()
+end
+
+function NS.HookProfessionProfit()
+    if profHooked then return end
+    local form=ProfessionsFrame and ProfessionsFrame.CraftingPage and ProfessionsFrame.CraftingPage.SchematicForm
+    if form and form.Init then
+        profHooked=true
+        hooksecurefunc(form,"Init",function(self,recipeInfo)
+            if not recipeInfo or not recipeInfo.recipeID or not (C_TradeSkillUI and C_TradeSkillUI.GetRecipeSchematic) then
+                if profStrip then profStrip:Hide() end; return
+            end
+            local ok,sch=pcall(C_TradeSkillUI.GetRecipeSchematic,recipeInfo.recipeID,false)
+            if not ok or type(sch)~="table" then if profStrip then profStrip:Hide() end; return end
+            local mats={}
+            for _,slot in ipairs(sch.reagentSlotSchematics or {}) do
+                if slot.required and slot.quantityRequired and slot.reagents and #slot.reagents==1 and slot.reagents[1].itemID then
+                    mats[#mats+1]={slot.reagents[1].itemID,slot.quantityRequired}
+                end
+            end
+            RenderProfitStrip(self,sch.outputItemID,mats)
+        end)
+        return
+    end
+    if TradeSkillFrame and TradeSkillFrame_SetSelection then
+        profHooked=true
+        hooksecurefunc("TradeSkillFrame_SetSelection",function(idx)
+            if not idx or not GetTradeSkillItemLink or not GetTradeSkillNumReagents then return end
+            local link=GetTradeSkillItemLink(idx)
+            local outID=NS.ID(link)
+            local mats={}
+            for i=1,(GetTradeSkillNumReagents(idx) or 0) do
+                local rLink=GetTradeSkillReagentItemLink and GetTradeSkillReagentItemLink(idx,i)
+                local _,_,cnt=GetTradeSkillReagentInfo(idx,i)
+                local rid=NS.ID(rLink)
+                if rid and cnt and cnt>0 then mats[#mats+1]={rid,cnt} end
+            end
+            RenderProfitStrip(TradeSkillDetailScrollChildFrame or TradeSkillFrame,outID,mats)
+        end)
+    end
+end
 
 end chunk(name,Module) end
 

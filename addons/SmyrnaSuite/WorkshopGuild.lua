@@ -35,22 +35,32 @@ function NS.ReadProfessions(selected)
     end
     -- Only consume already exposed profession rows; collapsed headers may omit names.
     if GetNumGuildTradeSkill and GetGuildTradeSkillInfo then
-        local current
-        for i = 1, math.min(GetNumGuildTradeSkill(), 10000) do
-            local _, _, _, header, _, _, _, name, fullName, _, _, _, skill = GetGuildTradeSkillInfo(i)
-            if Core.Readable(header) and header ~= "" then current = header end
-            if current == selected and (Core.Readable(fullName) or Core.Readable(name)) then Add(fullName or name, skill, "game data") end
+        local count=GetNumGuildTradeSkill()
+        if not (issecretvalue and issecretvalue(count)) and type(count)=="number" then
+            local current
+            for i = 1, math.min(count, 10000) do
+                local _, _, _, header, _, _, _, name, fullName, _, _, _, skill = GetGuildTradeSkillInfo(i)
+                if Core.Readable(header) and header ~= "" then current = header end
+                if current == selected then
+                    local picked = (Core.Readable(fullName) and fullName ~= "" and fullName) or (Core.Readable(name) and name ~= "" and name) or nil
+                    local safeSkill = (not (issecretvalue and issecretvalue(skill)) and type(skill) == "number") and skill or nil
+                    if picked then Add(picked, safeSkill, "game data") end
+                end
+            end
         end
     end
     if next(db.professionNotes) and GetNumGuildMembers and GetGuildRosterInfo then
-        for i = 1, GetNumGuildMembers() do
-            local name = GetGuildRosterInfo(i)
-            if Core.Readable(name) then
-                local short = name:match("^([^-]+)")
-                local record = db.professionNotes[Core.Key(name)] or (short and db.professionNotes[Core.Key(short)])
-                if type(record) == "string" then
-                    for token in record:gmatch("[^,]+") do
-                        if Core.Trim(token) == selected then Add(name, nil, "personal record"); break end
+        local totalMembers=GetNumGuildMembers()
+        if not (issecretvalue and issecretvalue(totalMembers)) and type(totalMembers)=="number" then
+            for i = 1, totalMembers do
+                local name = GetGuildRosterInfo(i)
+                if Core.Readable(name) then
+                    local short = name:match("^([^-]+)")
+                    local record = db.professionNotes[Core.Key(name)] or (short and db.professionNotes[Core.Key(short)])
+                    if type(record) == "string" then
+                        for token in record:gmatch("[^,]+") do
+                            if Core.Trim(token) == selected then Add(name, nil, "personal record"); break end
+                        end
                     end
                 end
             end
@@ -65,23 +75,43 @@ function NS.ReadProfessions(selected)
 end
 
 
-local panel,output
+local panel,output,outScroll,outCanvas
+local function SetOutputText(text)
+ output:SetText(text)
+ if outCanvas and outScroll then
+  outCanvas:SetHeight(math.max(216,(output:GetStringHeight() or 20)+18))
+  outScroll:UpdateScrollChildRect()
+  outScroll:SetVerticalScroll(0)
+ end
+end
 function NS.OpenGuildProfessions()
  if not panel then
-  panel=CreateFrame("Frame","SmyrnaWorkshopGuild",UIParent,"BackdropTemplate");panel:SetSize(570,450);panel:SetPoint("CENTER");panel:SetFrameStrata("FULLSCREEN_DIALOG");panel:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8"});panel:SetBackdropColor(.03,.03,.04,1)
-  local close=CreateFrame("Button",nil,panel,"UIPanelCloseButton");close:SetPoint("TOPRIGHT")
-  local title=panel:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOPLEFT",16,-16);title:SetText("Workshop - Guild professions")
-  output=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");output:SetPoint("TOPLEFT",18,-155);output:SetWidth(530);output:SetJustifyH("LEFT")
+  panel=CreateFrame("Frame","SmyrnaWorkshopGuild",UIParent,"BackdropTemplate");panel:SetSize(570,450);panel:SetPoint("CENTER");panel:SetFrameStrata("FULLSCREEN_DIALOG");panel:SetClampedToScreen(true)
+  Suite.StylePanel(panel,true)
+  Suite.CloseButton(panel)
+  local title=panel:CreateFontString(nil,"OVERLAY","GameFontNormalLarge");title:SetPoint("TOPLEFT",16,-14);title:SetText("Workshop - Guild Professions");title:SetTextColor(1,.86,.48)
+  Suite.OptionSection(panel,"Professions",16,-40,538)
   for i,name in ipairs(NS.professionNames) do
-   local b=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");b:SetSize(170,24);b:SetPoint("TOPLEFT",18+((i-1)%3)*177,-45-math.floor((i-1)/3)*26);b:SetText(name)
-   b:SetScript("OnClick",function() local ok,text=pcall(NS.ReadProfessions,name);output:SetText(ok and text or "Profession data unavailable.") end)
+   local b=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");b:SetSize(172,24);b:SetPoint("TOPLEFT",16+((i-1)%3)*180,-58-math.floor((i-1)/3)*28);b:SetText(name);Suite.StyleButton(b)
+   b:SetScript("OnClick",function() local ok,text=pcall(NS.ReadProfessions,name);SetOutputText(ok and text or "Profession data unavailable.") end)
   end
+  Suite.OptionSection(panel,"Exposed Guild Roster Results",16,-176,538)
+  local card=CreateFrame("Frame",nil,panel,"BackdropTemplate");card:SetPoint("TOPLEFT",16,-196);card:SetSize(538,238);Suite.StyleCard(card,.074,.086,.118)
+  outScroll=CreateFrame("ScrollFrame",nil,card,"UIPanelScrollFrameTemplate");outScroll:SetPoint("TOPLEFT",8,-8);outScroll:SetPoint("BOTTOMRIGHT",-28,8)
+  outCanvas=CreateFrame("Frame",nil,outScroll);outCanvas:SetSize(492,216);outScroll:SetScrollChild(outCanvas)
+  outScroll:EnableMouseWheel(true)
+  outScroll:SetScript("OnMouseWheel",function(self,delta)
+   local cur,max=self:GetVerticalScroll(),self:GetVerticalScrollRange()
+   if type(cur)=="number" and type(max)=="number" then self:SetVerticalScroll(math.max(0,math.min(max,cur-delta*36))) end
+  end)
+  output=outCanvas:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");output:SetPoint("TOPLEFT",4,-2);output:SetWidth(484);output:SetJustifyH("LEFT")
   UISpecialFrames[#UISpecialFrames+1]="SmyrnaWorkshopGuild"
  end
- output:SetText("Choose a profession to read exposed guild data. No background queries.");panel:Show()
+ SetOutputText("Choose a profession to read exposed guild data. No background queries.");panel:Show()
 end
 local driver=CreateFrame("Frame");driver:RegisterEvent("PLAYER_LOGIN");driver:SetScript("OnEvent",function(self)
  self:UnregisterEvent("PLAYER_LOGIN")
+ if not NS.DB then return end
  NS.DB.professionNotes=NS.DB.professionNotes or {}
  if type(SmyrnaChatDB)=="table" and type(SmyrnaChatDB.professionNotes)=="table" then for k,v in pairs(SmyrnaChatDB.professionNotes) do if NS.DB.professionNotes[k]==nil then NS.DB.professionNotes[k]=v end end;SmyrnaChatDB.professionNotes=nil;SmyrnaChatDB.professions=nil end
 end)

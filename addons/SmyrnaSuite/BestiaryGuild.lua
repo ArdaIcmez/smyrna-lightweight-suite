@@ -8,10 +8,15 @@ local function Guild()
  if not GetGuildInfo then return end
  local n,_,_,realm=GetGuildInfo('player')
  if not C.Public(n) or type(n)~='string' then return end
- return n..'@'..(realm or (GetRealmName and GetRealmName()) or '')
+ if not C.Public(realm) or type(realm)~='string' then
+  local r=GetRealmName and GetRealmName()
+  realm=(C.Public(r) and type(r)=='string') and r or ''
+ end
+ return n..'@'..realm
 end
 local RECENT=8192
 local KEYCAP,ITEMCAP,GUILDCAP=4096,256,8
+local rowCache,rowRing,rowSlots,rowCursor,ROW_CACHE_CAP={},{},{},1,64
 local function Decode(text)
  local total,body=(text or ''):match('^(%d+)|([%d:,]*)$')
  local hits={};for id,n in (body or ''):gmatch('(%d+):(%d+)') do hits[tonumber(id)]=tonumber(n) end
@@ -33,12 +38,14 @@ local function Add(d,build,context,npc,diff,ids,migrating)
  if not d.totals[key] then d.keyCount=(d.keyCount or 0)+1 end
  d.totals[key]=total..'|'..table.concat(parts,',')
  d.count=(d.count or 0)+1
+ rowCache[key]=nil;rowSlots[key]=nil
  return true
 end
 local function Remember(d,guid)
+ d.recentSlots=d.recentSlots or {}
  local slot=d.cursor or 1;local old=d.queue[slot]
- if old then d.recent[old]=nil end
- d.queue[slot]=guid;d.recent[guid]=true;d.cursor=slot%RECENT+1
+ if old and d.recentSlots[old]==slot then d.recent[old]=nil;d.recentSlots[old]=nil end
+ d.queue[slot]=guid;d.recent[guid]=true;d.recentSlots[guid]=slot;d.cursor=slot%RECENT+1
 end
 local function Store()
  local guild=Guild();if not guild then return end
@@ -68,8 +75,17 @@ local function Store()
 end
 function B.GuildRows(context,npc,difficulty)
  local d=Store();if not d then return {} end
- local total,hits=Decode(d.totals[B.DB.build..':'..context..':'..difficulty..':'..npc])
- local rows={};for id,n in pairs(hits) do rows[#rows+1]={id=id,pct=100*n/total,source='H',hits=n,windows=total} end
+ local key=B.DB.build..':'..context..':'..difficulty..':'..npc
+ local packed=d.totals[key]
+ if not packed then return {} end
+ local cached=rowCache[key]
+ if cached and cached.raw==packed then return cached.rows end
+ local total,hits=Decode(packed)
+ local rows={};if total>0 then for id,n in pairs(hits) do rows[#rows+1]={id=id,pct=100*n/total,source='H',hits=n,windows=total} end end
+ local old=rowRing[rowCursor]
+ if old and rowSlots[old]==rowCursor then rowCache[old]=nil;rowSlots[old]=nil end
+ rowRing[rowCursor]=key;rowSlots[key]=rowCursor;rowCursor=rowCursor%ROW_CACHE_CAP+1
+ rowCache[key]={raw=packed,rows=rows}
  return rows
 end
 function B.ReceiveGuild(message,channel,sender)
@@ -94,15 +110,21 @@ function B.ShareLoot(guid,context,difficulty,items)
  local payload=table.concat({'1',B.DB.build,context,difficulty,guid,table.concat(ids,',')},'|')
  -- One atomic loot window: never transmit an incomplete item list.
  if #payload>250 then return end
+ if C_ChatInfo and C_ChatInfo.AreOutgoingAddonChatMessagesRestricted and C_ChatInfo.AreOutgoingAddonChatMessagesRestricted() then return end
  if C_ChatInfo and C_ChatInfo.SendAddonMessage then C_ChatInfo.SendAddonMessage(prefix,payload,'GUILD') end
 end
 frame:RegisterEvent('PLAYER_LOGIN');frame:RegisterEvent('CHAT_MSG_ADDON')
-frame:SetScript('OnEvent',function(_,event,p,message,channel,sender)
+frame:SetScript('OnEvent',function(self,event,p,message,channel,sender)
  if event=='PLAYER_LOGIN' then
-  if B.DB.settings.guildShare==nil then B.DB.settings.guildShare=false end
+  self:UnregisterEvent('PLAYER_LOGIN')
+  if B.DB and B.DB.settings.guildShare==nil then B.DB.settings.guildShare=false end
   if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then C_ChatInfo.RegisterAddonMessagePrefix(prefix) end
- elseif p==prefix then
-  local own=UnitFullName and Suite.PlayerName(UnitFullName('player'))
-  if sender~=own then B.ReceiveGuild(message,channel,sender) end
+ elseif C.Public(p) and p==prefix and C.Public(channel) and C.Public(sender) and type(sender)=='string' then
+  local first,last
+  if UnitFullName then first,last=UnitFullName('player') elseif UnitName then first,last=UnitName('player') end
+  local own=Suite.PlayerName(first,last)
+  local short=sender:match('^([^-]+)')
+  local isSelf=(own and (sender==own or short==own)) or (C.Public(first) and type(first)=='string' and (sender==first or short==first))
+  if not isSelf then B.ReceiveGuild(message,channel,sender) end
  end
 end)
