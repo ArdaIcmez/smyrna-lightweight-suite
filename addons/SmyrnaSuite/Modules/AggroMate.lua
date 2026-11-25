@@ -34,10 +34,18 @@ local ITEM_PROBES={
 }
 
 local spellProbes={}
+local rangeProbes={}   -- unified sorted ascending: { {range, kind (1=spell,2=item), id}, ... }
+local isSpellFn,isItemFn=nil,nil
 local activePlates={}  -- [unit] = isHostile (bool)
+local plateInfo={}     -- [unit] = { np, isPlayer, oppFac, isOppPlayer, hostile, level, aggroR, name, probeHint }
 local plateCount,hostilePlateCount=0,0
 local aggroMobs={}     -- [guid] = { guid, id, name, level, px, py, map, w, h, pullAt, lastHitAt, leashSec, leashYards }
 local aggroCount=0
+local playerMoving=false
+local tickerInterval=nil
+local cachedPlayerLvl=1
+local aggroActive=true
+local driverEventsRegistered=false
 local lastMoveMode,lastMoveMap,lastMoveX,lastMoveY,lastMoveAt=nil,nil,nil,nil,0
 local LEASH_MIN_YARDS=10
 local LEASH_STILL_GRACE=0.6
@@ -55,8 +63,7 @@ local function Cfg()
     if c.showHalo==nil then c.showHalo=true end
     if c.showTargetBtn==nil then c.showTargetBtn=true end
     if c.showLeash==nil then c.showLeash=true end
-    if c.tankMate==nil then c.tankMate=true end
-    if c.dpsThreat==nil then c.dpsThreat=true end
+    if c.tankMate==nil then c.tankMate=false end
     if not Num(c.haloSize,120,460) then c.haloSize=260 end
     if not Num(c.haloX,-400,400) then c.haloX=0 end
     if not Num(c.haloY,-300,300) then c.haloY=0 end
@@ -98,6 +105,26 @@ local function IsHarmfulSpellID(spellID,spellName)
     return false
 end
 
+local function RebuildRangeProbes()
+    wipe(rangeProbes)
+    isSpellFn=(C_Spell and C_Spell.IsSpellInRange) or IsSpellInRange
+    isItemFn=(C_Item and C_Item.IsItemInRange) or IsItemInRange
+    local byR={}
+    if isSpellFn then
+        for i=1,#spellProbes do
+            local r,sid=spellProbes[i][1],spellProbes[i][2]
+            if not byR[r] then byR[r]=true; rangeProbes[#rangeProbes+1]={r,1,sid} end
+        end
+    end
+    if isItemFn then
+        for i=1,#ITEM_PROBES do
+            local r,iid=ITEM_PROBES[i][1],ITEM_PROBES[i][2]
+            if not byR[r] then byR[r]=true; rangeProbes[#rangeProbes+1]={r,2,iid} end
+        end
+    end
+    table.sort(rangeProbes,function(a,b) return a[1]<b[1] end)
+end
+
 local function BuildSpellProbes()
     wipe(spellProbes)
     local seen={}
@@ -128,6 +155,7 @@ local function BuildSpellProbes()
         end
     end
     table.sort(spellProbes,function(a,b) return a[1]<b[1] end)
+    RebuildRangeProbes()
 end
 
 -- Classic / Forever aggro radius formula based on mob vs player level (green/yellow/orange/red/gray)
@@ -164,9 +192,26 @@ local function ConColor(mobLevel,playerLevel)
     return .30,.92,.45,"Green","4deb73"
 end
 
--- Estimate distance bracket [minYd, maxYd] to a visible hostile unit using sanctioned APIs
-function Module.EstimateRange(unit)
-    local minYd,maxYd=0,60
+local function ProbeAt(idx,unit,allowItem)
+    local p=rangeProbes[idx]
+    if not p then return nil end
+    local res
+    if p[2]==1 then
+        if not isSpellFn then return nil end
+        res=isSpellFn(p[3],unit)
+    else
+        if not allowItem or not isItemFn then return nil end
+        res=isItemFn(p[3],unit)
+    end
+    if not Public(res) or res==nil then return nil end
+    if res==true or res==1 then return true end
+    if res==false or res==0 then return false end
+    return nil
+end
+
+-- Estimate distance bracket [minYd, maxYd, est] using cutoff fast-reject + temporal band cache + binary search.
+-- Reduces per-mob range API calls from 10-13/tick down to 1-2/tick!
+function Module.EstimateRange(unit,maxNeededYd,hintTbl)
     -- 1. Optional DBM.RangeCheck if installed
     local dbm=DBM and DBM.RangeCheck
     if dbm and dbm.GetUnitMinMaxRange then
@@ -176,41 +221,108 @@ function Module.EstimateRange(unit)
             return lo,hi,est
         end
     end
-    -- 2. Spell proxies (work both out-of-combat and in-combat!)
-    local isSpell=C_Spell and C_Spell.IsSpellInRange or IsSpellInRange
-    if isSpell and #spellProbes>0 then
-        for i=1,#spellProbes do
-            local r,sid=spellProbes[i][1],spellProbes[i][2]
-            local ok,res=pcall(isSpell,sid,unit)
-            if ok and Public(res) then
-                if res==true or res==1 then
-                    if r<maxYd then maxYd=r end
-                elseif res==false or res==0 then
-                    if r>minYd then minYd=r end
+    if #rangeProbes==0 then RebuildRangeProbes() end
+    local n=#rangeProbes
+    if n==0 then return nil,nil,nil end
+    local allowItem=true
+    if not hintTbl then
+        if not UnitExists or not UnitExists(unit) then return nil,nil,nil end
+        if UnitIsFriend and UnitIsFriend("player",unit) then allowItem=false end
+    end
+
+    -- Determine upper search bound from optional maxNeededYd cutoff
+    local limit=n
+    if maxNeededYd then
+        for i=1,n do
+            if rangeProbes[i][1]>=maxNeededYd then limit=i; break end
+        end
+    end
+
+    local h=hintTbl and hintTbl.probeHint
+    -- Fast path A: mob was out of warning range last tick (or brand new with cutoff) -> 1-call cutoff reject!
+    if maxNeededYd and (not h or h>limit) then
+        local cutRes=ProbeAt(limit,unit,allowItem)
+        if cutRes==false then
+            if hintTbl then hintTbl.probeHint=limit+1 end
+            return rangeProbes[limit][1],60,nil
+        end
+    end
+
+    -- Fast path B: temporal band coherence (1-2 calls when mob stays in same range band!)
+    if h and h>=1 and h<=limit then
+        local cur=ProbeAt(h,unit,allowItem)
+        if cur==true then
+            if h==1 then
+                local hi=rangeProbes[1][1]
+                return 0,hi,hi*.5
+            end
+            local prev=ProbeAt(h-1,unit,allowItem)
+            if prev==false then
+                local lo,hi=rangeProbes[h-1][1],rangeProbes[h][1]
+                return lo,hi,(lo+hi)*.5
+            elseif prev==true then
+                -- Moved closer: narrow upper bound to h-1 for binary search below
+                limit=h-1
+            end
+        elseif cur==false then
+            if maxNeededYd and h>=limit then
+                if hintTbl then hintTbl.probeHint=limit+1 end
+                return rangeProbes[h][1],60,nil
+            end
+            if h+1<=limit then
+                local nxt=ProbeAt(h+1,unit,allowItem)
+                if nxt==true then
+                    if hintTbl then hintTbl.probeHint=h+1 end
+                    local lo,hi=rangeProbes[h][1],rangeProbes[h+1][1]
+                    return lo,hi,(lo+hi)*.5
                 end
             end
         end
     end
-    -- 3. Forever-calibrated hostile item range probes (never call on friendly units)
-    local isItem=C_Item and C_Item.IsItemInRange or IsItemInRange
-    if isItem and UnitExists and UnitExists(unit) and not (UnitIsFriend and UnitIsFriend("player",unit)) then
-        for i=1,#ITEM_PROBES do
-            local r,iid=ITEM_PROBES[i][1],ITEM_PROBES[i][2]
-            local ok,res=pcall(isItem,iid,unit)
-            if ok and Public(res) and res~=nil then
-                if res==true or res==1 then
-                    if r<maxYd then maxYd=r end
-                elseif res==false or res==0 then
-                    if r>minYd then minYd=r end
+
+    -- General path: O(log N) binary search over rangeProbes[1..limit] (max 3 calls!)
+    local loIdx,hiIdx=1,limit
+    local bestTrue,bestFalse=nil,nil
+    while loIdx<=hiIdx do
+        local mid=math.floor((loIdx+hiIdx)/2)
+        local r=ProbeAt(mid,unit,allowItem)
+        if r==nil then
+            -- Uncached item probe: probe nearest valid neighbor inside [loIdx,hiIdx]
+            local found=nil
+            for d=1,hiIdx-loIdx do
+                if mid-d>=loIdx then
+                    local t=ProbeAt(mid-d,unit,allowItem)
+                    if t~=nil then mid=mid-d; r=t; found=true; break end
+                end
+                if mid+d<=hiIdx then
+                    local t=ProbeAt(mid+d,unit,allowItem)
+                    if t~=nil then mid=mid+d; r=t; found=true; break end
                 end
             end
+            if not found then break end
+        end
+        if r==true then
+            bestTrue=mid
+            hiIdx=mid-1
+        else
+            bestFalse=mid
+            loIdx=mid+1
         end
     end
-    if maxYd<minYd then minYd,maxYd=maxYd,minYd end
-    if maxYd>=60 and minYd==0 then return nil,nil,nil end
-    -- If closer probes returned nil (uncached), avoid dragging the estimate down to maxYd/2.
-    local est=(minYd==0 and maxYd>13) and (maxYd-3) or ((minYd+maxYd)/2)
-    return minYd,maxYd,est
+
+    if bestTrue then
+        if hintTbl then hintTbl.probeHint=bestTrue end
+        local lo=bestFalse and rangeProbes[bestFalse][1] or 0
+        local hi=rangeProbes[bestTrue][1]
+        local est=(lo==0 and hi>13) and (hi-3) or ((lo+hi)*.5)
+        return lo,hi,est
+    elseif bestFalse then
+        if hintTbl then hintTbl.probeHint=limit+1 end
+        local lo=rangeProbes[bestFalse][1]
+        if maxNeededYd and lo>=maxNeededYd then return lo,60,nil end
+        return lo,60,(lo+60)*.5
+    end
+    return nil,nil,nil
 end
 
 local function DangerColor(margin)
@@ -246,6 +358,11 @@ local function PlayerWorldPos()
     local w,h=C_Map.GetMapWorldSize and C_Map.GetMapWorldSize(m)
     if not Num(x,0,1) or not Num(y,0,1) or not Num(w,1,200000) or not Num(h,1,200000) then return nil end
     return "map",m,x,y,w,h
+end
+
+local function IsTapDenied(unit)
+    local denied=UnitIsTapDenied and UnitIsTapDenied(unit)
+    return (Public(denied) and denied) and true or false
 end
 
 local function IsUnitThreatening(unit)
@@ -473,17 +590,21 @@ end
 local function HideAllArcs()
     for i=1,#arcEntries do
         local e=arcEntries[i]
-        e.anchorNP=nil
-        e.tex:Hide()
-        if e.crest then e.crest:Hide() end
+        if e.shown or e.anchorNP then
+            e.anchorNP=nil; e.shown=false
+            e.tex:Hide()
+            if e.crest then e.crest:Hide() end
+        end
     end
 end
 
 -- ============================================================
 -- TankMate: Combat-safe Nameplate Threat Coloring & Oversized Loose-Mob Alert Frame
--- Green = attacking you (tank) | Amber = losing aggro | Big Red Frame = attacking someone else
+-- Native health color when attacking you | Big Red Frame = attacking someone else
 -- ============================================================
 local tankOverlays={} -- [unit] = Frame
+local tankLastState={} -- [unit] = last applied state
+local anyTankOverlayShown=false
 local tankHooked=false
 
 local function TankThreatState(unit)
@@ -492,6 +613,7 @@ local function TankThreatState(unit)
     if not Public(dead) or dead then return nil end
     local canAtk=UnitCanAttack and UnitCanAttack("player",unit)
     if not Public(canAtk) or not canAtk then return nil end
+    if IsTapDenied(unit) then return nil end
     local mobCombat=UnitAffectingCombat and UnitAffectingCombat(unit)
     if not Public(mobCombat) or not mobCombat then return nil end
     local utok=UNIT_TARGET[unit] or (unit.."target")
@@ -532,36 +654,54 @@ local function AcquireTankOverlay(unit)
 end
 
 local function HideTankOverlay(unit)
+    tankLastState[unit]=nil
     local f=tankOverlays[unit]
     if f and f:IsShown() then f:Hide(); f.anchorNP=nil end
 end
 
 local function HideAllTankOverlays()
+    if not anyTankOverlayShown then return end
+    anyTankOverlayShown=false
+    wipe(tankLastState)
     for _,f in pairs(tankOverlays) do
         if f:IsShown() then f:Hide(); f.anchorNP=nil end
+    end
+end
+
+-- Track only bars we tinted, so regaining aggro restores the native color once.
+local tintedTankBars=setmetatable({}, {__mode="k"})
+local function ApplyTankBarColor(frame,state,nativeUpdated)
+    local hb=frame and not (frame.IsForbidden and frame:IsForbidden()) and frame.healthBar
+    if not hb or (hb.IsForbidden and hb:IsForbidden()) or not hb.SetStatusBarColor then return end
+    if state=="loose" then
+        tintedTankBars[hb]=true
+        hb:SetStatusBarColor(1,.16,.16,1)
+    elseif tintedTankBars[hb] then
+        tintedTankBars[hb]=nil
+        if not nativeUpdated and CompactUnitFrame_UpdateHealthColor then
+            CompactUnitFrame_UpdateHealthColor(frame)
+        end
     end
 end
 
 local function ApplyTankPlateVisual(unit)
     local c=Cfg()
     if not c.enabled or not c.tankMate then HideTankOverlay(unit); return end
-    local np=C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit,false)
+    local info=plateInfo[unit]
+    local np=(info and info.np) or (C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit,false))
     if not np or (np.IsForbidden and np:IsForbidden()) then HideTankOverlay(unit); return end
     local state=TankThreatState(unit)
     local uf=np.UnitFrame
     local hb=uf and not (uf.IsForbidden and uf:IsForbidden()) and uf.healthBar
-    if hb and not (hb.IsForbidden and hb:IsForbidden()) and hb.SetStatusBarColor then
-        if state=="tanked" then
-            hb:SetStatusBarColor(.18,.86,.38,1)
-        elseif state=="losing" then
-            hb:SetStatusBarColor(1,.78,.20,1)
-        elseif state=="loose" then
-            hb:SetStatusBarColor(1,.16,.16,1)
-        end
+    local anchor=(hb and not (hb.IsForbidden and hb:IsForbidden())) and hb or np
+    local ov=tankOverlays[unit]
+    if state==tankLastState[unit] and (state~="loose" or (ov and ov.anchorNP==anchor and ov:IsShown())) then
+        return
     end
+    tankLastState[unit]=state
+    ApplyTankBarColor(uf,state,false)
     if state=="loose" then
-        local ov=AcquireTankOverlay(unit)
-        local anchor=(hb and not (hb.IsForbidden and hb:IsForbidden())) and hb or np
+        ov=AcquireTankOverlay(unit)
         if ov.anchorNP~=anchor then
             ov.anchorNP=anchor
             ov:ClearAllPoints()
@@ -573,104 +713,10 @@ local function ApplyTankPlateVisual(unit)
         local lvl=np.GetFrameLevel and np:GetFrameLevel()
         if type(lvl)=="number" then ov:SetFrameLevel(math.max(1,lvl-1)) end
         if not ov:IsShown() then ov:Show() end
+        anyTankOverlayShown=true
     else
         HideTankOverlay(unit)
     end
-end
-
--- ============================================================
--- DPS Threat Pill: Tiny, non-intrusive live aggro % on current hostile target
--- ============================================================
-local threatPill=nil
-
-local function EnsureThreatPill()
-    if threatPill then return threatPill end
-    local f=CreateFrame("Frame","SmyrnaAggroMateThreatPill",UIParent,"BackdropTemplate")
-    f:SetSize(124,20); f:SetFrameStrata("MEDIUM"); f:SetFrameLevel(22)
-    f:SetClampedToScreen(true); f:SetMovable(true); f:EnableMouse(true)
-    f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
-    f:SetBackdropColor(.055,.065,.092,.88)
-    f:SetBackdropBorderColor(.82,.67,.33,.72)
-    local c=Cfg()
-    if type(c.threatPos)=="table" and Num(c.threatPos[1],0,5000) and Num(c.threatPos[2],0,5000) then
-        f:SetPoint("CENTER",UIParent,"BOTTOMLEFT",c.threatPos[1],c.threatPos[2])
-    else
-        f:SetPoint("CENTER",UIParent,"CENTER",c.haloX or 0,(c.haloY or 0)-math.floor((c.haloSize or 260)*.38))
-    end
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart",function(self)
-        if not (InCombatLockdown and InCombatLockdown()) then self:StartMoving() end
-    end)
-    f:SetScript("OnDragStop",function(self)
-        self:StopMovingOrSizing()
-        local cx,cy=self:GetCenter()
-        if cx and cy then Cfg().threatPos={math.floor(cx+.5),math.floor(cy+.5)} end
-    end)
-    f.lbl=f:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
-    f.lbl:SetPoint("LEFT",7,1); f.lbl:SetText("THREAT"); f.lbl:SetTextColor(.82,.72,.46)
-    f.pct=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-    f.pct:SetPoint("RIGHT",-7,1); f.pct:SetJustifyH("RIGHT")
-    f.barBg=f:CreateTexture(nil,"BACKGROUND",nil,2)
-    f.barBg:SetPoint("BOTTOMLEFT",2,2); f.barBg:SetPoint("BOTTOMRIGHT",-2,2); f.barBg:SetHeight(2)
-    f.barBg:SetColorTexture(.03,.04,.06,.95)
-    f.bar=f:CreateTexture(nil,"ARTWORK",nil,2)
-    f.bar:SetPoint("TOPLEFT",f.barBg,"TOPLEFT",0,0); f.bar:SetPoint("BOTTOMLEFT",f.barBg,"BOTTOMLEFT",0,0)
-    f.bar:SetWidth(1)
-    f:Hide()
-    threatPill=f
-    return f
-end
-
-local function UpdateDPSThreatPill(inCombat)
-    local c=Cfg()
-    if c.enabled and c.dpsThreat and editModeActive and not inCombat then
-        local f=EnsureThreatPill()
-        f.pct:SetText("|cffffd64774%|r")
-        f:SetBackdropBorderColor(1,.84,.28,.85)
-        f.bar:SetWidth(88)
-        Suite.ApplyGradient(f.bar,"HORIZONTAL",.55,.46,.15,.95,1,.84,.28,1)
-        if not f:IsShown() then f:Show() end
-        return
-    end
-    if not c.enabled or not c.dpsThreat or not inCombat or not UnitDetailedThreatSituation then
-        if threatPill and threatPill:IsShown() then threatPill:Hide() end
-        return
-    end
-    if not UnitExists or not UnitExists("target") then
-        if threatPill and threatPill:IsShown() then threatPill:Hide() end
-        return
-    end
-    local dead=UnitIsDeadOrGhost and UnitIsDeadOrGhost("target")
-    local canAtk=UnitCanAttack and UnitCanAttack("player","target")
-    if not Public(dead) or dead or not Public(canAtk) or not canAtk then
-        if threatPill and threatPill:IsShown() then threatPill:Hide() end
-        return
-    end
-    local ok,isTanking,status,pct=pcall(UnitDetailedThreatSituation,"player","target")
-    if not ok or not Public(pct) or type(pct)~="number" then
-        if threatPill and threatPill:IsShown() then threatPill:Hide() end
-        return
-    end
-    local f=EnsureThreatPill()
-    local p=math.max(0,math.min(100,math.floor(pct+.5)))
-    local r,g,b,hex
-    if (Public(isTanking) and isTanking) or p>=100 then
-        r,g,b,hex=1,.24,.24,"ff3d3d"
-        f.pct:SetText("|cff"..hex.."AGGRO|r")
-    elseif p>=90 then
-        r,g,b,hex=1,.48,.18,"ff7a2e"
-        f.pct:SetText("|cff"..hex..p.."%|r")
-    elseif p>=70 then
-        r,g,b,hex=1,.84,.28,"ffd647"
-        f.pct:SetText("|cff"..hex..p.."%|r")
-    else
-        r,g,b,hex=.30,.88,.48,"4ce07a"
-        f.pct:SetText("|cff"..hex..p.."%|r")
-    end
-    f:SetBackdropBorderColor(r,g,b,.80)
-    f.bar:SetWidth(math.max(2,math.floor(120*(p/100))))
-    Suite.ApplyGradient(f.bar,"HORIZONTAL",r*.55,g*.55,b*.55,.95,r,g,b,1)
-    if not f:IsShown() then f:Show() end
 end
 
 local function EnsureTankHook()
@@ -678,32 +724,65 @@ local function EnsureTankHook()
     tankHooked=true
     if hooksecurefunc and CompactUnitFrame_UpdateHealthColor then
         hooksecurefunc("CompactUnitFrame_UpdateHealthColor",function(frame)
-            if not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+            if not aggroActive or not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
             local unit=frame.unit
             if not Public(unit) or type(unit)~="string" or not unit:match("^nameplate%d+$") then return end
             local c=Cfg()
             if not c.enabled or not c.tankMate then return end
             local state=TankThreatState(unit)
-            if not state then return end
-            local hb=frame.healthBar
-            if hb and not (hb.IsForbidden and hb:IsForbidden()) and hb.SetStatusBarColor then
-                if state=="tanked" then hb:SetStatusBarColor(.18,.86,.38,1)
-                elseif state=="losing" then hb:SetStatusBarColor(1,.78,.20,1)
-                else hb:SetStatusBarColor(1,.16,.16,1) end
-            end
+            if state~="loose" then HideTankOverlay(unit) end
+            ApplyTankBarColor(frame,state,true)
         end)
     end
 end
 
--- Hoisted zero-allocation HUD scan state & inspector (zero closures/tables allocated per 0.15s tick!)
+-- Hoisted zero-allocation HUD scan state & inspector (zero closures/tables allocated per tick!)
 local uCfg,uSz,uPlayerLvl,uWarnMargin
 local uWarnCount,uArcCount=0,0
+local uArcNP,uArcR,uArcG,uArcB,uArcA=nil,1,1,1,0
 local uWorstMargin,uWorstEst,uWorstAggro,uWorstName,uWorstUnit,uWorstInCombat=999,nil,nil,nil,nil,false
 local uWorstFaction,uWorstIsPlayer,uWorstLvl=nil,false,nil
 local uSeenTarget=false
 
+-- Cached per-nameplate static metadata (refreshed on NAME_PLATE_UNIT_ADDED / UNIT_FACTION / PLAYER_LEVEL_UP)
+local function RefreshPlateInfo(unit)
+    if not unit or not UnitExists or not UnitExists(unit) then plateInfo[unit]=nil; return nil end
+    if not playerFaction and UnitFactionGroup then
+        local mf=UnitFactionGroup("player")
+        if Public(mf) and (mf=="Alliance" or mf=="Horde") then playerFaction=mf end
+    end
+    local info=plateInfo[unit]
+    if not info then info={}; plateInfo[unit]=info end
+    local isPl=UnitIsPlayer and UnitIsPlayer(unit)
+    info.isPlayer=(Public(isPl) and isPl) and true or false
+    local uFac=UnitFactionGroup and UnitFactionGroup(unit)
+    info.oppFac=(playerFaction and Public(uFac) and (uFac=="Alliance" or uFac=="Horde") and uFac~=playerFaction) and uFac or nil
+    info.isOppPlayer=info.isPlayer and (info.oppFac~=nil)
+    local ca=UnitCanAttack and UnitCanAttack("player",unit)
+    local react=UnitReaction and UnitReaction("player",unit)
+    info.canAtk=(Public(ca) and ca) and true or false
+    info.hostile=(info.canAtk and Public(react) and react<=3) and true or false
+    local ml=UnitLevel and UnitLevel(unit)
+    info.level=Num(ml,-1,200) and ml or nil
+    info.aggroR=Module.AggroRadius(ml,cachedPlayerLvl)
+    local un1,un2=UnitName and UnitName(unit)
+    if info.isPlayer and Suite.PlayerName then
+        local pn=Suite.PlayerName(Public(un1) and un1 or nil,Public(un2) and un2 or nil)
+        info.name=(type(pn)=="string" and pn~="") and pn or (info.oppFac or "Player")
+    else
+        info.name=(Public(un1) and type(un1)=="string") and un1 or "Mob"
+    end
+    local np=C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit,false)
+    info.np=(np and not (np.IsForbidden and np:IsForbidden())) and np or nil
+    info.probeHint=nil
+    return info
+end
+
 local function InspectUnit(unit,allowVisuals)
-    if not UnitExists(unit) then return end
+    local info=plateInfo[unit]
+    if not info then
+        if not UnitExists(unit) then return end
+    end
     local dead=UnitIsDeadOrGhost and UnitIsDeadOrGhost(unit)
     if not Public(dead) or dead then
         if aggroCount>0 then PruneDeadAggro(unit) end
@@ -713,25 +792,35 @@ local function InspectUnit(unit,allowVisuals)
         local same=UnitIsUnit(unit,"target")
         if Public(same) and same then uSeenTarget=true end
     end
-    local isPlayer=UnitIsPlayer and UnitIsPlayer(unit)
-    isPlayer=(Public(isPlayer) and isPlayer) and true or false
-    local uFac=UnitFactionGroup and UnitFactionGroup(unit)
-    local oppFac=(playerFaction and Public(uFac) and (uFac=="Alliance" or uFac=="Horde") and uFac~=playerFaction) and uFac or nil
-    local isOppPlayer=isPlayer and (oppFac~=nil)
-    local canAtk=UnitCanAttack("player",unit)
-    local react=UnitReaction("player",unit)
+    local isPlayer,oppFac,isOppPlayer,hostile,aggroR,ml,unitName,np
     local utok=UNIT_TARGET[unit] or (unit.."target")
     local rawTargetMe=UnitIsUnit(utok,"player")
     local inCombatWithMe=(Public(rawTargetMe) and rawTargetMe) and true or false
+    if info then
+        isPlayer=info.isPlayer; oppFac=info.oppFac; isOppPlayer=info.isOppPlayer
+        hostile=info.hostile or (info.canAtk and inCombatWithMe)
+        aggroR=info.aggroR; ml=info.level; unitName=info.name; np=info.np
+    else
+        local rawPl=UnitIsPlayer and UnitIsPlayer(unit)
+        isPlayer=(Public(rawPl) and rawPl) and true or false
+        local uFac=UnitFactionGroup and UnitFactionGroup(unit)
+        oppFac=(playerFaction and Public(uFac) and (uFac=="Alliance" or uFac=="Horde") and uFac~=playerFaction) and uFac or nil
+        isOppPlayer=isPlayer and (oppFac~=nil)
+        local canAtk=UnitCanAttack("player",unit)
+        local react=UnitReaction("player",unit)
+        hostile=(Public(canAtk) and canAtk and Public(react) and (react<=3 or inCombatWithMe))
+        ml=UnitLevel(unit)
+        aggroR=Module.AggroRadius(ml,uPlayerLvl)
+    end
     if inCombatWithMe and not isPlayer then RegisterAggroUnit(unit) end
-    local hostile=(Public(canAtk) and canAtk and Public(react) and (react<=3 or inCombatWithMe))
     if not (hostile or isOppPlayer) then return end
-    local _,_,est=Module.EstimateRange(unit)
+    if IsTapDenied(unit) and not inCombatWithMe then return end
+    -- Cutoff fast-reject: for normal mobs not attacking us, reject in 1 probe if farther than aggroR + warnMargin!
+    local cutoff=(not isOppPlayer and not inCombatWithMe) and (aggroR+uWarnMargin) or nil
+    local _,_,est=Module.EstimateRange(unit,cutoff,info)
     if not est then
         if isOppPlayer then est=45 else return end
     end
-    local ml=UnitLevel(unit)
-    local aggroR=Module.AggroRadius(ml,uPlayerLvl)
     local margin=est-aggroR
     if not (isOppPlayer or inCombatWithMe or margin<=uWarnMargin) then return end
     uWarnCount=uWarnCount+1
@@ -744,17 +833,25 @@ local function InspectUnit(unit,allowVisuals)
     if effMargin<uWorstMargin then
         uWorstMargin=effMargin; uWorstEst=est; uWorstAggro=aggroR; uWorstInCombat=inCombatWithMe; uWorstUnit=unit
         uWorstFaction=oppFac; uWorstIsPlayer=isOppPlayer; uWorstLvl=Num(ml,-1,200) and ml or nil
-        local un1,un2=UnitName(unit)
-        if isPlayer and Suite.PlayerName then
-            local pn=Suite.PlayerName(Public(un1) and un1 or nil,Public(un2) and un2 or nil)
-            uWorstName=(type(pn)=="string" and pn~="") and pn or (oppFac or "Player")
+        if unitName then
+            uWorstName=unitName
         else
-            uWorstName=(Public(un1) and type(un1)=="string") and un1 or "Mob"
+            local un1,un2=UnitName(unit)
+            if isPlayer and Suite.PlayerName then
+                local pn=Suite.PlayerName(Public(un1) and un1 or nil,Public(un2) and un2 or nil)
+                uWorstName=(type(pn)=="string" and pn~="") and pn or (oppFac or "Player")
+            else
+                uWorstName=(Public(un1) and type(un1)=="string") and un1 or "Mob"
+            end
         end
     end
-    if not allowVisuals then return end
-    local np=C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit,false)
-    if np and not (np.IsForbidden and np:IsForbidden()) then
+    if not allowVisuals or effMargin>=arcMargin then return end
+    if not np then
+        np=C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit,false)
+        if np and (np.IsForbidden and np:IsForbidden()) then np=nil end
+        if info and np then info.np=np end
+    end
+    if np then
         local r,g,b
         if oppFac and FACTION_COLORS[oppFac] then
             local fc=FACTION_COLORS[oppFac]
@@ -764,32 +861,47 @@ local function InspectUnit(unit,allowVisuals)
         end
         local wm=uWarnMargin>1 and uWarnMargin or 1
         local alpha=(isOppPlayer or inCombatWithMe) and .96 or math.min(.94,math.max(.68,.94-(margin/wm)*.26))
-        if effMargin<arcMargin then
-            arcMargin=effMargin
-            uArcCount=1
-            local e=AcquireArc(uArcCount)
-            if e then
-                -- Strictly quarter-ish arc (< halo diameter) so it NEVER completes a 360° circle;
-                -- moves smoothly around the rim following the closest visible enemy's nameplate.
-                local maskW=math.floor(uSz*.72)
-                local maskH=math.floor(uSz*.66)
-                if e.lastMW~=maskW or e.lastMH~=maskH then
-                    e.lastMW=maskW; e.lastMH=maskH
-                    e.mask:SetSize(maskW,maskH)
-                    e.crestMask:SetSize(math.floor(maskW*.68),math.floor(maskH*.68))
-                end
-                if e.anchorNP~=np then
-                    e.anchorNP=np
-                    e.mask:ClearAllPoints()
-                    e.mask:SetPoint("CENTER",np,"CENTER",0,0)
-                    e.crestMask:ClearAllPoints()
-                    e.crestMask:SetPoint("CENTER",np,"CENTER",0,0)
-                end
-                e.tex:SetVertexColor(r,g,b,alpha)
+        arcMargin=effMargin
+        uArcCount=1
+        uArcNP,uArcR,uArcG,uArcB,uArcA=np,r,g,b,alpha
+    end
+end
+
+local function ApplyWinningArc()
+    if uArcCount==1 and uArcNP then
+        local e=AcquireArc(1)
+        if e then
+            local maskW=math.floor(uSz*.72)
+            local maskH=math.floor(uSz*.66)
+            if e.lastMW~=maskW or e.lastMH~=maskH then
+                e.lastMW=maskW; e.lastMH=maskH
+                e.mask:SetSize(maskW,maskH)
+                e.crestMask:SetSize(math.floor(maskW*.68),math.floor(maskH*.68))
+            end
+            if e.anchorNP~=uArcNP then
+                e.anchorNP=uArcNP
+                e.mask:ClearAllPoints()
+                e.mask:SetPoint("CENTER",uArcNP,"CENTER",0,0)
+                e.crestMask:ClearAllPoints()
+                e.crestMask:SetPoint("CENTER",uArcNP,"CENTER",0,0)
+            end
+            if e.lastR~=uArcR or e.lastG~=uArcG or e.lastB~=uArcB or e.lastA~=uArcA then
+                e.lastR,e.lastG,e.lastB,e.lastA=uArcR,uArcG,uArcB,uArcA
+                e.tex:SetVertexColor(uArcR,uArcG,uArcB,uArcA)
+                e.crest:SetVertexColor(math.min(1,uArcR*.78+.24),math.min(1,uArcG*.78+.24),math.min(1,uArcB*.78+.24),math.min(1,uArcA))
+            end
+            if not e.shown then
+                e.shown=true
                 e.tex:Show()
-                e.crest:SetVertexColor(math.min(1,r*.78+.24),math.min(1,g*.78+.24),math.min(1,b*.78+.24),math.min(1,alpha))
                 e.crest:Show()
             end
+        end
+    end
+    for i=uArcCount+1,#arcEntries do
+        local e=arcEntries[i]
+        if e.shown or e.anchorNP then
+            e.anchorNP=nil; e.shown=false; e.tex:Hide()
+            if e.crest then e.crest:Hide() end
         end
     end
 end
@@ -850,7 +962,7 @@ local function UpdateHUD()
     -- 1. Transparent center halo + GPU-masked directional danger arcs + optional target frame
     -- Automatically hides during combat so the combat screen stays clean (still tracks aggro for leash).
     uCfg=c; uSz=sz; uPlayerLvl=playerLvl; uWarnMargin=c.warnMargin or 14
-    uWarnCount=0; uArcCount=0; uSeenTarget=false; arcMargin=math.huge
+    uWarnCount=0; uArcCount=0; uArcNP=nil; uSeenTarget=false; arcMargin=math.huge
     uWorstMargin=999; uWorstEst=nil; uWorstAggro=nil; uWorstName=nil; uWorstUnit=nil; uWorstInCombat=false
     uWorstFaction=nil; uWorstIsPlayer=false; uWorstLvl=nil
     local showHaloNow=c.showHalo and not inCombat
@@ -860,20 +972,13 @@ local function UpdateHUD()
             if isHostile then InspectUnit(unit,true) end
         end
         if not uSeenTarget and UnitExists("target") then InspectUnit("target",false) end
-        for i=uArcCount+1,#arcEntries do
-            local e=arcEntries[i]
-            if e.anchorNP or e.tex:IsShown() then
-                e.anchorNP=nil; e.tex:Hide()
-                if e.crest then e.crest:Hide() end
-            end
-        end
-        local hr,hg,hb=HaloColor()
-        local baseAlpha=c.haloAlpha or 0
+        ApplyWinningArc()
         -- Never show a full circle during normal gameplay — directional arcs only.
         if editModeActive or sliderDragging then
-            haloFrame.base:SetVertexColor(hr,hg,hb,math.max(.35,baseAlpha))
-            haloFrame.base:Show()
-        else
+            local hr,hg,hb=HaloColor()
+            haloFrame.base:SetVertexColor(hr,hg,hb,math.max(.35,c.haloAlpha or 0))
+            if not haloFrame.base:IsShown() then haloFrame.base:Show() end
+        elseif haloFrame.base:IsShown() then
             haloFrame.base:Hide()
         end
         if uWarnCount>0 then
@@ -901,37 +1006,41 @@ local function UpdateHUD()
                             icon:SetTexCoord(0,1,0,1)
                         end
                     end
-                    if not uWorstFaction then
-                        haloFrame.statusIcon:SetVertexColor(r,g,b,1)
-                    end
                     local extra=uWarnCount-1
-                    local extraStr=(extra>0) and (" |cff9aa4b2(+"..extra..")|r") or ""
-                    local statusTxt
-                    if uWorstIsPlayer then
-                        local lvlStr=(uWorstLvl and uWorstLvl>0) and ("Lv "..uWorstLvl) or "Lv ??"
-                        statusTxt=string.format("%s |cffb8c4d4(%s)|r%s",uWorstName or uWorstFaction or "Enemy",lvlStr,extraStr)
-                    else
-                        statusTxt=(uWorstName or "Mob")..extraStr
+                    if sbg.lastSrcName~=uWorstName or sbg.lastExtra~=extra or sbg.lastIsPl~=uWorstIsPlayer or sbg.lastLvl~=uWorstLvl then
+                        sbg.lastSrcName=uWorstName; sbg.lastExtra=extra; sbg.lastIsPl=uWorstIsPlayer; sbg.lastLvl=uWorstLvl
+                        local extraStr=(extra>0) and (" |cff9aa4b2(+"..extra..")|r") or ""
+                        local statusTxt
+                        if uWorstIsPlayer then
+                            local lvlStr=(uWorstLvl and uWorstLvl>0) and ("Lv "..uWorstLvl) or "Lv ??"
+                            statusTxt=string.format("%s |cffb8c4d4(%s)|r%s",uWorstName or uWorstFaction or "Enemy",lvlStr,extraStr)
+                        else
+                            statusTxt=(uWorstName or "Mob")..extraStr
+                        end
+                        if sbg.lastTxt~=statusTxt then
+                            sbg.lastTxt=statusTxt
+                            haloFrame.status:SetText(statusTxt)
+                            local sw=haloFrame.status:GetStringWidth() or 80
+                            sbg:SetSize(math.max(82,math.floor(sw+26)),18)
+                        end
+                        sbg.targetName=uWorstName; sbg.targetFaction=uWorstFaction; sbg.targetIsPlayer=uWorstIsPlayer; sbg.targetExtra=extra
+                        local safeName=(type(uWorstName)=="string" and uWorstName~="") and uWorstName:gsub("[\r\n]",""):sub(1,80) or nil
+                        local macro=safeName and ("/targetexact "..safeName) or ""
+                        if macro~=sbg.lastMacro then
+                            sbg.lastMacro=macro
+                            sbg:SetAttribute("type","macro")
+                            sbg:SetAttribute("type1","macro")
+                            sbg:SetAttribute("macrotext",macro)
+                            sbg:SetAttribute("macrotext1",macro)
+                        end
                     end
-                    if sbg.lastTxt~=statusTxt then
-                        sbg.lastTxt=statusTxt
-                        haloFrame.status:SetText(statusTxt)
-                        local sw=haloFrame.status:GetStringWidth() or 80
-                        sbg:SetSize(math.max(82,math.floor(sw+26)),18)
-                    end
-                    haloFrame.status:SetTextColor(r,g,b)
-                    sbg.bgR,sbg.bgG,sbg.bgB=r*.16,g*.16,b*.16
-                    if not sbg:IsMouseOver() then sbg:SetBackdropColor(sbg.bgR,sbg.bgG,sbg.bgB,.62) end
-                    sbg:SetBackdropBorderColor(r,g,b,.85)
-                    sbg.targetName=uWorstName; sbg.targetFaction=uWorstFaction; sbg.targetIsPlayer=uWorstIsPlayer; sbg.targetExtra=extra
-                    local safeName=(type(uWorstName)=="string" and uWorstName~="") and uWorstName:gsub("[\r\n]",""):sub(1,80) or nil
-                    local macro=safeName and ("/targetexact "..safeName) or ""
-                    if macro~=sbg.lastMacro then
-                        sbg.lastMacro=macro
-                        sbg:SetAttribute("type","macro")
-                        sbg:SetAttribute("type1","macro")
-                        sbg:SetAttribute("macrotext",macro)
-                        sbg:SetAttribute("macrotext1",macro)
+                    if sbg.lastR~=r or sbg.lastG~=g or sbg.lastB~=b then
+                        sbg.lastR,sbg.lastG,sbg.lastB=r,g,b
+                        if not uWorstFaction then haloFrame.statusIcon:SetVertexColor(r,g,b,1) end
+                        haloFrame.status:SetTextColor(r,g,b)
+                        sbg.bgR,sbg.bgG,sbg.bgB=r*.16,g*.16,b*.16
+                        if not sbg:IsMouseOver() then sbg:SetBackdropColor(sbg.bgR,sbg.bgG,sbg.bgB,.62) end
+                        sbg:SetBackdropBorderColor(r,g,b,.85)
                     end
                     if not sbg:IsShown() then sbg:Show() end
                 end
@@ -960,14 +1069,29 @@ local function UpdateHUD()
         HideAllTankOverlays()
     end
 
-    -- 1c. Tiny live DPS Threat % pill on current hostile target
-    UpdateDPSThreatPill(inCombat)
-
-    -- 2. Compact Aggro & Leash Tracker Card (moved to UpdateLeashCard to keep UpdateHUD upvalue count low)
+    -- 2. Compact Aggro & Leash Tracker Card + Adaptive Ticker Rate (kept outside UpdateHUD for upvalue headroom)
     if Suite._UpdateAggroLeash then Suite._UpdateAggroLeash(c,inCombat) end
 end
 
+local function EnsureTickerRate(c,inCombat)
+    if not ticker then return end
+    local want
+    if editModeActive or sliderDragging then
+        want=0.15
+    elseif inCombat then
+        want=(c.showLeash and aggroCount>0 and playerMoving) and 0.20 or 0.60
+    else
+        want=(playerMoving or uWorstIsPlayer or uWorstMargin<=4) and 0.20 or 0.50
+    end
+    if tickerInterval~=want then
+        ticker:Cancel()
+        ticker=C_Timer.NewTicker(want,UpdateHUD)
+        tickerInterval=want
+    end
+end
+
 Suite._UpdateAggroLeash=function(c,inCombat)
+    EnsureTickerRate(c,inCombat)
     if not inCombat then
         if aggroCount>0 then wipe(aggroMobs); aggroCount=0 end
         lastMoveMode,lastMoveMap,lastMoveX,lastMoveY,lastMoveAt=nil,nil,nil,nil,0
@@ -1106,13 +1230,22 @@ end
 
 local function SyncTicker()
     local c=Cfg()
+    local inCombat=(UnitAffectingCombat and UnitAffectingCombat("player")) or (InCombatLockdown and InCombatLockdown())
     local hasHostileTarget=IsUnitThreatening("target")
-    local need=c.enabled and (hostilePlateCount>0 or aggroCount>0 or hasHostileTarget or (UnitAffectingCombat and UnitAffectingCombat("player")))
+    local need=c.enabled and (hostilePlateCount>0 or aggroCount>0 or hasHostileTarget or inCombat)
     if need then
         UpdateHUD()
-        if not ticker then ticker=C_Timer.NewTicker(.15,UpdateHUD) end
+        local want
+        if editModeActive or sliderDragging then want=0.15
+        elseif inCombat then want=(c.showLeash and aggroCount>0 and playerMoving) and 0.20 or 0.60
+        else want=(playerMoving or uWorstIsPlayer or uWorstMargin<=4) and 0.20 or 0.50 end
+        if not ticker or tickerInterval~=want then
+            if ticker then ticker:Cancel() end
+            ticker=C_Timer.NewTicker(want,UpdateHUD)
+            tickerInterval=want
+        end
     else
-        if ticker then ticker:Cancel(); ticker=nil end
+        if ticker then ticker:Cancel(); ticker=nil; tickerInterval=nil end
         UpdateHUD()
     end
 end
@@ -1285,7 +1418,11 @@ function Module.Open()
         local function AddCheck(key,text,tipBody,x,y)
             local cb=CreateFrame("CheckButton",nil,card,"UICheckButtonTemplate"); cb:SetPoint("TOPLEFT",x,y)
             local lbl=cb:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); lbl:SetPoint("LEFT",cb,"RIGHT",2,0); lbl:SetText(text)
-            cb:SetScript("OnClick",function(self) Cfg()[key]=self:GetChecked() and true or false; SyncTicker() end)
+            cb:SetScript("OnClick",function(self)
+                local v=self:GetChecked() and true or false
+                if key=="enabled" and Module.SetEnabled then Module.SetEnabled(v)
+                else Cfg()[key]=v; SyncTicker() end
+            end)
             Suite.AttachTooltip(cb,text,tipBody,lbl)
             checks[key]=cb
         end
@@ -1293,7 +1430,7 @@ function Module.Open()
         AddCheck("showHalo","Threat arcs","Sleek click-through directional outer arcs pointing toward nearby hostile mobs (automatically hidden during combat).",120,-34)
         AddCheck("showTargetBtn","Target frame","Low-opacity clickable enemy frame near your feet — left-click out of combat to target the closest threat.",244,-34)
         AddCheck("showLeash","Leash tracker","Compact card that appears only while running >10 yd away from aggroed mobs and closes automatically when standing still.",382,-34)
-        AddCheck("tankMate","TankMate","Color in-combat nameplates Green when attacking you (tank), Amber when losing aggro, or oversized Red + NO AGGRO border when attacking someone else.",524,-34)
+        AddCheck("tankMate","TankMate","Keep normal health-bar colors when attacking you; show bright Red + NO AGGRO border when attacking someone else.",524,-34)
 
         local function HookGhost(slider)
             slider:HookScript("OnMouseDown",function() SetMenuGhost(true) end)
@@ -1430,58 +1567,136 @@ function Module.Open()
 end
 
 local driver=CreateFrame("Frame")
-driver:RegisterEvent("PLAYER_LOGIN")
-driver:RegisterEvent("SPELLS_CHANGED")
-driver:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-driver:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-driver:RegisterEvent("PLAYER_REGEN_DISABLED")
-driver:RegisterEvent("PLAYER_REGEN_ENABLED")
-driver:RegisterEvent("PLAYER_TARGET_CHANGED")
-driver:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
-pcall(driver.RegisterEvent,driver,"UNIT_THREAT_LIST_UPDATE")
-if driver.RegisterUnitEvent then
-    driver:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED","player")
-else
-    driver:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+local RUNTIME_EVENTS={
+    "SPELLS_CHANGED","NAME_PLATE_UNIT_ADDED","NAME_PLATE_UNIT_REMOVED",
+    "PLAYER_REGEN_DISABLED","PLAYER_REGEN_ENABLED","PLAYER_TARGET_CHANGED",
+    "PLAYER_STARTED_MOVING","PLAYER_STOPPED_MOVING","PLAYER_LEVEL_UP",
+    "UNIT_FACTION","UNIT_THREAT_SITUATION_UPDATE","UNIT_THREAT_LIST_UPDATE",
+}
+
+local function SeedVisiblePlates()
+    wipe(activePlates); wipe(plateInfo); plateCount=0; hostilePlateCount=0
+    for i=1,40 do
+        local u="nameplate"..i
+        if UnitExists and UnitExists(u) and activePlates[u]==nil then
+            local info=RefreshPlateInfo(u)
+            local h=(info and (info.hostile or info.isOppPlayer or info.canAtk)) or IsUnitThreatening(u)
+            activePlates[u]=h; plateCount=plateCount+1
+            if h then hostilePlateCount=hostilePlateCount+1 end
+        end
+    end
 end
+
+local function SyncDriverEvents(want)
+    aggroActive=want and true or false
+    if aggroActive then
+        if not driverEventsRegistered then
+            driverEventsRegistered=true
+            for i=1,#RUNTIME_EVENTS do pcall(driver.RegisterEvent,driver,RUNTIME_EVENTS[i]) end
+            if driver.RegisterUnitEvent then
+                pcall(driver.RegisterUnitEvent,driver,"UNIT_SPELLCAST_SUCCEEDED","player")
+            else
+                pcall(driver.RegisterEvent,driver,"UNIT_SPELLCAST_SUCCEEDED")
+            end
+        end
+    else
+        if driverEventsRegistered then
+            driverEventsRegistered=false
+            for i=1,#RUNTIME_EVENTS do pcall(driver.UnregisterEvent,driver,RUNTIME_EVENTS[i]) end
+            pcall(driver.UnregisterEvent,driver,"UNIT_SPELLCAST_SUCCEEDED")
+        end
+        if ticker then ticker:Cancel(); ticker=nil; tickerInterval=nil end
+        wipe(activePlates); wipe(plateInfo); plateCount=0; hostilePlateCount=0
+        wipe(aggroMobs); aggroCount=0
+        uWarnCount,uArcCount,uArcNP=0,0,nil; uWorstMargin=999; uWorstIsPlayer=false
+        HideAllArcs(); HideAllTankOverlays()
+        if haloFrame then
+            haloFrame:Hide()
+            if not (InCombatLockdown and InCombatLockdown()) and haloFrame.statusBg then haloFrame.statusBg:Hide() end
+        end
+        if leashPanel then leashPanel:Hide() end
+    end
+end
+
+function Module.SetEnabled(on)
+    local c=Cfg()
+    c.enabled=on and true or false
+    if checks and checks.enabled then checks.enabled:SetChecked(c.enabled) end
+    if c.enabled and (not Suite.Config.features or Suite.Config.features[name]~=false) then
+        SyncDriverEvents(true)
+        SeedVisiblePlates()
+        SyncTicker()
+    else
+        SyncDriverEvents(false)
+    end
+end
+
+driver:RegisterEvent("PLAYER_LOGIN")
+SyncDriverEvents(Cfg().enabled and (not Suite.Config.features or Suite.Config.features[name]~=false))
 driver:SetScript("OnEvent",function(self,event,arg1,_,arg3)
     if event=="PLAYER_LOGIN" then
         self:UnregisterEvent("PLAYER_LOGIN")
+        local pl=UnitLevel and UnitLevel("player")
+        cachedPlayerLvl=Num(pl,1,200) and pl or 1
+        playerMoving=(IsPlayerMoving and IsPlayerMoving()) and true or false
         BuildSpellProbes()
         EnsureTankHook()
         if C_Item and C_Item.RequestLoadItemDataByID then
             for i=1,#ITEM_PROBES do pcall(C_Item.RequestLoadItemDataByID,ITEM_PROBES[i][2]) end
         end
-        -- Seed any already-visible nameplates using UnitExists only (never touch forbidden NamePlate frames!)
-        for i=1,40 do
-            local u="nameplate"..i
-            if UnitExists and UnitExists(u) and activePlates[u]==nil then
-                local h=IsUnitThreatening(u)
-                activePlates[u]=h; plateCount=plateCount+1
-                if h then hostilePlateCount=hostilePlateCount+1 end
-            end
+        local wantOn=Cfg().enabled and (not Suite.Config.features or Suite.Config.features[name]~=false)
+        SyncDriverEvents(wantOn)
+        if wantOn then
+            -- Seed any already-visible nameplates using UnitExists only (never touch forbidden NamePlate frames!)
+            SeedVisiblePlates()
         end
         -- Hook Blizzard Edit Mode so halo can be moved & resized natively when Edit Mode is open
         if EventRegistry and EventRegistry.RegisterCallback then
-            pcall(EventRegistry.RegisterCallback,EventRegistry,"EditMode.Enter",function() SetEditMode(true,false) end,Module)
-            pcall(EventRegistry.RegisterCallback,EventRegistry,"EditMode.Exit",function() SetEditMode(false,false) end,Module)
+            pcall(EventRegistry.RegisterCallback,EventRegistry,"EditMode.Enter",function() if aggroActive then SetEditMode(true,false) end end,Module)
+            pcall(EventRegistry.RegisterCallback,EventRegistry,"EditMode.Exit",function() if editModeActive then SetEditMode(false,false) end end,Module)
         end
         if EditModeManagerFrame and EditModeManagerFrame.HookScript then
-            EditModeManagerFrame:HookScript("OnShow",function() SetEditMode(true,false) end)
-            EditModeManagerFrame:HookScript("OnHide",function() SetEditMode(false,false) end)
+            EditModeManagerFrame:HookScript("OnShow",function() if aggroActive then SetEditMode(true,false) end end)
+            EditModeManagerFrame:HookScript("OnHide",function() if editModeActive then SetEditMode(false,false) end end)
         end
-        SyncTicker()
+        if wantOn then SyncTicker() end
+    elseif not aggroActive then
+        return
     elseif event=="SPELLS_CHANGED" then
         BuildSpellProbes()
+    elseif event=="PLAYER_STARTED_MOVING" then
+        playerMoving=true
+        if ticker then SyncTicker() end
+    elseif event=="PLAYER_STOPPED_MOVING" then
+        playerMoving=false
+        if ticker then SyncTicker() end
+    elseif event=="PLAYER_LEVEL_UP" then
+        local pl=Num(arg1,1,200) and arg1 or (UnitLevel and UnitLevel("player"))
+        cachedPlayerLvl=Num(pl,1,200) and pl or cachedPlayerLvl
+        for u,info in pairs(plateInfo) do
+            info.aggroR=Module.AggroRadius(info.level,cachedPlayerLvl)
+        end
+    elseif event=="UNIT_FACTION" then
+        if Public(arg1) and type(arg1)=="string" and activePlates[arg1]~=nil then
+            local info=RefreshPlateInfo(arg1)
+            local h=(info and (info.hostile or info.isOppPlayer or info.canAtk)) or false
+            if h~=activePlates[arg1] then
+                activePlates[arg1]=h
+                hostilePlateCount=math.max(0,hostilePlateCount+(h and 1 or -1))
+                SyncTicker()
+            end
+        end
     elseif event=="NAME_PLATE_UNIT_ADDED" then
         if Public(arg1) and type(arg1)=="string" and activePlates[arg1]==nil then
-            local h=IsUnitThreatening(arg1)
+            local info=RefreshPlateInfo(arg1)
+            local h=(info and (info.hostile or info.isOppPlayer or info.canAtk)) or IsUnitThreatening(arg1)
             activePlates[arg1]=h; plateCount=plateCount+1
             if h then hostilePlateCount=hostilePlateCount+1; SyncTicker() end
         end
     elseif event=="NAME_PLATE_UNIT_REMOVED" then
         if Public(arg1) and type(arg1)=="string" then
             HideTankOverlay(arg1)
+            plateInfo[arg1]=nil
             local prev=activePlates[arg1]
             if prev~=nil then
                 activePlates[arg1]=nil; plateCount=math.max(0,plateCount-1)
@@ -1496,10 +1711,17 @@ driver:SetScript("OnEvent",function(self,event,arg1,_,arg3)
             if sliderDragging then SetMenuGhost(false) end
         end
         if UnitTargetsPlayer("target") then RegisterAggroUnit("target") end
-        for u,isH in pairs(activePlates) do
-            if UnitTargetsPlayer(u) then
-                if not isH then activePlates[u]=true; hostilePlateCount=hostilePlateCount+1 end
-                RegisterAggroUnit(u)
+        if event=="UNIT_THREAT_SITUATION_UPDATE" and Public(arg1) and type(arg1)=="string" and activePlates[arg1]~=nil then
+            if UnitTargetsPlayer(arg1) then
+                if not activePlates[arg1] then activePlates[arg1]=true; hostilePlateCount=hostilePlateCount+1 end
+                RegisterAggroUnit(arg1)
+            end
+        else
+            for u,isH in pairs(activePlates) do
+                if UnitTargetsPlayer(u) then
+                    if not isH then activePlates[u]=true; hostilePlateCount=hostilePlateCount+1 end
+                    RegisterAggroUnit(u)
+                end
             end
         end
         SyncTicker()

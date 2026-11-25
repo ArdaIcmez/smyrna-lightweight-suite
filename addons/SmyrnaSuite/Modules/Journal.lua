@@ -41,6 +41,7 @@ local function Cfg()
     if type(c)~="table" then c={}; Suite.Config.journal=c end
     if c.autoTracker==nil then c.autoTracker=true end
     if c.locked==nil then c.locked=false end
+    if not Public(c.mapPinSize) or type(c.mapPinSize)~="number" or c.mapPinSize<18 or c.mapPinSize>42 then c.mapPinSize=26 end
     return c
 end
 Module.Config=Cfg
@@ -205,6 +206,12 @@ end
 local function ApplyBossPortrait(tex,boss)
     if not tex then return end
     local npcID=boss and boss.id
+    local portraits=Suite.WorldDB and Suite.WorldDB.BossPortraits
+    local bundled=npcID and portraits and portraits[npcID]
+    if bundled then
+        tex:SetTexCoord(0,1,0,1)
+        if tex:SetTexture("Interface\\AddOns\\SmyrnaWorldDB\\Portraits\\"..bundled)~=false then return end
+    end
     if npcID and SetPortraitTextureFromCreatureDisplayID then
         local cached=bossDisplayCache[npcID]
         if cached and cached>0 then
@@ -221,6 +228,7 @@ local function ApplyBossPortrait(tex,boss)
     tex:SetTexture(BossTileIcon(boss))
 end
 
+Module.ApplyBossPortrait=ApplyBossPortrait
 local function BossHasUpgrade(boss,uCtx)
     if not boss or not boss.lt then return false end
     for _,it in ipairs(boss.lt) do
@@ -303,7 +311,7 @@ end
 local function ScheduleLootHide()
     lootHideGen=lootHideGen+1
     local gen=lootHideGen
-    C_Timer.After(.40,function()
+    C_Timer.After(.08,function()
         if gen~=lootHideGen or not lootPop or not lootPop:IsShown() then return end
         if lootPop:IsMouseOver() or (lootOwnerTile and lootOwnerTile:IsMouseOver()) then return end
         lootPop:Hide()
@@ -329,6 +337,17 @@ local function EnsureLootPopover()
     lootPop.hint:SetPoint("BOTTOMLEFT",10,7); lootPop.hint:SetWidth(266); lootPop.hint:SetJustifyH("LEFT"); lootPop.hint:SetTextColor(.58,.64,.74)
     lootPop:SetScript("OnEnter",CancelLootHide)
     lootPop:SetScript("OnLeave",ScheduleLootHide)
+    lootPop:SetScript("OnHide",function(self)
+        lootHideGen=lootHideGen+1;lootOwnerTile=nil
+        if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then
+            local owner=GameTooltip.GetOwner and GameTooltip:GetOwner()
+            for i=1,6 do
+                if not owner then break end
+                if owner==self then SafeHideTip();break end
+                owner=owner.GetParent and owner:GetParent()
+            end
+        end
+    end)
     lootPop:Hide()
     return lootPop
 end
@@ -338,15 +357,15 @@ local function GetLootRow(i)
     if r then return r end
     EnsureLootPopover()
     r=CreateFrame("Button",nil,lootPop,"BackdropTemplate")
-    r:SetSize(266,26)
+    r:SetSize(266,34)
     Suite.StyleCard(r,.074,.086,.118)
     r:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
     local hl=r:GetHighlightTexture(); if hl then hl:SetVertexColor(.95,.78,.36,.14) end
-    r.tile=Suite.CreateIconTile(r,20); r.tile:SetPoint("LEFT",4,0)
+    r.tile=Suite.CreateIconTile(r,24); r.tile:SetPoint("LEFT",4,0)
     r.name=r:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-    r.name:SetPoint("LEFT",29,0); r.name:SetWidth(166); r.name:SetJustifyH("LEFT"); r.name:SetMaxLines(1)
+    r.name:SetPoint("TOPLEFT",34,-3); r.name:SetWidth(226); r.name:SetJustifyH("LEFT"); r.name:SetMaxLines(1)
     r.right=r:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-    r.right:SetPoint("RIGHT",-6,0); r.right:SetJustifyH("RIGHT")
+    r.right:SetPoint("TOPLEFT",34,-18); r.right:SetWidth(226); r.right:SetMaxLines(1); r.right:SetJustifyH("LEFT")
     r:SetScript("OnEnter",function(self)
         CancelLootHide()
         if self.itemID and GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then
@@ -400,20 +419,20 @@ local function ShowBossLootPopover(tile,boss,killed,seen)
 
     local uCtx=MakeUpgradeContext()
     local shownRows=0
-    local maxRows=math.min(#items,12)
+    local maxRows=math.min(#items,6)
     for i=1,maxRows do
         local it=items[i]
         local itemID,itemName,slot,qual=it[1],it[2],it[3],it[4] or 2
         local row=GetLootRow(i)
         row.itemID=itemID
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT",10,-(metaY+(i-1)*28))
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT",10,-(metaY+(i-1)*36))
         row.tile.icon:SetTexture(ItemIcon(itemID))
         local qc=ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[qual]
         local qr,qg,qb=qc and qc.r or .9,qc and qc.g or .9,qc and qc.b or .94
         row.tile:SetBackdropBorderColor(qr,qg,qb,.92)
         row.name:SetText(itemName or ("Item #"..itemID)); row.name:SetTextColor(qr,qg,qb)
         local upg=UpgradeBadge(itemID,uCtx)
-        row.right:SetText(upg or ("|cff8a95a8"..(slot or "").."|r"))
+        row.right:SetText("|cff8a95a8"..(slot or "").."|r"..(upg and ("  "..upg) or ""))
         row:Show()
         shownRows=i
     end
@@ -422,7 +441,7 @@ local function ShowBossLootPopover(tile,boss,killed,seen)
     local extra=#items-maxRows
     local extraNote=extra>0 and (" (+"..extra.." more in Journal)") or ""
     lootPop.hint:SetText((boss.id and "Click boss: Bestiary\nCtrl + left-click item to expand upgrades" or "Hover item for tooltip\nCtrl + left-click to expand upgrades")..extraNote)
-    local h=metaY+shownRows*28+math.max(24,lootPop.hint:GetStringHeight()+14)
+    local h=metaY+shownRows*36+math.max(24,lootPop.hint:GetStringHeight()+14)
     lootPop:SetSize(286,math.max(76,h))
 
     -- Anchor cleanly beside the tracker or hovered map pin on whichever side has more room
@@ -680,7 +699,7 @@ local function MakeListButton(i)
     b.meta=b:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
     b.meta:SetPoint("TOPLEFT",38,-20); b.meta:SetWidth(174); b.meta:SetJustifyH("LEFT"); b.meta:SetMaxLines(1); b.meta:SetTextColor(.68,.74,.82)
     b:SetScript("OnClick",function(self)
-        if self.slug then selectedSlug=self.slug; selectedFloor=1; highlightItemID=nil; highlightBossName=nil; Module.RefreshDetail(); Module.RefreshList() end
+        if self.slug then if lootPop then lootPop:Hide() end; selectedSlug=self.slug; selectedFloor=1; highlightItemID=nil; highlightBossName=nil; Module.RefreshDetail(); Module.RefreshList() end
     end)
     listBtns[i]=b
     return b
@@ -761,6 +780,8 @@ end
 
 function Module.RefreshDetail()
     if not window or not window:IsShown() then return end
+    if Module.QuestView then Module.QuestView:Hide() end
+    if Module.BossView then Module.BossView:Hide() end
     for k,b in pairs(subTabBtns) do Suite.SetButtonSelected(b,detailTab==k) end
     local d=selectedSlug and Suite.WorldDB and Suite.WorldDB.Dungeon(selectedSlug)
     if not d then
@@ -772,7 +793,7 @@ function Module.RefreshDetail()
     end
     local pf=PlayerFaction()
     local visQuests=0
-    for _,q in ipairs(d.q or {}) do if QuestMatchesFaction(q,pf) then visQuests=visQuests+1 end end
+    for _,q in ipairs((Suite.WorldDB.JournalQuests and Suite.WorldDB.JournalQuests(d.s)) or d.q or {}) do if QuestMatchesFaction(q,pf) then visQuests=visQuests+1 end end
     local fvTag=d.fv and "  |cff55ccff[WoW Forever]|r" or ""
     headerTitle:SetText((d.n or "")..fvTag)
     headerMeta:SetText("Levels "..(d.l or "?").."  ·  "..(d.loc or "Azeroth").."  ·  "..#(d.b or {}).." bosses  ·  "..visQuests.." quests")
@@ -782,6 +803,14 @@ function Module.RefreshDetail()
     local scrollTargetY=0
     local y,idx=0,0
     if mapView then mapView:SetShown(detailTab=="map") end
+    if detailTab=="quests" and Module.RenderQuestPage then
+        if detailScroll then detailScroll:Hide() end
+        Module.RenderQuestPage(window,d,pf);return
+    elseif detailTab=="bosses" and Module.RenderBossPage then
+        if detailScroll then detailScroll:Hide() end
+        Module.RenderBossPage(window,d,highlightBossName,highlightItemID)
+        highlightBossName=nil;highlightItemID=nil;return
+    end
     if detailScroll then detailScroll:SetShown(detailTab~="map") end
 
     if detailTab=="map" then
@@ -1116,6 +1145,7 @@ local function RenderDungeonMapFloor(d,floorIdx)
             local seen=isCurrentRun and runRareSeen[boss and boss.n or bp[1]] and true or false
             local isRare=boss and boss.r==1
             p.boss=boss; p.bossName=bp[1]; p.killed=killed; p.seen=seen
+            local pinSize=Cfg().mapPinSize;p:SetSize(pinSize,pinSize)
             p:ClearAllPoints()
             p:SetPoint("CENTER",mapCanvas,"TOPLEFT",(bp[3]/1000)*mapW,-(bp[4]/1000)*mapH)
             ApplyBossPortrait(p.icon,boss)
@@ -1133,7 +1163,12 @@ end
 
 function Module.RefreshDungeonMap(d)
     if not mapView then return end
+    mapView.dungeon=d
     RenderDungeonMapFloor(d,selectedFloor)
+    if mapView.pinLabel then
+        local size=Cfg().mapPinSize;mapView.pinLabel:SetText("Boss icons: "..size.."px")
+        mapView.pinMinus:SetEnabled(size>18);mapView.pinPlus:SetEnabled(size<42)
+    end
 end
 
 -- ============================================================
@@ -1281,6 +1316,7 @@ function Module.Open()
             local k,lbl,w=entry[1],entry[2],entry[3]
             local b=CreateFrame("Button",nil,window,"UIPanelButtonTemplate"); b:SetSize(w,22); b:SetPoint("TOPLEFT",tx,-104); b:SetText(lbl); Suite.StyleButton(b)
             b:SetScript("OnClick",function()
+                if lootPop then lootPop:Hide() end
                 detailTab=k
                 if k=="map" then selectedFloor=1 end
                 Module.RefreshDetail()
@@ -1305,7 +1341,15 @@ function Module.Open()
         mapEmptyLbl:SetPoint("CENTER"); mapEmptyLbl:SetWidth(420); mapEmptyLbl:SetTextColor(.70,.75,.84); mapEmptyLbl:Hide()
         local mapHint=mapView:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
         mapHint:SetPoint("BOTTOMLEFT",2,4); mapHint:SetText("Hover any boss pin for drops, upgrades & resistances  ·  Click pin to view loot\nCtrl + left-click to expand Bestiary")
-        mapHint:SetTextColor(.68,.74,.84)
+        mapHint:SetTextColor(.68,.74,.84);mapHint:SetWidth(390)
+        local pinPlus=CreateFrame("Button",nil,mapView,"UIPanelButtonTemplate");pinPlus:SetSize(22,22);pinPlus:SetPoint("BOTTOMRIGHT",0,0);pinPlus:SetText("+");Suite.StyleButton(pinPlus)
+        local pinMinus=CreateFrame("Button",nil,mapView,"UIPanelButtonTemplate");pinMinus:SetSize(22,22);pinMinus:SetPoint("RIGHT",pinPlus,"LEFT",-112,0);pinMinus:SetText("-");Suite.StyleButton(pinMinus)
+        local pinLabel=mapView:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");pinLabel:SetPoint("LEFT",pinMinus,"RIGHT",4,0);pinLabel:SetWidth(104)
+        mapView.pinLabel=pinLabel;mapView.pinMinus=pinMinus;mapView.pinPlus=pinPlus
+        pinMinus:SetScript("OnClick",function() Cfg().mapPinSize=math.max(18,Cfg().mapPinSize-4);Module.RefreshDungeonMap(mapView.dungeon) end)
+        pinPlus:SetScript("OnClick",function() Cfg().mapPinSize=math.min(42,Cfg().mapPinSize+4);Module.RefreshDungeonMap(mapView.dungeon) end)
+        Suite.AttachTooltip(pinMinus,"Smaller boss icons","Reduce map icon size when encounters are close together.")
+        Suite.AttachTooltip(pinPlus,"Larger boss icons","Increase map icon size for easier selection.")
         mapView:Hide()
 
         detailScroll=CreateFrame("ScrollFrame",nil,window,"UIPanelScrollFrameTemplate")
@@ -1322,7 +1366,7 @@ function Module.Open()
             autoChk:SetChecked(Cfg().autoTracker~=false)
             Module.RefreshList(); Module.RefreshDetail()
         end)
-        window:SetScript("OnHide",function() highlightItemID=nil; highlightBossName=nil end)
+        window:SetScript("OnHide",function() highlightItemID=nil; highlightBossName=nil;if lootPop then lootPop:Hide() end end)
         UISpecialFrames[#UISpecialFrames+1]="SmyrnaJournalWindow"
     end
     window:Show()
@@ -1335,9 +1379,16 @@ end
 -- ============================================================
 
 local driver=CreateFrame("Frame")
+local journalActive=true
+local ZONE_EVENTS={"PLAYER_ENTERING_WORLD","ZONE_CHANGED_NEW_AREA","ZONE_CHANGED","ENCOUNTER_END"}
 local LIVE_EVENTS={"UPDATE_MOUSEOVER_UNIT","PLAYER_TARGET_CHANGED","NAME_PLATE_UNIT_ADDED","LOOT_OPENED","PLAYER_REGEN_ENABLED"}
 local function SetDungeonLiveEvents(on)
     for _,ev in ipairs(LIVE_EVENTS) do
+        if on then pcall(driver.RegisterEvent,driver,ev) else pcall(driver.UnregisterEvent,driver,ev) end
+    end
+end
+local function SetZoneEvents(on)
+    for _,ev in ipairs(ZONE_EVENTS) do
         if on then pcall(driver.RegisterEvent,driver,ev) else pcall(driver.UnregisterEvent,driver,ev) end
     end
 end
@@ -1390,11 +1441,25 @@ local function SyncDungeonZone()
     end
 end
 
-driver:RegisterEvent("PLAYER_ENTERING_WORLD")
-driver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-driver:RegisterEvent("ZONE_CHANGED")
-pcall(driver.RegisterEvent,driver,"ENCOUNTER_END")
+function Module.SetEnabled(on)
+    journalActive=on and true or false
+    if journalActive then
+        SetZoneEvents(true)
+        SyncDungeonZone()
+    else
+        inDungeon=false
+        SetDungeonLiveEvents(false)
+        SetZoneEvents(false)
+        if trackerTicker then trackerTicker:Cancel(); trackerTicker=nil end
+        if trackerFrame then trackerFrame:Hide() end
+        if lootPop then lootPop:Hide() end
+        if window then window:Hide() end
+    end
+end
+
+SetZoneEvents(true)
 driver:SetScript("OnEvent",function(_,event,a1,a2,_,_,a5)
+    if not journalActive then return end
     if event=="PLAYER_ENTERING_WORLD" or event=="ZONE_CHANGED_NEW_AREA" or event=="ZONE_CHANGED" then
         SyncDungeonZone()
     elseif event=="ENCOUNTER_END" then

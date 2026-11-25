@@ -991,8 +991,9 @@ end
 local tooltipQualityLabels={[5]="Legendary",[4]="Epic",[3]="Rare",[2]="Uncommon"}
 local tooltipQualityColors={[5]="ff8000",[4]="a335ee",[3]="0070dd",[2]="1eff00"}
 local shownNPC=setmetatable({},{__mode="k"})
+local modActive=true
 local function AddTooltip(tooltip)
-    if not tooltip or (tooltip.IsForbidden and tooltip:IsForbidden()) then return end
+    if not modActive or not tooltip or (tooltip.IsForbidden and tooltip:IsForbidden()) then return end
     if Suite.IsLootInteraction and Suite.IsLootInteraction(tooltip.GetOwner and tooltip:GetOwner()) then return end
     if not NS.DB or not NS.DB.settings.enabled or not NS.DB.settings.tooltip then return end
     if not (IsControlKeyDown and IsControlKeyDown()) then return end
@@ -1040,6 +1041,31 @@ SlashCmdList.SMYRNABESTIARY=function(input)
     elseif input=="perf" then NS.Perf()
     else NS.OpenBrowser() end
 end
+local function SyncDriverEvents(on)
+    if on then
+        pcall(driver.RegisterEvent,driver,"GLOBAL_MOUSE_DOWN")
+        driver:RegisterEvent("PLAYER_TARGET_CHANGED")
+        driver:RegisterEvent("MODIFIER_STATE_CHANGED")
+        for _,e in ipairs(contextEvents) do driver:RegisterEvent(e) end
+    else
+        driver:UnregisterEvent("GLOBAL_MOUSE_DOWN")
+        driver:UnregisterEvent("PLAYER_TARGET_CHANGED")
+        driver:UnregisterEvent("MODIFIER_STATE_CHANGED")
+        driver:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        for _,e in ipairs(contextEvents) do driver:UnregisterEvent(e) end
+    end
+end
+function NS.SetEnabled(on)
+    modActive=on and true or false
+    if NS.DB and NS.DB.settings then NS.DB.settings.enabled=modActive end
+    if NS.ConfigureRecorder then NS.ConfigureRecorder() end
+    SyncDriverEvents(modActive)
+    if not modActive then
+        for _,fn in ipairs({"SmyrnaBestiaryWindow","SmyrnaBestiaryOptions","SmyrnaBestiaryExport","SmyrnaBestiaryDetails"}) do
+            local w=_G[fn]; if w and w.Hide then w:Hide() end
+        end
+    end
+end
 driver:RegisterEvent("ADDON_LOADED"); driver:RegisterEvent("PLAYER_LOGIN")
 driver:SetScript("OnEvent",function(self,event,arg1)
     if event=="ADDON_LOADED" and C.Public(arg1) and arg1=="SmyrnaSuite" then
@@ -1050,14 +1076,15 @@ driver:SetScript("OnEvent",function(self,event,arg1)
     elseif event=="PLAYER_LOGIN" then
         self:UnregisterEvent("PLAYER_LOGIN")
         NS.ConfigureRecorder(); NS.ConfigureUI()
-        pcall(driver.RegisterEvent,driver,"GLOBAL_MOUSE_DOWN");driver:RegisterEvent("PLAYER_TARGET_CHANGED");driver:RegisterEvent("MODIFIER_STATE_CHANGED")
-        if TargetFrame then TargetFrame:HookScript("OnClick",function(_,button) NS.MobClick("target",button) end) end
-        for _,e in ipairs(contextEvents) do driver:RegisterEvent(e) end
+        SyncDriverEvents(modActive)
+        if TargetFrame then TargetFrame:HookScript("OnClick",function(_,button) if modActive then NS.MobClick("target",button) end end) end
         if TooltipDataProcessor and Enum and Enum.TooltipDataType then
-            TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit,function(tooltip) if tooltip==GameTooltip then AddTooltip(tooltip) end end)
+            TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit,function(tooltip) if modActive and tooltip==GameTooltip then AddTooltip(tooltip) end end)
         elseif GameTooltip:HasScript("OnTooltipSetUnit") then GameTooltip:HookScript("OnTooltipSetUnit",AddTooltip) end
         GameTooltip:HookScript("OnTooltipCleared",function(self) shownNPC[self]=nil end)
         GameTooltip:HookScript("OnHide",function(self) shownNPC[self]=nil end)
+    elseif not modActive then
+        return
     elseif event=="MODIFIER_STATE_CHANGED" then
         if C.Public(arg1) and (arg1=="LCTRL" or arg1=="RCTRL") and GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) and GameTooltip:IsShown() then
             local _,unit=GameTooltip:GetUnit()

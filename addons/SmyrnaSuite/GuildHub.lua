@@ -928,10 +928,27 @@ function G.RefreshProfDialog()
         local mats=nil
         if WS and SmyrnaWorkshopDB and type(SmyrnaWorkshopDB.recipes)=="table" then
             local rtbl=SmyrnaWorkshopDB.recipes
-            local rkey=(rec.spell and rtbl[rec.spell] and rec.spell) or (rec.spell and rtbl[tostring(rec.spell)] and tostring(rec.spell)) or (rec.name and rtbl[rec.name] and rec.name)
+            local qualified=rec.prof..":"..tostring(rec.spell or "")
+            local named=rec.prof..":"..rec.name
+            local rkey=(rtbl[qualified] and qualified) or (rtbl[named] and named) or (rec.spell and rtbl[rec.spell] and rec.spell) or (rec.spell and rtbl[tostring(rec.spell)] and tostring(rec.spell)) or (rec.name and rtbl[rec.name] and rec.name)
             local raw=rkey and rtbl[rkey]
             local parsed=raw and WS.ReadRecipe and WS.ReadRecipe(raw,rkey)
             if parsed and type(parsed.mats)=="table" then mats=parsed.mats end
+        end
+        -- Remote recipes may not be learned locally. Ask the client without scanning professions.
+        if not mats and rec.spell and C_TradeSkillUI and C_TradeSkillUI.GetRecipeSchematic then
+            local ok,schema=pcall(C_TradeSkillUI.GetRecipeSchematic,rec.spell,false)
+            if ok and type(schema)=="table" then
+                local found,valid={},true
+                for _,slot in ipairs(schema.reagentSlotSchematics or {}) do
+                    if slot.required~=false and (slot.quantityRequired or 0)>0 then
+                        local choices=slot.reagents or {}
+                        if #choices~=1 or not choices[1].itemID then valid=false;break end
+                        found[#found+1]={choices[1].itemID,slot.quantityRequired}
+                    end
+                end
+                if valid and #found>0 then mats=found end
+            end
         end
         local MK=Suite.Market
         local totalCost=0
@@ -940,7 +957,8 @@ function G.RefreshProfDialog()
             local r=dp.reagents[i]
             local m=mats and mats[i]
             if m then
-                local mName,_,_,_,_,_,_,_,_,mIcon=getInfo and getInfo(m[1])
+                local mName,mIcon
+                if getInfo then local values={getInfo(m[1])};mName=values[1];mIcon=values[10] end
                 local have=(WS and WS.Count and WS.Count(m[1])) or 0
                 local uCost=WS and WS.MatUnitCost and WS.MatUnitCost(m[1])
                 if not uCost and MK and MK.Price then

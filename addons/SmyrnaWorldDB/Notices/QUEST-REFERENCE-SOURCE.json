@@ -1,0 +1,12 @@
+{
+  "source": "ForeverDungeonJournal 2.1.4, Exehn",
+  "scope": "Literal prerequisite/details/maps and quest additions, merged with existing Smyrna dungeon quests; source functions were not executed. Not a full upstream UI or updater port.",
+  "files": {
+    "Dungeons.lua": "c25f5cd37062dfc015651a4b983084eebd10082459ee8bdfea989907f2a1ebb0",
+    "QuestChains.lua": "a25bc5c21b08529fc2391721e9c75a7ae3df18e6ee9a32f924c9aa028b9901ca",
+    "QuestMaps.lua": "ec5bfd36a8fbdc07fec50e8856e70d77db48d919b70cd6933d32103c9a9c4b03",
+    "QuestUpdates.lua": "848eceeb12619267f415feef23a1fe636616588b7c6e6ad20c37568e9e3c6356"
+  },
+  "dungeons": 35,
+  "quests": 365
+}

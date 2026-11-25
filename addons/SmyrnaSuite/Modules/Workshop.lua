@@ -287,9 +287,7 @@ function NS.Tooltip(tip,id)
     tip:AddLine(NS.SourceLabel and NS.SourceLabel(id) or "Source unknown",.72,.46,.95,true)
     tip:AddLine("Known in "..known..(known==1 and " recipe" or " recipes"),.47,.83,.61)
     tip:AddLine("Used in "..total..(total==1 and " recipe" or " recipes"),.55,.8,1)
-    if not (Suite.IsLootInteraction and Suite.IsLootInteraction(tip.GetOwner and tip:GetOwner())) then
-        Suite.OptionalHint(tip,"Ctrl + left-click to expand")
-    end
+    Suite.OptionalHint(tip,"Ctrl + left-click to expand")
 end
 
 end chunk(name,Module) end
@@ -306,6 +304,19 @@ do local function chunk(...)
 local _,NS=...
 -- Only inspect the profession the player opened. Never expand/filter their UI.
 local pending={}
+-- Session-only: legacy APIs expose difficulty when the profession is open.
+local difficulties={}
+local difficultyKinds={[0]="optimal",[1]="medium",[2]="easy",[3]="trivial"}
+function NS.RecipeDifficulty(r)
+    if r.spell and C_TradeSkillUI and C_TradeSkillUI.GetRecipeInfo then
+        local ok,info=pcall(C_TradeSkillUI.GetRecipeInfo,r.spell)
+        if ok and info and not (issecretvalue and issecretvalue(info.relativeDifficulty)) then
+            local kind=difficultyKinds[info.relativeDifficulty]
+            if kind then return kind end
+        end
+    end
+    return difficulties[r.profession..":"..r.name]
+end
 local function Legacy(craft)
     if not craft and IsTradeSkillLinked and IsTradeSkillLinked() then return end
     local num=craft and GetNumCrafts or GetNumTradeSkills
@@ -319,6 +330,7 @@ local function Legacy(craft)
         local name,kind,third=info(i)
         if craft then kind=third end
         if name and kind~="header" then
+            difficulties[profession..":"..name]=kind
             local mats={};local valid=true
             for j=1,math.min(nmat(i) or 0,17) do
                 local id=NS.ID(matlink(i,j));local _,_,need=matinfo(i,j)
@@ -360,6 +372,7 @@ function NS.Scan(craft)
     if not NS.DB or not NS.DB.settings.enabled then return end
     if not craft and C_TradeSkillUI and C_TradeSkillUI.GetRecipeSchematic then Modern() else Legacy(craft) end
     if NS.ScanDirty then NS.ScanDirty=false;NS.Reindex() end
+    if NS.Refresh then NS.Refresh(true) end
 end
 function NS.QueueScan(craft)
     local key=craft and "craft" or "trade"
@@ -456,6 +469,14 @@ local function MatUnitCost(matID)
  return nil,nil
 end
 NS.FormatCoins=FormatCoins
+
+-- Shared profession-card/strip estimate; quote prices are listings, not completed sales.
+function NS.NetCraftProfit(listing,cost)
+ local market=Suite.Modules and Suite.Modules.SmyrnaMarket
+ local sale=market and market.UndercutPrice and market.UndercutPrice(listing) or listing
+ return math.floor(sale*.95+.5)-cost
+end
+
 NS.MatUnitCost=MatUnitCost
 
 local function CreateRecipeCard()
@@ -655,7 +676,15 @@ function NS.Refresh(preserveScroll)
                 card.spell,card.itemID,card.recipeName=r.spell,rItemID,r.name
                 card.tile.icon:SetTexture(rIcon)
                 card.tile:SetBackdropBorderColor(qr,qg,qb,.92)
-                Suite.SetCornerGlow(card,qr,qg,qb,GlowIntensity(rQuality))
+                local difficulty=NS.RecipeDifficulty(r)
+                local colors=TradeSkillTypeColor or CraftTypeColor
+                local color=difficulty and colors and colors[difficulty]
+                if color then
+                    Suite.SetCornerGlow(card,color.r,color.g,color.b,difficulty=="trivial" and .05 or .16)
+                else
+                    -- No skill-up claim for unlearned/unavailable recipe data.
+                    Suite.SetCornerGlow(card,.50,.56,.68,.04)
+                end
 
                 local skillTag=r.skill and Suite.UIText("  (Skill "..r.skill..")","muted") or ""
                 card.name:SetText(r.name..skillTag)
@@ -689,11 +718,11 @@ function NS.Refresh(preserveScroll)
                     if outAH then parts[#parts+1]="|cffdfb66bSell (AH):|r "..FormatCoins(outAH) end
                     if totalCost>0 then parts[#parts+1]="|cff9aa6b8Mats:|r "..FormatCoins(totalCost)..(costComplete and "" or "+") end
                     if outAH and totalCost>0 and costComplete then
-                        local prof=outAH-totalCost
+                        local prof=NS.NetCraftProfit(outAH,totalCost)
                         local pCol=prof>=0 and "|cff78d49b+" or "|cffff7a66"
-                        parts[#parts+1]="|cffdfb66bProfit:|r "..pCol..FormatCoins(prof).."|r"
+                        parts[#parts+1]="|cffdfb66bNet (5% AH cut):|r "..pCol..FormatCoins(prof).."|r"
                     end
-                    econ=table.concat(parts,"   |cff444c5e·|r   ")
+                    econ=table.concat(parts,"   |cff444c5e / |r   ")
                 end
                 local acq=(Suite.RecipeAcquisition and r.spell and Suite.RecipeAcquisition[r.spell]) or "Source unknown"
                 card.learn:SetText("Learn: "..acq)
@@ -788,11 +817,18 @@ end chunk(name,Module) end
 do local function chunk(...)
 local addon,NS=...
 local f=CreateFrame("Frame")
+local modActive=true
+local WORKSHOP_EVENTS={"BAG_UPDATE_DELAYED","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE","TRADE_SKILL_DATA_SOURCE_CHANGED","TRADE_SKILL_DETAILS_UPDATE","CRAFT_SHOW","CRAFT_UPDATE"}
 NS.Events={}
 local function Register(event)
     if C_EventUtils and C_EventUtils.IsEventValid and not C_EventUtils.IsEventValid(event) then return end
     local ok=pcall(f.RegisterEvent,f,event)
     if ok then NS.Events[event]=true end
+end
+local function SyncWorkshopEvents(on)
+    for _,e in ipairs(WORKSHOP_EVENTS) do
+        if on then Register(e) else pcall(f.UnregisterEvent,f,e) end
+    end
 end
 local shownIDs=setmetatable({},{__mode="k"})
 -- Reagent widgets may bypass HandleModifiedItemClick. Hook only the actual
@@ -835,7 +871,7 @@ local function CarriedBag(bag)
     return NS.Public(bag) and type(bag)=="number" and bag%1==0 and bag>=0 and bag<=(NUM_TOTAL_BAG_FRAMES or 5)
 end
 function NS.ModifiedItemClick(link,location)
-    if Suite.IsLootInteraction and Suite.IsLootInteraction() then return false end
+    -- Native modified-click posthook also handles loot reagents; never hook loot buttons.
     if not NS.DB or not NS.DB.settings.enabled or not IsControlKeyDown or not IsControlKeyDown() then return false end
     if (IsShiftKeyDown and IsShiftKeyDown()) or (IsAltKeyDown and IsAltKeyDown()) then return false end
     local id=NS.ID(link)
@@ -874,7 +910,7 @@ f:SetScript("OnEvent",function(self,event,name)
             ItemRefTooltip:HookScript("OnHide",function(tip) shownIDs[tip]=nil end)
         end
         if SetItemRef then hooksecurefunc("SetItemRef",function(link,text,button) NS.ChatItemClick(link,button) end) end
-        for _,e in ipairs({"BAG_UPDATE_DELAYED","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE","TRADE_SKILL_DATA_SOURCE_CHANGED","TRADE_SKILL_DETAILS_UPDATE","CRAFT_SHOW","CRAFT_UPDATE"}) do Register(e) end
+        SyncWorkshopEvents(modActive)
         GameTooltip:HookScript("OnTooltipCleared",function(tip) shownIDs[tip or GameTooltip]=nil end)
         GameTooltip:HookScript("OnHide",function(tip) shownIDs[tip or GameTooltip]=nil end)
         if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType and Enum.TooltipDataType.Item then
@@ -922,21 +958,27 @@ local profStrip,profHooked=nil,false
 local function EnsureProfStrip(parent)
     if not parent then return nil end
     if not profStrip then
-        local f=CreateFrame("Frame",nil,parent,"BackdropTemplate")
-        f:SetSize(330,24); f:SetFrameLevel(parent:GetFrameLevel()+6)
-        f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
-        f:SetBackdropColor(.055,.065,.092,.94); f:SetBackdropBorderColor(.82,.67,.33,.88)
+        local f=CreateFrame("Frame",nil,parent)
+        f:SetSize(170,60);f:SetFrameLevel(parent:GetFrameLevel()+6);f:EnableMouse(false)
         f.txt=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-        f.txt:SetPoint("LEFT",8,0); f.txt:SetPoint("RIGHT",-8,0); f.txt:SetJustifyH("LEFT"); f.txt:SetMaxLines(1)
+        f.txt:SetPoint("TOPLEFT",0,0);f.txt:SetPoint("TOPRIGHT",0,0)
+        f.txt:SetJustifyH("LEFT");f.txt:SetJustifyV("TOP");f.txt:SetMaxLines(3)
+        local note=f:CreateFontString(nil,"OVERLAY","GameFontDisableSmall")
+        note:SetPoint("TOPLEFT",0,-46);note:SetText("*After undercut + 5% AH cut")
         profStrip=f
     end
     profStrip:SetParent(parent)
     profStrip:ClearAllPoints()
-    profStrip:SetPoint("BOTTOMLEFT",parent,"BOTTOMLEFT",12,8)
+    local label=parent.ReagentsLabel or (parent.Reagents and parent.Reagents.Label)
+    if not label and TradeSkillFrame and (parent==TradeSkillFrame or parent==TradeSkillDetailScrollChildFrame) then label=TradeSkillReagentLabel end
+    if not label and CraftFrame and (parent==CraftFrame or parent==CraftDetailScrollChildFrame) then label=CraftReagentLabel end
+    if label then profStrip:SetPoint("TOPLEFT",label,"BOTTOMLEFT",170,-10)
+    else profStrip:SetPoint("TOPRIGHT",parent,"TOPRIGHT",-12,-120) end
     return profStrip
 end
 
 local function RenderProfitStrip(parent,outItemID,mats)
+    if not modActive or (NS.DB and not NS.DB.settings.enabled) then if profStrip then profStrip:Hide() end; return end
     local f=EnsureProfStrip(parent)
     if not f then return end
     if not mats or #mats==0 then f:Hide(); return end
@@ -952,11 +994,11 @@ local function RenderProfitStrip(parent,outItemID,mats)
     if cost>0 then parts[#parts+1]="|cffc8d2e2Cost:|r "..NS.FormatCoins(cost)..(complete and "" or "+") end
     if ah then parts[#parts+1]="|cffc8d2e2AH:|r "..NS.FormatCoins(ah) end
     if ah and cost>0 and complete then
-        local p=ah-cost
+        local p=NS.NetCraftProfit(ah,cost)
         local col=p>=0 and "|cff78d49b+" or "|cffff7a66"
-        parts[#parts+1]="|cffdfb66bProfit:|r "..col..NS.FormatCoins(p).."|r"
+        parts[#parts+1]="|cffdfb66bProfit*:|r "..col..NS.FormatCoins(p).."|r"
     end
-    f.txt:SetText(table.concat(parts,"   ·   "))
+    f.txt:SetText(table.concat(parts,"\n"))
     f:Show()
 end
 
@@ -996,6 +1038,18 @@ function NS.HookProfessionProfit()
             end
             RenderProfitStrip(TradeSkillDetailScrollChildFrame or TradeSkillFrame,outID,mats)
         end)
+    end
+end
+
+function NS.SetEnabled(on)
+    modActive=on and true or false
+    if NS.DB and NS.DB.settings then NS.DB.settings.enabled=modActive end
+    SyncWorkshopEvents(modActive)
+    if not modActive then
+        if profStrip then profStrip:Hide() end
+        for _,fn in ipairs({"SmyrnaWorkshopWindow","SmyrnaWorkshopUses"}) do
+            local w=_G[fn]; if w and w.Hide then w:Hide() end
+        end
     end
 end
 

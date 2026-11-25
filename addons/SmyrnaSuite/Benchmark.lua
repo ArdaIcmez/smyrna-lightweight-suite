@@ -43,6 +43,7 @@ function NS.TrimAllCaches()
     if NS.BestiaryDefenseReference and NS.BestiaryDefenseReference.ClearCache then NS.BestiaryDefenseReference.ClearCache() end
     local workshop=NS.Modules.SmyrnaWorkshop
     if workshop and workshop.ClearCaches then workshop.ClearCaches() end
+    if NS.Market and NS.Market.KV and NS.Market.KV.Invalidate then NS.Market.KV.Invalidate() end
     CollectGC()
 end
 
@@ -130,6 +131,11 @@ function NS.RunBenchmark(memoryOnly)
     if rem and rem.DB then
         lines[#lines+1]=string.format("  Remembrance : %d remembered records",rem.Count or CountKeys(rem.DB.records))
     end
+    if NS.Market and NS.Market.KV and NS.Market.KV.Stats then
+        local ks=NS.Market.KV.Stats()
+        lines[#lines+1]=string.format("  Market KV   : %d items (%d w/ hist), %d shards, %.1f KiB packed, LRU %d/%d",
+            ks.items or 0,ks.histItems or 0,ks.shards or 0,(ks.kvBytes or 0)/1024,ks.cacheSize or 0,ks.cacheCap or 0)
+    end
     lines[#lines+1]=""
 
     if not memoryOnly then
@@ -210,6 +216,9 @@ function NS.RunBenchmark(memoryOnly)
         end
         if NS.Market and NS.Market.Price then
             lines[#lines+1]=Measure("Market.Price lookup (x500)",500,function(n) for i=1,n do NS.Market.Price(2589+(i%20)) end end)
+            if NS.Market.KV and NS.Market.KV.Series then
+                lines[#lines+1]=Measure("Market.KV.Series (x200)",200,function(n) for i=1,n do NS.Market.KV.Series(2589+(i%20)) end end)
+            end
         end
         local aggro=NS.Modules.SmyrnaAggroMate
         if aggro and aggro.AggroRadius then

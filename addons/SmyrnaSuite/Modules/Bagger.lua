@@ -49,11 +49,12 @@ local function RebuildEquipmentSets()
 end
 
 local equipTipHooked=false
+local baggerActive=true
 local function HookEquipSetTooltips()
     if equipTipHooked then return end
     equipTipHooked=true
     local function AddSetLine(tip,data)
-        if not tip or (tip.IsForbidden and tip:IsForbidden()) then return end
+        if not baggerActive or not tip or (tip.IsForbidden and tip:IsForbidden()) then return end
         local id=data and Public(data.id) and type(data.id)=="number" and data.id
         if not id and TooltipUtil and TooltipUtil.GetDisplayedItem then
             local ok,_,_,tid=pcall(TooltipUtil.GetDisplayedItem,tip)
@@ -81,6 +82,7 @@ local function Cfg()
     if c.enabled==nil then c.enabled=true end
     if c.showBagBar==nil then c.showBagBar=true end
     if type(c.bgColor)~="string" or not c.bgColor:match("^%x%x%x%x%x%x$") then c.bgColor="0e1015" end
+    if type(c.borderColor)~="string" or not c.borderColor:match("^%x%x%x%x%x%x$") then c.borderColor="e0b557" end
     if not Num(c.bgAlpha,.40,1.0) then c.bgAlpha=.94 end
     if not Num(c.columns,6,16) then c.columns=10 end
     if not Num(c.scale,.75,1.30) then c.scale=1.0 end
@@ -88,10 +90,11 @@ local function Cfg()
 end
 Module.Config=Cfg
 
-local function BgRGB()
-    local hex=Cfg().bgColor or "0e1015"
+local function ColorRGB(key)
+    local hex=Cfg()[key]
     return tonumber(hex:sub(1,2),16)/255, tonumber(hex:sub(3,4),16)/255, tonumber(hex:sub(5,6),16)/255
 end
+local function BgRGB() return ColorRGB("bgColor") end
 
 local function MaxBagID()
     return (type(NUM_TOTAL_BAG_FRAMES)=="number" and NUM_TOTAL_BAG_FRAMES>=4) and NUM_TOTAL_BAG_FRAMES or 5
@@ -157,7 +160,9 @@ local function ApplyBagAppearance()
     local c=Cfg()
     local r,g,b=BgRGB()
     bagFrame:SetBackdropColor(r,g,b,c.bgAlpha or .94)
-    bagFrame:SetBackdropBorderColor(.88,.71,.34,.95) -- Signature gilded gold outer frame
+    if bagFrame.floralMotif then bagFrame.floralMotif:SetAlpha(.08*(c.bgAlpha or .94)) end
+    local br,bg,bb=ColorRGB("borderColor")
+    bagFrame:SetBackdropBorderColor(br,bg,bb,.95)
     if not (InCombatLockdown and InCombatLockdown()) then
         bagFrame:SetScale(c.scale or 1.0)
     end
@@ -214,6 +219,18 @@ local function HideOwnedTooltip(owner)
     return false
 end
 
+local function UpdateSlotCooldown(btn,bag,slot)
+    local cd=btn.Cooldown or (btn.GetName and _G[btn:GetName().."Cooldown"])
+    if cd and CooldownFrame_Set then
+        local start,dur,enable=SlotCooldown(bag,slot)
+        if Public(start) and Public(dur) and start and dur and dur>0 then
+            CooldownFrame_Set(cd,start,dur,enable)
+        else
+            CooldownFrame_Set(cd,0,0,0)
+        end
+    end
+end
+
 local function UpdateSlotVisual(btn,bag,slot,query)
     local tex,count,locked,quality,link,itemID=SlotInfo(bag,slot)
     local isLocked=(Public(locked) and locked) and true or false
@@ -247,16 +264,7 @@ local function UpdateSlotVisual(btn,bag,slot,query)
         end
     end
 
-    -- Cooldown sweep
-    local cd=btn.Cooldown or (btn.GetName and _G[btn:GetName().."Cooldown"])
-    if cd and CooldownFrame_Set then
-        local start,dur,enable=SlotCooldown(bag,slot)
-        if Public(start) and Public(dur) and start and dur and dur>0 then
-            CooldownFrame_Set(cd,start,dur,enable)
-        else
-            CooldownFrame_Set(cd,0,0,0)
-        end
-    end
+    UpdateSlotCooldown(btn,bag,slot)
 
     -- Search + category dim/highlight
     local match=true
@@ -470,8 +478,7 @@ local function EnsureSlotButton(bag,slot)
     created:HookScript("OnHide",function(self)
         self:SetScript("OnUpdate",nil)
         if self.UnlockHighlight then pcall(self.UnlockHighlight,self) end
-        HideOwnedTooltip(self)
-        SafeResetCursor()
+        if HideOwnedTooltip(self) then SafeResetCursor() end
     end)
     if created.searchOverlay then created.searchOverlay:Hide() end
     if created.SearchOverlay then created.SearchOverlay:Hide() end
@@ -499,6 +506,17 @@ local function EnsureBagFrame()
     f:SetFrameStrata("MEDIUM"); f:SetFrameLevel(40)
     f:SetClampedToScreen(true); f:EnableMouse(true)
     Suite.StylePanel(f,true)
+    -- Reuse the Suite tile at half the menu motif size; no timers.
+    local motif=f:CreateTexture(nil,"BACKGROUND",nil,0)
+    motif:SetPoint("TOPLEFT",3,-3);motif:SetPoint("BOTTOMRIGHT",-3,3)
+    motif:SetTexture("Interface\\AddOns\\SmyrnaSuite\\Media\\OttomanFloral","REPEAT","REPEAT")
+    motif:SetHorizTile(true);motif:SetVertTile(true)
+    f.floralMotif=motif
+    local function SizeMotif(self)
+        motif:SetTexCoord(0,math.max(1,self:GetWidth()-6)/128,0,math.max(1,self:GetHeight()-6)/128)
+    end
+    f:HookScript("OnSizeChanged",SizeMotif);SizeMotif(f)
+
     Suite.HeaderStrip(f,36)
     f:SetPoint("BOTTOMRIGHT",UIParent,"BOTTOMRIGHT",-24,96)
 
@@ -543,11 +561,20 @@ local function EnsureBagFrame()
     local search=CreateFrame("EditBox",nil,f,"InputBoxTemplate")
     search:SetHeight(20); search:SetPoint("TOPLEFT",14,-42); search:SetPoint("TOPRIGHT",-14,-42)
     search:SetAutoFocus(false)
+    search:SetTextInsets(6,24,0,0)
+    local clearSearch=CreateFrame("Button",nil,search)
+    clearSearch:SetSize(18,18);clearSearch:SetPoint("RIGHT",-3,0)
+    clearSearch:SetNormalFontObject("GameFontHighlightSmall");clearSearch:SetHighlightFontObject("GameFontNormalSmall")
+    clearSearch:SetText("X");clearSearch:Hide()
+    clearSearch:SetScript("OnClick",function() search:SetText("");search:ClearFocus() end)
+    Suite.AttachTooltip(clearSearch,"Clear search","Remove the search filter and show matching bag items again.")
+    f.clearSearch=clearSearch
     local ph=search:CreateFontString(nil,"OVERLAY","GameFontDisableSmall")
     ph:SetPoint("LEFT",6,0); ph:SetText("Search bags...")
     search:SetScript("OnTextChanged",function(self)
         searchText=string.lower((self:GetText() or ""):gsub("^%s+",""):gsub("%s+$",""))
         ph:SetShown(searchText=="")
+        clearSearch:SetShown((self:GetText() or "")~="")
         Module.RefreshBags(false)
     end)
     search:SetScript("OnEscapePressed",function(self) self:SetText(""); self:ClearFocus() end)
@@ -636,8 +663,10 @@ end
 
 function Module.RefreshBags(relayout,allowHidden)
     if not bagFrame or (not allowHidden and not bagFrame:IsShown()) then return end
-    ApplyBagAppearance()
-    UpdateBagBar()
+    if relayout then
+        ApplyBagAppearance()
+        UpdateBagBar()
+    end
     local c=Cfg()
     local cols=math.max(6,math.min(16,math.floor(c.columns or 10)))
     local inCombat=InCombatLockdown and InCombatLockdown()
@@ -702,6 +731,8 @@ end
 
 function Module.OpenBags()
     if not Cfg().enabled then return end
+    -- OpenAllBags may invoke several hooked open functions in the same call.
+    if bagFrame and bagFrame:IsShown() then return end
     if InCombatLockdown and InCombatLockdown() then
         -- Allow opening pre-allocated bags during combat without creating or moving frames under lockdown.
         if bagFrame and bagFrame.sized then
@@ -725,27 +756,33 @@ function Module.ToggleBags()
     if bagFrame and bagFrame:IsShown() then Module.CloseBags() else Module.OpenBags() end
 end
 
-local lastToggleAt=0
+local pendingBagAction,pendingBagShown
+local bagActionQueued=false
+local function FlushBagAction()
+    local action,wasShown=pendingBagAction,pendingBagShown
+    pendingBagAction=nil;pendingBagShown=nil;bagActionQueued=false
+    if not Cfg().enabled then return end
+    if action=="open" then Module.OpenBags()
+    elseif action=="close" then Module.CloseBags()
+    elseif action=="toggle" then
+        if wasShown then Module.CloseBags() else Module.OpenBags() end
+    end
+end
+local function QueueBagAction(action)
+    if not Cfg().enabled then return end
+    pendingBagAction=action
+    if bagActionQueued then return end
+    pendingBagShown=bagFrame and bagFrame:IsShown() or false
+    bagActionQueued=true
+    -- Outer hooks run last. Resolve their intent once, after nested bag calls.
+    C_Timer.After(0,FlushBagAction)
+end
 local function InstallBagHooks()
     if hooksInstalled or not hooksecurefunc then return end
     hooksInstalled=true
-    local function OnOpen()
-        if not Cfg().enabled then return end
-        lastToggleAt=GetTime()
-        Module.OpenBags()
-    end
-    local function OnClose()
-        if not Cfg().enabled then return end
-        lastToggleAt=GetTime()
-        Module.CloseBags()
-    end
-    local function OnToggle()
-        if not Cfg().enabled then return end
-        local now=GetTime()
-        if now-lastToggleAt<0.08 then return end -- Prevent ToggleBackpack -> ToggleBag(0) double-toggle!
-        lastToggleAt=now
-        if bagFrame and bagFrame:IsShown() then Module.CloseBags() else Module.OpenBags() end
-    end
+    local function OnOpen() QueueBagAction("open") end
+    local function OnClose() QueueBagAction("close") end
+    local function OnToggle() QueueBagAction("toggle") end
     if ToggleAllBags then hooksecurefunc("ToggleAllBags",OnToggle) end
     if OpenAllBags then hooksecurefunc("OpenAllBags",OnOpen) end
     if CloseAllBags then hooksecurefunc("CloseAllBags",OnClose) end
@@ -789,9 +826,13 @@ function Module.Open()
             local cb=CreateFrame("CheckButton",nil,card,"UICheckButtonTemplate"); cb:SetPoint("TOPLEFT",x,y)
             local lbl=cb:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); lbl:SetPoint("LEFT",cb,"RIGHT",2,0); lbl:SetText(text)
             cb:SetScript("OnClick",function(self)
-                Cfg()[key]=self:GetChecked() and true or false
-                if key=="enabled" then SyncBlizzardBags(); if not Cfg().enabled then Module.CloseBags() end end
-                Module.RefreshBags(true)
+                local v=self:GetChecked() and true or false
+                if key=="enabled" and Module.SetEnabled then
+                    Module.SetEnabled(v)
+                else
+                    Cfg()[key]=v
+                    Module.RefreshBags(true)
+                end
             end)
             Suite.AttachTooltip(cb,text,tip,lbl)
             checks[key]=cb
@@ -826,40 +867,49 @@ function Module.Open()
             ApplyBagAppearance()
         end)
 
-        local bgLbl=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); bgLbl:SetPoint("TOPLEFT",16,-146); bgLbl:SetTextColor(.93,.77,.40); bgLbl:SetText("Background color:")
-        local bgBtn=CreateFrame("Button",nil,card,"UIPanelButtonTemplate"); bgBtn:SetSize(142,24); bgBtn:SetPoint("LEFT",bgLbl,"RIGHT",10,0); bgBtn:SetText("    Pick color"); Suite.StyleButton(bgBtn)
-        local swatch=bgBtn:CreateTexture(nil,"OVERLAY",nil,2); swatch:SetSize(12,12); swatch:SetPoint("LEFT",8,0)
-        local function SyncSwatch() swatch:SetColorTexture(BgRGB()) end
-        local function SetBgRGB(r,g,b)
-            if not Num(r,0,1) or not Num(g,0,1) or not Num(b,0,1) then return end
-            Cfg().bgColor=string.format("%02x%02x%02x",math.floor(r*255+.5),math.floor(g*255+.5),math.floor(b*255+.5))
-            SyncSwatch(); ApplyBagAppearance()
-        end
-        bgBtn:SetScript("OnClick",function()
-            local picker=ColorPickerFrame; if not picker or not picker.GetColorRGB then return end
-            local r,g,b=BgRGB()
-            local function Apply() SetBgRGB(picker:GetColorRGB()) end
-            local function Cancel() SetBgRGB(r,g,b) end
-            if picker.SetFrameStrata then picker:SetFrameStrata("FULLSCREEN_DIALOG") end
-            if picker.SetupColorPickerAndShow then
-                picker:SetupColorPickerAndShow({r=r,g=g,b=b,hasOpacity=false,swatchFunc=Apply,cancelFunc=Cancel})
-            elseif picker.SetColorRGB then
-                picker:Hide(); picker.func=nil; picker.cancelFunc=nil
-                picker:SetColorRGB(r,g,b); picker.hasOpacity=false; picker.func=Apply; picker.cancelFunc=Cancel
-                picker:Show()
+        local colorSwatches={}
+        local function AddColorPicker(key,label,x)
+            local bgLbl=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); bgLbl:SetPoint("TOPLEFT",x,-146); bgLbl:SetTextColor(.93,.77,.40); bgLbl:SetText(label)
+            local bgBtn=CreateFrame("Button",nil,card,"UIPanelButtonTemplate"); bgBtn:SetSize(142,24); bgBtn:SetPoint("LEFT",bgLbl,"RIGHT",10,0); bgBtn:SetText("    Pick color"); Suite.StyleButton(bgBtn)
+            local swatch=bgBtn:CreateTexture(nil,"OVERLAY",nil,2); swatch:SetSize(12,12); swatch:SetPoint("LEFT",8,0)
+            local function SyncSwatch() swatch:SetColorTexture(ColorRGB(key)) end
+            colorSwatches[#colorSwatches+1]=SyncSwatch
+            local function SetRGB(r,g,b)
+                if not Num(r,0,1) or not Num(g,0,1) or not Num(b,0,1) then return end
+                Cfg()[key]=string.format("%02x%02x%02x",math.floor(r*255+.5),math.floor(g*255+.5),math.floor(b*255+.5))
+                SyncSwatch(); ApplyBagAppearance()
             end
-            if picker.Raise then picker:Raise() end
-        end)
+            bgBtn:SetScript("OnClick",function()
+                local picker=ColorPickerFrame; if not picker or not picker.GetColorRGB then return end
+                Module.OpenBags()
+                local r,g,b=ColorRGB(key)
+                local function Apply() SetRGB(picker:GetColorRGB()) end
+                local function Cancel() SetRGB(r,g,b) end
+                if picker.SetFrameStrata then picker:SetFrameStrata("FULLSCREEN_DIALOG") end
+                if picker.SetupColorPickerAndShow then
+                    picker:SetupColorPickerAndShow({r=r,g=g,b=b,hasOpacity=false,swatchFunc=Apply,cancelFunc=Cancel})
+                elseif picker.SetColorRGB then
+                    picker:Hide(); picker.func=nil; picker.cancelFunc=nil
+                    picker:SetColorRGB(r,g,b); picker.hasOpacity=false; picker.func=Apply; picker.cancelFunc=Cancel
+                    picker:Show()
+                end
+                if picker.Raise then picker:Raise() end
+            end)
 
-        local resetBtn=CreateFrame("Button",nil,card,"UIPanelButtonTemplate"); resetBtn:SetSize(118,24); resetBtn:SetPoint("LEFT",bgBtn,"RIGHT",8,0); resetBtn:SetText("Reset defaults"); Suite.StyleButton(resetBtn)
+            SyncSwatch()
+        end
+        AddColorPicker("bgColor","Background color:",16)
+        AddColorPicker("borderColor","Border color:",380)
+
+        local resetBtn=CreateFrame("Button",nil,card,"UIPanelButtonTemplate"); resetBtn:SetSize(118,24); resetBtn:SetPoint("TOPLEFT",16,-182); resetBtn:SetText("Reset defaults"); Suite.StyleButton(resetBtn)
         resetBtn:SetScript("OnClick",function()
-            local c=Cfg(); c.bgColor="0e1015"; c.bgAlpha=.94; c.columns=10; c.scale=1.0; c.pos=nil
+            local c=Cfg(); c.bgColor="0e1015"; c.borderColor="e0b557"; c.bgAlpha=.94; c.columns=10; c.scale=1.0; c.pos=nil
             if syncControlsFn then syncControlsFn() end
             ApplyBagAppearance(); Module.RefreshBags(true)
         end)
 
         local note=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-        note:SetPoint("TOPLEFT",16,-192); note:SetWidth(696); note:SetJustifyH("LEFT"); note:SetTextColor(.74,.80,.88)
+        note:SetPoint("TOPLEFT",154,-182); note:SetWidth(550); note:SetJustifyH("LEFT"); note:SetTextColor(.74,.80,.88)
         note:SetText("Tip: You can disable third-party Bagnon / BagBrother once Smyrna Bagger is active. All right-click actions, Workshop & Market tooltips, Shift+click links, and Ctrl+click previews work natively.")
 
         syncControlsFn=function()
@@ -870,7 +920,7 @@ function Module.Open()
             opSlider:SetValue(opPct); opLbl:SetText("Background opacity: "..opPct.."%")
             local scPct=math.floor(((c.scale or 1.0)*100)+.5)
             scSlider:SetValue(scPct); scLbl:SetText("Bag scale: "..scPct.."%")
-            SyncSwatch()
+            for _,sync in ipairs(colorSwatches) do sync() end
         end
         settingsWin:SetScript("OnShow",syncControlsFn)
         UISpecialFrames[#UISpecialFrames+1]="SmyrnaBaggerWindow"
@@ -881,23 +931,38 @@ function Module.Open()
 end
 
 local driver=CreateFrame("Frame")
+local BAGGER_EVENTS={"BAG_UPDATE_DELAYED","BAG_UPDATE_COOLDOWN","ITEM_LOCK_CHANGED","PLAYER_MONEY","PLAYER_REGEN_ENABLED","MERCHANT_SHOW","MERCHANT_CLOSED","EQUIPMENT_SETS_CHANGED"}
+local function SyncBaggerEvents(on)
+    for _,ev in ipairs(BAGGER_EVENTS) do
+        if on then pcall(driver.RegisterEvent,driver,ev) else pcall(driver.UnregisterEvent,driver,ev) end
+    end
+end
+function Module.SetEnabled(on)
+    baggerActive=on and true or false
+    Cfg().enabled=baggerActive
+    if checks and checks.enabled then checks.enabled:SetChecked(baggerActive) end
+    SyncBaggerEvents(baggerActive)
+    SyncBlizzardBags()
+    if baggerActive then
+        Module.RefreshBags(true)
+    else
+        Module.CloseBags()
+        if settingsWin and settingsWin.Hide then settingsWin:Hide() end
+    end
+end
 driver:RegisterEvent("PLAYER_LOGIN")
-driver:RegisterEvent("BAG_UPDATE_DELAYED")
-driver:RegisterEvent("BAG_UPDATE_COOLDOWN")
-driver:RegisterEvent("ITEM_LOCK_CHANGED")
-driver:RegisterEvent("PLAYER_MONEY")
-driver:RegisterEvent("PLAYER_REGEN_ENABLED")
-pcall(driver.RegisterEvent,driver,"MERCHANT_SHOW")
-pcall(driver.RegisterEvent,driver,"MERCHANT_CLOSED")
-pcall(driver.RegisterEvent,driver,"EQUIPMENT_SETS_CHANGED")
-driver:SetScript("OnEvent",function(self,event)
+baggerActive=Cfg().enabled and (not Suite.Config.features or Suite.Config.features[name]~=false)
+SyncBaggerEvents(baggerActive)
+driver:SetScript("OnEvent",function(self,event,bag,slot)
     if event=="PLAYER_LOGIN" then
         self:UnregisterEvent("PLAYER_LOGIN")
         RebuildEquipmentSets()
         HookEquipSetTooltips()
         InstallBagHooks()
         SyncBlizzardBags()
-        PrewarmBags()
+        if baggerActive then PrewarmBags() end
+    elseif not baggerActive then
+        return
     elseif event=="MERCHANT_SHOW" or event=="MERCHANT_CLOSED" then
         if bagFrame and bagFrame.junkBtn then
             bagFrame.junkBtn:SetShown(event=="MERCHANT_SHOW" or (MerchantFrame and MerchantFrame:IsShown() and true or false))
@@ -909,7 +974,18 @@ driver:SetScript("OnEvent",function(self,event)
     elseif event=="PLAYER_REGEN_ENABLED" then
         if pendingLayout then pendingLayout=false; Module.RefreshBags(true) end
     elseif bagFrame and bagFrame:IsShown() then
-        if event=="PLAYER_MONEY" then UpdateMoneyAndCounts()
+        if event=="BAG_UPDATE_COOLDOWN" then
+            for bagID,btns in pairs(slotBtns) do
+                if not hiddenBags[bagID] then
+                    for slotID,btn in pairs(btns) do
+                        if btn:IsShown() then UpdateSlotCooldown(btn,bagID,slotID) end
+                    end
+                end
+            end
+        elseif event=="ITEM_LOCK_CHANGED" then
+            local btn=slotBtns[bag] and slotBtns[bag][slot]
+            if btn and btn:IsShown() then UpdateSlotVisual(btn,bag,slot,searchText) end
+        elseif event=="PLAYER_MONEY" then UpdateMoneyAndCounts()
         else Module.RefreshBags(event=="BAG_UPDATE_DELAYED") end
     end
 end)

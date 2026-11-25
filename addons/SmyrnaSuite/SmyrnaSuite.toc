@@ -37,6 +37,7 @@ Modules/Remembrance.lua
 RemembranceActivities.lua
 Modules/Upgrader.lua
 Modules/Journal.lua
+JournalBrowser.lua
 Modules/Quests.lua
 Modules/AggroMate.lua
 Modules/Bagger.lua

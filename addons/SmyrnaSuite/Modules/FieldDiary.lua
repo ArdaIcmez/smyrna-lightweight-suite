@@ -689,7 +689,7 @@ end)
 
 function NS.ConfigureCollector()
     local s=NS.DB.settings
-    local enabled=s.tracking and (s.mine or s.herb or s.skin or s.fish or s.rare)
+    local enabled=(NS._enabled~=false) and s.tracking and (s.mine or s.herb or s.skin or s.fish or s.rare)
     if enabled==active then return end
     active=enabled
     if enabled then
@@ -818,7 +818,7 @@ end
 frame:SetScript("OnEvent",function(_,_,...) NS.Receive(...) end)
 function NS.ConfigureSharing()
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then C_ChatInfo.RegisterAddonMessagePrefix(PREFIX) end
-    if NS.DB.settings.receive then frame:RegisterEvent("CHAT_MSG_ADDON") else frame:UnregisterEvent("CHAT_MSG_ADDON"); wipe(rates); wipe(identities) end
+    if (NS._enabled~=false) and NS.DB.settings.receive then frame:RegisterEvent("CHAT_MSG_ADDON") else frame:UnregisterEvent("CHAT_MSG_ADDON"); wipe(rates); wipe(identities) end
 end
 
 end chunk(name,Module) end
@@ -970,6 +970,7 @@ end
 function NS.DrawWorld()
     HideWorld()
     local state=NS.MapDisplay;state.areas=0
+    if NS._enabled==false then state.reason="Module disabled";return end
     if not NS.DB or not WorldMapFrame then state.reason="Map not loaded";return end
     if not NS.DB.settings.worldmap then state.reason="Map markers switched off";return end
     if not WorldMapFrame:IsShown() then state.reason="Map closed";return end
@@ -1151,18 +1152,22 @@ NS.UpdateMini=UpdateMini
 
 local miniAccum=0
 local function OnMiniUpdate(_,elapsed)
-    if miniMoving then
-        miniAccum=0
-        UpdateMini(false)
-    else
-        miniAccum=miniAccum+(elapsed or 0)
-        if miniAccum>=.12 then miniAccum=0; UpdateMini(false) end
+    miniAccum=miniAccum+(elapsed or 0)
+    local step=miniMoving and .06 or .15
+    if miniAccum>=step then miniAccum=0; UpdateMini(false) end
+end
+
+local MINI_EVENTS={"PLAYER_STARTED_MOVING","PLAYER_STOPPED_MOVING","MINIMAP_UPDATE_ZOOM","ZONE_CHANGED_NEW_AREA","PLAYER_ENTERING_WORLD","CVAR_UPDATE"}
+local function SyncMiniEvents(on)
+    if not miniDriver then return end
+    for _,ev in ipairs(MINI_EVENTS) do
+        if on then pcall(miniDriver.RegisterEvent,miniDriver,ev) else pcall(miniDriver.UnregisterEvent,miniDriver,ev) end
     end
 end
 
 local function SyncMiniMotion()
     if not miniDriver then return end
-    local want=NS.DB and NS.DB.settings.minimap and Minimap and Minimap:IsShown() and C_Minimap and C_Minimap.GetViewRadius
+    local want=(NS._enabled~=false) and NS.DB and NS.DB.settings.minimap and Minimap and Minimap:IsShown() and C_Minimap and C_Minimap.GetViewRadius
     if not want then
         miniDriver:SetScript("OnUpdate",nil); HideMini(); return
     end
@@ -1179,13 +1184,9 @@ end
 local function EnsureMiniDriver()
     if miniDriver then return end
     miniDriver=CreateFrame("Frame")
-    miniDriver:RegisterEvent("PLAYER_STARTED_MOVING")
-    miniDriver:RegisterEvent("PLAYER_STOPPED_MOVING")
-    miniDriver:RegisterEvent("MINIMAP_UPDATE_ZOOM")
-    miniDriver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-    miniDriver:RegisterEvent("PLAYER_ENTERING_WORLD")
-    miniDriver:RegisterEvent("CVAR_UPDATE")
+    SyncMiniEvents(NS._enabled~=false)
     miniDriver:SetScript("OnEvent",function(_,ev,arg1)
+        if NS._enabled==false then return end
         if ev=="PLAYER_STARTED_MOVING" then
             miniMoving=true; SyncMiniMotion()
         elseif ev=="PLAYER_STOPPED_MOVING" then
@@ -1199,14 +1200,21 @@ local function EnsureMiniDriver()
     end)
     if not miniHookedZoom and Minimap then
         miniHookedZoom=true
-        Minimap:HookScript("OnShow",function() if NS.DB then lastPX=nil; lastMiniRev=nil; UpdateMini(true); SyncMiniMotion() end end)
+        Minimap:HookScript("OnShow",function() if NS._enabled~=false and NS.DB then lastPX=nil; lastMiniRev=nil; UpdateMini(true); SyncMiniMotion() end end)
         Minimap:HookScript("OnHide",function() miniDriver:SetScript("OnUpdate",nil); lastPX=nil; lastMiniRev=nil; HideMini() end)
     end
 end
 
 function NS.ConfigureMaps()
+    local modOn=(NS._enabled~=false)
+    if not modOn then
+        if miniDriver then miniDriver:SetScript("OnUpdate",nil); SyncMiniEvents(false) end
+        HideMini(); HideWorld()
+        return
+    end
     NS.AttachMap()
     EnsureMiniDriver()
+    SyncMiniEvents(true)
     lastPX=nil; lastMiniRev=nil
     if provider and WorldMapFrame:IsShown() then provider:RefreshAllData() end
     if NS.DB.settings.minimap and (not C_Minimap or not C_Minimap.GetViewRadius) and not NS.miniWarning then
@@ -1557,6 +1565,16 @@ end
 function NS.Configure()
     NS.ConfigureCollector(); NS.ConfigureSharing(); NS.ConfigureMaps()
     if NS.RefreshOptions then NS.RefreshOptions() end
+end
+function NS.SetEnabled(on)
+    NS._enabled=on and true or false
+    if not NS._enabled and NS.StopSharing then NS.StopSharing() end
+    if NS.DB then NS.Configure() end
+    if not NS._enabled then
+        for _,fn in ipairs({"SmyrnaFieldDiaryOptions","SmyrnaFieldDiaryData","SmyrnaFieldDiaryGuild","SmyrnaFieldDiaryManager"}) do
+            local w=_G[fn]; if w and w.Hide then w:Hide() end
+        end
+    end
 end
 function NS.Set(key,value)
     local settings=NS.DB.settings

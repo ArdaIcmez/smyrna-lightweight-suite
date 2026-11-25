@@ -668,9 +668,10 @@ end chunk(name,Module) end
 do local function chunk(...)
 local addon,NS=...
 local f=CreateFrame("Frame");f:RegisterEvent("PLAYER_LOGIN")
+local modActive=true
 local drawn
 local function Tooltip(tip)
-    if tip~=GameTooltip or not NS.DB or not NS.DB.enabled or not NS.DB.tooltip then return end
+    if not modActive or tip~=GameTooltip or not NS.DB or not NS.DB.enabled or not NS.DB.tooltip then return end
     if tip.IsForbidden and tip:IsForbidden() then return end
     if Suite.IsLootInteraction and Suite.IsLootInteraction(tip.GetOwner and tip:GetOwner()) then return end
     local _,unit=tip:GetUnit()
@@ -699,6 +700,32 @@ end
 SLASH_SMYRNAREMEMBRANCE1="/sr";SLASH_SMYRNAREMEMBRANCE2="/smyrnaremembrance"
 SlashCmdList.SMYRNAREMEMBRANCE=function() if NS.DB then NS.Open() end end
 local initialized=false
+local function SyncRemembranceEvents(on)
+    if on then
+        pcall(f.RegisterEvent,f,"GLOBAL_MOUSE_DOWN")
+        f:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+        f:RegisterEvent("PLAYER_LEAVING_WORLD")
+        f:RegisterEvent("GOSSIP_SHOW")
+    else
+        f:UnregisterEvent("GLOBAL_MOUSE_DOWN")
+        f:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+        f:UnregisterEvent("PLAYER_LEAVING_WORLD")
+        f:UnregisterEvent("GOSSIP_SHOW")
+        f:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    end
+end
+function NS.SetEnabled(on)
+    modActive=on and true or false
+    if NS.DB then NS.DB.enabled=modActive end
+    if initialized then SyncRemembranceEvents(modActive) end
+    if not modActive then
+        if NS.ClearHover then NS.ClearHover() end
+        drawn=nil
+        for _,fn in ipairs({"SmyrnaRemembranceWindow","SmyrnaRemembranceHistory"}) do
+            local w=_G[fn]; if w and w.Hide then w:Hide() end
+        end
+    end
+end
 local function TryInit(self)
     if initialized then return end
     if not SmyrnaRemembranceStore then
@@ -709,9 +736,8 @@ local function TryInit(self)
     if not (SmyrnaRemembranceStore and SmyrnaRemembranceStore.Open) then return end
     initialized=true
     NS.Init();NS.ConfigureIcon();Suite.Loaded[addon]=true
-    pcall(self.RegisterEvent,self,"GLOBAL_MOUSE_DOWN")
-    if TargetFrame then TargetFrame:HookScript("OnClick",function(_,button) NS.PlayerClick("target",button) end) end
-    self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");self:RegisterEvent("PLAYER_LEAVING_WORLD");self:RegisterEvent("GOSSIP_SHOW")
+    SyncRemembranceEvents(modActive)
+    if TargetFrame then TargetFrame:HookScript("OnClick",function(_,button) if modActive then NS.PlayerClick("target",button) end end) end
     if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
         TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit,Tooltip)
     elseif GameTooltip.HasScript and GameTooltip:HasScript("OnTooltipSetUnit") then GameTooltip:HookScript("OnTooltipSetUnit",Tooltip) end
@@ -725,6 +751,8 @@ f:SetScript("OnEvent",function(self,event,arg1)
     elseif event=="PLAYER_REGEN_ENABLED" then
         self:UnregisterEvent("PLAYER_REGEN_ENABLED")
         TryInit(self)
+    elseif not modActive then
+        return
     elseif event=="GLOBAL_MOUSE_DOWN" then
         if NS.Public(arg1) and arg1=="LeftButton" and IsControlKeyDown and IsControlKeyDown() then
             local unit

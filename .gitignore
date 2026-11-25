@@ -26,3 +26,7 @@ addons/SmyrnaSuite/Media/TaylanSmile.tga
 # Master-only Market implementation
 addons/SmyrnaSuite/Market.lua
 addons/SmyrnaSuite/Modules/MarketUI.lua
+
+# Local-only agent instructions
+AGENTS.md
+**/AGENTS.md

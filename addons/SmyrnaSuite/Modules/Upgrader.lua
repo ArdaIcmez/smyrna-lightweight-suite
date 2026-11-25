@@ -396,13 +396,22 @@ function U.Open()
  end
  panel:Show();return panel
 end
-local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('MODIFIER_STATE_CHANGED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE');pcall(driver.RegisterEvent,driver,'SKILL_LINES_CHANGED');pcall(driver.RegisterEvent,driver,'SPELLS_CHANGED')
+local driver=CreateFrame('Frame')
+local UPGRADER_EVENTS={'MODIFIER_STATE_CHANGED','PLAYER_EQUIPMENT_CHANGED','PLAYER_LEVEL_UP','CHARACTER_POINTS_CHANGED','PLAYER_TALENT_UPDATE','SKILL_LINES_CHANGED','SPELLS_CHANGED'}
+local function SyncUpgraderEvents(on)
+ for _,ev in ipairs(UPGRADER_EVENTS) do
+  if on then pcall(driver.RegisterEvent,driver,ev) else pcall(driver.UnregisterEvent,driver,ev) end
+ end
+end
+driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED')
+SyncUpgraderEvents(cfg.enabled~=false)
 driver:SetScript('OnEvent',function(self,event,key,state)
- if event=='MODIFIER_STATE_CHANGED' then
-  if (not key or (Safe(key) and Safe(state) and (key=='LCTRL' or key=='RCTRL') and (state==1 or state==true))) and hoverOwner and U.ActivationDown() then Reveal(hoverOwner,hoverSlot) end
- elseif event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then
+ if event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then
   if event=='PLAYER_LOGIN' then self:UnregisterEvent('PLAYER_LOGIN') end
   if HookSlots() then self:UnregisterEvent('ADDON_LOADED') end
+ elseif not cfg.enabled then return
+ elseif event=='MODIFIER_STATE_CHANGED' then
+  if (not key or (Safe(key) and Safe(state) and (key=='LCTRL' or key=='RCTRL') and (state==1 or state==true))) and hoverOwner and U.ActivationDown() then Reveal(hoverOwner,hoverSlot) end
  else U.Invalidate() end
 end)
 U.Driver=driver
@@ -492,6 +501,7 @@ end)
 
 if hooksecurefunc then
  hooksecurefunc('HandleModifiedItemClick',function(link)
+  if not cfg.enabled then return end
   local id=Safe(link) and type(link)=='string' and tonumber(link:match('item:(%d+)'))
   local WS=S.Modules and S.Modules.SmyrnaWorkshop
   if id and WS and WS.Uses then
@@ -503,6 +513,7 @@ if hooksecurefunc then
  end)
  if SetItemRef then
   hooksecurefunc('SetItemRef',function(link,_,button)
+   if not cfg.enabled then return end
    if Safe(button) and button=='LeftButton' and Safe(link) and type(link)=='string' and link:match('^item:') then
     HandleGearLink(link,UIParent)
    end
@@ -510,9 +521,24 @@ if hooksecurefunc then
  end
  if PaperDollItemSlotButton_OnModifiedClick then
   hooksecurefunc('PaperDollItemSlotButton_OnModifiedClick',function(self,button)
+   if not cfg.enabled then return end
    local sl=self and slotButtons[self]
    if Safe(button) and button=='LeftButton' and sl and CtrlOnly() then OpenForSlot(sl,nil,self) end
   end)
+ end
+end
+
+function U.SetEnabled(on)
+ local en=on and true or false
+ cfg.enabled=en
+ SyncUpgraderEvents(en)
+ if en then
+  pcall(clickDriver.RegisterEvent,clickDriver,'GLOBAL_MOUSE_DOWN')
+ else
+  pcall(clickDriver.UnregisterEvent,clickDriver,'GLOBAL_MOUSE_DOWN')
+  hoverOwner,hoverSlot=nil,nil
+  if panel and panel.Hide then panel:Hide() end
+  if U.HideSources then U.HideSources() end
  end
 end
 

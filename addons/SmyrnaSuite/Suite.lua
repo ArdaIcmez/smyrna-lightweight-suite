@@ -18,6 +18,7 @@ local MODULE_FOOTPRINT={
     SmyrnaWorkshop={"~80 KB","detail","Medium · Reagent/recipe index (loads WorkshopDB on demand)"},
     SmyrnaRemembrance={"~50 KB","good","Light · Player encounter history (uses RemembranceDB)"},
     SmyrnaUpgrader={"~110 KB","detail","Medium · Live hover upgrade % & slot finder (loads EquipmentDB on demand)"},
+    SmyrnaMarket={"~140 KB","warning","Higher · Lazy sharded AH KV cache (24h hourly seasonality + 30d/6m history)"},
     SmyrnaJournal={"~90 KB","detail","Medium · Bosses, loot, maps & portraits (uses WorldDB on demand)"},
     SmyrnaQuests={"~120 KB","warning","Higher · Map/minimap quest pins, parchment chains & tracker (uses WorldDB)"},
     SmyrnaAggroMate={"~45 KB","good","Light · Threat arc, TankMate, DPS Threat Pill & Leash Tracker"},
@@ -41,7 +42,10 @@ local function RefreshOverview()
 end
 function NS.SetFeature(name,value)
     if not NS.Versions[name] then return end
-    NS.Config.features[name]=not not value
+    local on=not not value
+    NS.Config.features[name]=on
+    local mod=NS.Modules and NS.Modules[name]
+    if mod and mod.SetEnabled then mod.SetEnabled(on) end
 end
 function NS.SetAll(value)
     for _,entry in ipairs(NS.Features) do NS.SetFeature(entry[1],value) end
@@ -50,7 +54,11 @@ end
 function NS.Status(name)
     if name=="SmyrnaRemembrance" and not SmyrnaRemembranceStore then return "DB disabled" end
     local enabled=NS.Config.features[name]~=false
-    if NS.Loaded[name] then return enabled and "On" or "Off after reload" end
+    if NS.Loaded[name] then
+        local mod=NS.Modules and NS.Modules[name]
+        if mod and mod.SetEnabled then return enabled and "On" or "Off" end
+        return enabled and "On" or "Off after reload"
+    end
     return enabled and "On after reload" or "Off"
 end
 function NS.Memory()
@@ -109,7 +117,7 @@ function NS.OpenOverview()
             local name,label,command,arg=entry[1],entry[2],entry[3],entry[4]
             local y=-(i-1)*30
             local fp=MODULE_FOOTPRINT[name]
-            checks[name]=Check(modCanvas,label,4,y,function(value) NS.SetFeature(name,value);statuses[name]:SetText(NS.UIText("Pending reload","warning")) end,"GameFontHighlightSmall")
+            checks[name]=Check(modCanvas,label,4,y,function(value) NS.SetFeature(name,value);local st=NS.Status(name);statuses[name]:SetText(NS.UIText(st,st=="On" and "good" or st=="Off" and "muted" or "warning")) end,"GameFontHighlightSmall")
             if fp then NS.AttachTooltip(checks[name],label.." ("..fp[1]..")",fp[3]) end
             local status=modCanvas:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");status:SetPoint("TOPLEFT",128,y-9);statuses[name]=status
             if fp then

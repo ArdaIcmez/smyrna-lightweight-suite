@@ -80,7 +80,7 @@ local caches={
     D=MakeLRU(64),
     Z=MakeLRU(32),
 }
-local dlistCache,encCache,metaCache
+local dlistCache,encCache,metaCache,dentCache
 local MISSING=false -- sentinel for cached absent records only
 
 function W.Ensure()
@@ -195,6 +195,13 @@ function W.Encounters()
     return encCache
 end
 
+function W.DungeonEntrances()
+    if dentCache then return dentCache end
+    if not W.Ensure() then return {} end
+    dentCache=DecodeKey("X-DENT",true) or {}
+    return dentCache
+end
+
 function W.Meta()
     if metaCache then return metaCache end
     if not W.Ensure() then return nil end
@@ -204,7 +211,7 @@ end
 
 function W.TrimCache()
     for _,lru in pairs(caches) do LRUClear(lru) end
-    dlistCache=nil; encCache=nil; metaCache=nil
+    dlistCache=nil; encCache=nil; metaCache=nil; dentCache=nil
 end
 
 function W.CacheStats()

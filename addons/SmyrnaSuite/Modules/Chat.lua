@@ -121,6 +121,7 @@ local pendingFrames = setmetatable({}, { __mode = "k" })
 local copyButtons = setmetatable({}, { __mode = "k" })
 NS.CopyButtons = copyButtons
 local driver = CreateFrame("Frame")
+local chatActive = true
 
 local function Say(text)
     DEFAULT_CHAT_FRAME:AddMessage("|cffedbd72Smyrna Chat:|r " .. text)
@@ -134,7 +135,7 @@ local function UpdateTimestampMarkers(frame)
     if not frame or not DB or (frame.IsForbidden and frame:IsForbidden()) then return end
     local visible=rawget(frame,"visibleLines")
     if type(visible)~="table" then return end
-    local show=DB.timestamps and DB.timestampOutline~=false
+    local show=chatActive and DB.timestamps and DB.timestampOutline~=false
     local pillW=DB.seconds and 66 or 48
     local host=(frame.FontStringContainer and frame.FontStringContainer.CreateTexture) and frame.FontStringContainer or frame
     local fTop=frame.GetTop and frame:GetTop()
@@ -193,7 +194,7 @@ local function FlushPendingMarkers()
     end
 end
 local function QueueTimestampMarkers(frame)
-    if not frame then return end
+    if not chatActive or not frame then return end
     pendingFrames[frame]=true
     if refreshPending then return end
     refreshPending=true
@@ -233,6 +234,7 @@ local function HookFrame(frame)
     end
     local original = frame.AddMessage
     frame.AddMessage = function(self, text, ...)
+        if not chatActive then return original(self, text, ...) end
         if DB and Core.Readable(text) then
             -- Fast byte check avoids regex matching on ~95% of incoming chat lines.
             if DB.timestamps then
@@ -256,8 +258,25 @@ local function HookFrame(frame)
 end
 
 local function HookFrames()
+    if not chatActive then return end
     for _, name in ipairs(CHAT_FRAMES or {}) do HookFrame(_G[name]) end
     for i = 1, (NUM_CHAT_WINDOWS or 10) do HookFrame(_G["ChatFrame" .. i]) end
+end
+function NS.SetEnabled(on)
+    chatActive = on and true or false
+    for frame, btn in pairs(copyButtons) do
+        if btn and btn.SetShown then btn:SetShown(chatActive) end
+    end
+    for frame in pairs(hooked) do
+        UpdateTimestampMarkers(frame)
+    end
+    if chatActive then
+        HookFrames()
+    else
+        if copyWindow and copyWindow.Hide then copyWindow:Hide() end
+        local sw = _G.SmyrnaChatSettingsWindow
+        if sw and sw.Hide then sw:Hide() end
+    end
 end
 
 local PAGE_SIZE = 300
@@ -454,7 +473,7 @@ function NS.SetTimestampColor(hex)
     if NS.SyncTimestampColor then NS.SyncTimestampColor() end
     return true
 end
-function NS.OpenTimestampColor()
+function NS.OpenTimestampColor(anchor)
     local picker=ColorPickerFrame
     if not picker or not picker.GetColorRGB then Say("The game's color picker is unavailable.");return false end
     local original=Core.TimestampColor(DB)
@@ -471,6 +490,23 @@ function NS.OpenTimestampColor()
         picker:Hide();picker.func=nil;picker.cancelFunc=nil;picker:SetColorRGB(r,g,b)
         picker.hasOpacity=false;picker.func=Update;picker.cancelFunc=Cancel;picker:Show()
     else return false end
+    if anchor then
+        if not picker.smyrnaChatRestoreHook then
+            picker.smyrnaChatRestoreHook=true
+            picker:HookScript("OnHide",function(self)
+                local points=self.smyrnaChatOldPoints
+                self.smyrnaChatOldPoints=nil
+                if points then
+                    self:ClearAllPoints()
+                    for _,point in ipairs(points) do self:SetPoint(unpack(point)) end
+                end
+            end)
+        end
+        local points={}
+        for i=1,picker:GetNumPoints() do points[i]={picker:GetPoint(i)} end
+        picker.smyrnaChatOldPoints=points
+        picker:ClearAllPoints();picker:SetPoint("TOPLEFT",anchor,"BOTTOMLEFT",0,-8)
+    end
     return true
 end
 NS.ValidLabel = ValidLabel
@@ -560,7 +596,7 @@ local function Build()
         button:SetSize(150,25);button:SetPoint("TOPLEFT",x,y);button:SetText(text);button:SetScript("OnClick",action)
         return button
     end
-    local timestampColor=Button("Color",170,-74,function() NS.OpenTimestampColor() end);timestampColor:SetSize(90,25)
+    local timestampColor=Button("Color",170,-74,function(self) NS.OpenTimestampColor(self) end);timestampColor:SetSize(90,25)
     local swatchBorder=timestampColor:CreateTexture(nil,"OVERLAY",nil,1);swatchBorder:SetSize(14,14);swatchBorder:SetPoint("LEFT",5,0);swatchBorder:SetColorTexture(1,1,1,.92)
     local swatch=timestampColor:CreateTexture(nil,"OVERLAY",nil,2);swatch:SetSize(12,12);swatch:SetPoint("LEFT",6,0)
     local resetColor=Button("Reset",445,-74,function() NS.SetTimestampColor("888888") end);resetColor:SetSize(70,25)
@@ -568,11 +604,20 @@ local function Build()
     Button("Memory usage", 195, -145, function() NS.Command("perf") end)
     local copyHelp = Label("Right-click any chat message to select its text (Ctrl+C to copy). Click History to browse older chat.", 20, -184)
     copyHelp:SetWidth(520); copyHelp:SetJustifyH("LEFT")
-    Label("Chat preview", 565, -68, "GameFontNormalLarge")
-    Label("Live preview (nothing is sent to chat).", 565, -94)
-    local preview = Label("", 565, -118, "ChatFontNormal")
-    preview:SetWidth(335)
-    preview:SetJustifyH("LEFT")
+    local previewCard=CreateFrame("Frame",nil,frame,"BackdropTemplate")
+    previewCard:SetSize(355,224);previewCard:SetPoint("TOPLEFT",555,-58)
+    previewCard:EnableMouse(false)
+    previewCard:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
+    previewCard:SetBackdropColor(.035,.043,.058,.88)
+    previewCard:SetBackdropBorderColor(.65,.54,.31,.65)
+    local function PreviewLabel(text,y,font)
+        local label=previewCard:CreateFontString(nil,"OVERLAY",font)
+        label:SetPoint("TOPLEFT",12,y);label:SetWidth(331);label:SetJustifyH("LEFT");label:SetText(text)
+        return label
+    end
+    PreviewLabel("Chat preview",-12,"GameFontNormalLarge")
+    PreviewLabel("Live preview (nothing is sent to chat).",-38,"GameFontHighlightSmall")
+    local preview=PreviewLabel("",-62,"ChatFontNormal")
     local function UpdatePreview()
         local db = NS.GetDB()
         swatchBorder:SetShown(db and db.timestampOutline ~= false)

@@ -27,9 +27,40 @@ local function ApplyGradient(tex,orientation,r1,g1,b1,a1,r2,g2,b2,a2)
 end
 S.ApplyGradient=ApplyGradient
 
+-- Shared passive popup decoration. Alpha is always relative to the backing.
+local function PopupMotif(f)
+ local name=f.GetName and f:GetName()
+ if name=='SmyrnaSuiteHub' or name=='SmyrnaBaggerFrame' then return end
+ if f.IsObjectType and f:IsObjectType('Button') then return end
+ if f.smyrnaPopupMotif then return end
+ local tex=f:CreateTexture(nil,'BACKGROUND',nil,0)
+ tex:SetPoint('TOPLEFT',3,-3);tex:SetPoint('BOTTOMRIGHT',-3,3)
+ tex:SetTexture('Interface\\AddOns\\SmyrnaSuite\\Media\\OttomanFloral','REPEAT','REPEAT')
+ tex:SetHorizTile(true);tex:SetVertTile(true)
+ f.smyrnaPopupMotif=tex
+ local function Refresh()
+  local w,h=f:GetWidth(),f:GetHeight()
+  local backdrop=f.GetBackdrop and f:GetBackdrop()
+  local visible=backdrop~=nil and w>=180 and h>=60
+  tex:SetShown(visible)
+  if visible then
+   local _,_,_,alpha=f:GetBackdropColor()
+   tex:SetAlpha(.08*(alpha or 1))
+   tex:SetTexCoord(0,math.max(1,w-6)/256,0,math.max(1,h-6)/256)
+  end
+ end
+ f:HookScript('OnSizeChanged',Refresh);f:HookScript('OnShow',Refresh)
+ if hooksecurefunc then
+  hooksecurefunc(f,'SetBackdropColor',Refresh)
+  hooksecurefunc(f,'SetBackdrop',Refresh)
+ end
+ Refresh()
+end
+
 function S.StylePanel(f,thick)
  f:SetBackdrop(thick and shellEdge or panelEdge)
  f:SetBackdropColor(.055,.063,.082,.97)
+ PopupMotif(f)
  if thick then
   -- Signature Smyrna Gilded Frame: 4 outer brushed-gold bars + 1 inner burnished-silver rim + gilded corner brackets
   f:SetBackdropBorderColor(.82,.67,.33,.96)

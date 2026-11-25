@@ -10,6 +10,7 @@ local worldPins,miniPins={},{}
 local mapHooked,tipHooked
 local window,tracker,questRows,scroll,canvas,statusLabel,checks,trackerLines=nil,nil,{},nil,nil,nil,{},{}
 local activeQuests,activeCount={},0
+local activeQuestNPCs,activeQuestNPCsBuilt={},false -- O(1) npcID -> { qid, ... } index for instant unit tooltips
 local RACE_BITS={Human=1,Orc=2,Dwarf=4,NightElf=8,Scourge=16,Tauren=32,Gnome=64,Troll=128,Goblin=256,BloodElf=512,Draenei=1024}
 local CLASS_BITS={WARRIOR=1,PALADIN=2,HUNTER=4,ROGUE=8,PRIEST=16,DEATHKNIGHT=32,SHAMAN=64,MAGE=128,WARLOCK=256,DRUID=1024}
 
@@ -25,9 +26,99 @@ local function Cfg()
     if c.lowLevel==nil then c.lowLevel=false end
     if c.tooltips==nil then c.tooltips=true end
     if c.tracker==nil then c.tracker=false end
+    if type(c.notes)~="table" then c.notes={} end
     return c
 end
 Module.Config=Cfg
+
+local function GetNoteEntry(qid,create)
+    if not Num(qid,1,10000000) then return nil end
+    local notes=Cfg().notes
+    local e=notes[qid]
+    if not e and create then
+        e={text="",pins={}}
+        notes[qid]=e
+    end
+    if e and type(e.pins)~="table" then e.pins={} end
+    return e
+end
+
+local function PruneNoteEntry(qid)
+    local notes=Cfg().notes
+    local e=notes[qid]
+    if not e then return end
+    local txt=type(e.text)=="string" and e.text:gsub("^%s+",""):gsub("%s+$","") or ""
+    local pins=type(e.pins)=="table" and e.pins or {}
+    if txt=="" and #pins==0 then
+        notes[qid]=nil
+    else
+        e.text=txt; e.pins=pins
+    end
+end
+
+local function TrimText(s,maxLen)
+    if type(s)~="string" then return "" end
+    s=s:gsub("[\r\n]+"," "):gsub("^%s+",""):gsub("%s+$","")
+    if maxLen and #s>maxLen then s=s:sub(1,maxLen) end
+    return s
+end
+
+function Module.GetQuestNote(qid)
+    return GetNoteEntry(qid,false)
+end
+
+local ApplyQuestRefresh
+
+function Module.SetQuestNote(qid,text)
+    if not Num(qid,1,10000000) then return false end
+    local clean=TrimText(text or "",240)
+    local e=GetNoteEntry(qid,clean~="")
+    if e then
+        e.text=clean
+        PruneNoteEntry(qid)
+    end
+    if ApplyQuestRefresh then ApplyQuestRefresh() end
+    return true
+end
+
+function Module.AddQuestPin(qid,kind,label,mapID,x10,y10)
+    if not Num(qid,1,10000000) then return false,"Invalid quest" end
+    kind=(kind=="entrance") and "entrance" or "note"
+    if not Num(mapID,1,1000000) or not Num(x10,0,1000) or not Num(y10,0,1000) then
+        mapID=C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+        local pos=mapID and C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(mapID,"player")
+        if not pos or not pos.GetXY then return false,"Player map position unavailable here" end
+        local px,py=pos:GetXY()
+        if not Num(px,0,1) or not Num(py,0,1) then return false,"Player map position unavailable here" end
+        x10=math.floor(px*1000+.5)
+        y10=math.floor(py*1000+.5)
+    end
+    local e=GetNoteEntry(qid,true)
+    if #e.pins>=16 then table.remove(e.pins,1) end
+    local lbl=TrimText(label or "",80)
+    if lbl=="" then lbl=(kind=="entrance") and "Entrance" or "Note" end
+    e.pins[#e.pins+1]={map=mapID,x=x10,y=y10,kind=kind,label=lbl}
+    if ApplyQuestRefresh then ApplyQuestRefresh() end
+    return true,e.pins[#e.pins]
+end
+
+function Module.RemoveQuestPin(qid,idx)
+    local e=GetNoteEntry(qid,false)
+    if not e or not Num(idx,1,#e.pins) then return false end
+    table.remove(e.pins,idx)
+    PruneNoteEntry(qid)
+    if ApplyQuestRefresh then ApplyQuestRefresh() end
+    return true
+end
+
+function Module.ClearQuestPins(qid)
+    local e=GetNoteEntry(qid,false)
+    if not e then return false end
+    wipe(e.pins)
+    PruneNoteEntry(qid)
+    if ApplyQuestRefresh then ApplyQuestRefresh() end
+    return true
+end
 
 local function IsCompleted(qid)
     if C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted then
@@ -55,6 +146,55 @@ local function MaskAllows(mask,playerBit)
     if not mask or mask==0 or playerBit==0 then return true end
     if type(mask)~="number" or mask~=mask then return true end
     return (math.floor(mask/playerBit)%2)==1
+end
+
+local function RebuildActiveQuestNPCIndex()
+    wipe(activeQuestNPCs)
+    if activeCount<=0 or not W or not W.loaded then activeQuestNPCsBuilt=false; return end
+    activeQuestNPCsBuilt=true
+    local function IndexNPC(nid,qid)
+        if not nid then return end
+        local list=activeQuestNPCs[nid]
+        if not list then activeQuestNPCs[nid]={qid}; return end
+        for i=1,#list do if list[i]==qid then return end end
+        list[#list+1]=qid
+    end
+    for qid,aq in pairs(activeQuests) do
+        if not aq.complete then
+            local q=W.Quest(qid)
+            if q then
+                local ob=q.ob
+                if type(ob)=="table" then
+                    if type(ob[1])=="table" then
+                        for _,e in ipairs(ob[1]) do IndexNPC(type(e)=="table" and e[1] or e,qid) end
+                    end
+                    if type(ob[3])=="table" then
+                        for _,e in ipairs(ob[3]) do
+                            local it=W.Item(type(e)=="table" and e[1] or e)
+                            if it and type(it.nd)=="table" then
+                                for _,dn in ipairs(it.nd) do IndexNPC(dn,qid) end
+                            end
+                        end
+                    end
+                    if type(ob[5])=="table" then
+                        for _,e in ipairs(ob[5]) do
+                            if type(e)=="table" and type(e[1])=="table" then
+                                for _,dn in ipairs(e[1]) do IndexNPC(dn,qid) end
+                            end
+                        end
+                    end
+                end
+                if type(q.rs)=="table" then
+                    for _,iid in ipairs(q.rs) do
+                        local it=W.Item(iid)
+                        if it and type(it.nd)=="table" then
+                            for _,dn in ipairs(it.nd) do IndexNPC(dn,qid) end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function RefreshActiveQuests()
@@ -94,6 +234,7 @@ local function RefreshActiveQuests()
             end
         end
     end
+    RebuildActiveQuestNPCIndex()
 end
 
 local function QuestGreenRange(lvl)
@@ -152,23 +293,109 @@ local function IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,showLow,showSea
     return true
 end
 
--- Collect pins for a specific uiMapID using the O(1) precomputed X-Z-<mapID> reverse index!
+-- Questie extraObjectives iconType -> Smyrna pin kind
+local EO_ICON_MAP={[1]="slay",[2]="loot",[3]="event",[4]="object",[5]="talk",[6]="event",[7]="object"}
+
+-- Kinds that represent multi-spawn quest objective fields (clustered into area rings)
+local FIELD_KINDS={slay=true,loot=true,object=true,event=true,obj=true}
+local FIELD_COLORS={
+    slay={.95,.32,.28,.34},
+    loot={.96,.78,.28,.34},
+    object={.36,.82,.98,.34},
+    event={.76,.52,.98,.34},
+    obj={.96,.78,.28,.34},
+}
+local PIN_DRAW_ORDER={
+    turnin=8, avail=5, ["repeat"]=6, entrance=4, note=4,
+    talk=3, slay=2, loot=2, object=2, event=2, obj=2,
+}
+local FIELD_RING_TEX="Interface\\AddOns\\SmyrnaSuite\\Media\\DiaryRing"
+local FIELD_RING_FALLBACK="Interface\\Minimap\\Ping\\ping2"
+
+-- Collect pins for a specific uiMapID using O(1) X-Z-<mapID> + full QuestieDB marker data + user pins!
 local function CollectZonePins(mapID)
     local pins,clusters={},{}
-    if not W or not W.Ensure or not W.Ensure() then return pins end
     local cfg=Cfg()
+    local hasWorld=(W and W.Ensure and W.Ensure()) and true or false
     local playerLvl,raceBit,classBit=PlayerMasks()
-    local function AddPin(kind,x10,y10,qid,title,level,who,detail)
+    local function AddPin(kind,x10,y10,qid,title,level,who,detail,userPin)
         if not x10 or not y10 or x10<0 or x10>1000 or y10<0 or y10>1000 then return end
-        local cx,cy=math.floor(x10/18),math.floor(y10/18)
+        local cell=FIELD_KINDS[kind] and 45 or 18
+        local cx,cy=math.floor(x10/cell),math.floor(y10/cell)
         local ckey=kind..":"..cx..":"..cy
+        local nx,ny=x10/1000,y10/1000
         local c=clusters[ckey]
         if not c then
-            c={kind=kind,x=x10/1000,y=y10/1000,items={}}
+            c={kind=kind,x=nx,y=ny,minX=nx,maxX=nx,minY=ny,maxY=ny,sumX=nx,sumY=ny,ptCount=1,items={}}
             clusters[ckey]=c; pins[#pins+1]=c
+        else
+            if nx<c.minX then c.minX=nx end
+            if nx>c.maxX then c.maxX=nx end
+            if ny<c.minY then c.minY=ny end
+            if ny>c.maxY then c.maxY=ny end
+            c.sumX=c.sumX+nx; c.sumY=c.sumY+ny; c.ptCount=c.ptCount+1
+            c.x=c.sumX/c.ptCount; c.y=c.sumY/c.ptCount
+        end
+        for i=1,#c.items do
+            local it=c.items[i]
+            if it.id==qid and it.who==who and it.detail==detail and not userPin then return end
         end
         if #c.items<8 then
-            c.items[#c.items+1]={id=qid,title=title,level=level,who=who,detail=detail}
+            c.items[#c.items+1]={id=qid,title=title,level=level,who=who,detail=detail,userPin=userPin}
+        end
+    end
+
+    local function PlotNpc(nid,kind,qid,title,level,detail)
+        if not hasWorld or not nid then return end
+        local npc=W.Npc(nid)
+        if not npc then return end
+        local pts=npc.sp and npc.sp[mapID]
+        if type(pts)=="table" then
+            for k=1,math.min(#pts,24) do
+                AddPin(kind,pts[k][1],pts[k][2],qid,title,level,npc.n,detail)
+            end
+        end
+        local wpts=npc.wp and npc.wp[mapID]
+        if type(wpts)=="table" then
+            for k=1,math.min(#wpts,12) do
+                AddPin(kind,wpts[k][1],wpts[k][2],qid,title,level,npc.n,(detail and (detail.." (Patrol)") or "Patrol"))
+            end
+        end
+    end
+
+    local function PlotObject(oid,kind,qid,title,level,detail)
+        if not hasWorld or not oid then return end
+        local obj=W.Object(oid)
+        if not obj then return end
+        local pts=obj.sp and obj.sp[mapID]
+        if type(pts)=="table" then
+            for k=1,math.min(#pts,24) do
+                AddPin(kind,pts[k][1],pts[k][2],qid,title,level,obj.n,detail)
+            end
+        end
+    end
+
+    local function PlotItemSources(iid,kind,qid,title,level,prefix)
+        if not hasWorld or not iid then return end
+        local it=W.Item(iid)
+        if not it then return end
+        local lbl=it.n and ((prefix or "Drops: ")..it.n) or "Quest item"
+        if type(it.nd)=="table" then
+            for k=1,math.min(#it.nd,12) do
+                PlotNpc(it.nd[k],kind,qid,title,level,lbl)
+            end
+        end
+        if type(it.od)=="table" then
+            local oLbl=it.n and ((prefix or "Loot: ")..it.n) or "Quest object"
+            for k=1,math.min(#it.od,12) do
+                PlotObject(it.od[k],"object",qid,title,level,oLbl)
+            end
+        end
+        if type(it.vd)=="table" then
+            local vLbl=it.n and ("Sold by vendor: "..it.n) or "Quest vendor"
+            for k=1,math.min(#it.vd,6) do
+                PlotNpc(it.vd[k],"talk",qid,title,level,vLbl)
+            end
         end
     end
 
@@ -176,77 +403,170 @@ local function CollectZonePins(mapID)
         if type(group)~="table" then return end
         local npcs=group[1]
         if type(npcs)=="table" then
-            for _,nid in ipairs(npcs) do
-                local npc=W.Npc(nid)
-                local pts=npc and npc.sp and npc.sp[mapID]
-                if pts and pts[1] then
-                    AddPin(kind,pts[1][1],pts[1][2],qid,title,level,npc.n,detail)
-                end
-            end
+            for _,nid in ipairs(npcs) do PlotNpc(nid,kind,qid,title,level,detail) end
         end
         local objs=group[2]
         if type(objs)=="table" then
-            for _,oid in ipairs(objs) do
-                local obj=W.Object(oid)
-                local pts=obj and obj.sp and obj.sp[mapID]
-                if pts and pts[1] then
-                    AddPin(kind,pts[1][1],pts[1][2],qid,title,level,obj.n,detail)
-                end
+            for _,oid in ipairs(objs) do PlotObject(oid,kind,qid,title,level,detail) end
+        end
+        local items=group[3]
+        if type(items)=="table" then
+            for _,iid in ipairs(items) do PlotItemSources(iid,kind,qid,title,level,"Starts quest: ") end
+        end
+    end
+
+    local dentMap=hasWorld and W.DungeonEntrances and W.DungeonEntrances() or nil
+    local function PlotDungeonEntrance(q,qid,title,level,detail)
+        if not dentMap or not q or not q.zn then return end
+        local dent=dentMap[q.zn]
+        if not dent or type(dent.e)~="table" then return end
+        for _,ent in ipairs(dent.e) do
+            if ent[1]==mapID then
+                AddPin("entrance",ent[2],ent[3],qid,title,level,(dent.n or "Dungeon").." Entrance",detail or "Instance entrance")
             end
         end
     end
 
-    -- 1. Active quests: turn-ins (if complete) or objective targets (if in progress)
-    for qid,aq in pairs(activeQuests) do
-        local q=W.Quest(qid)
-        if q then
-            if aq.complete then
-                PlaceEntityGroup(q.fb,"turnin",qid,aq.title,aq.level,"Ready to turn in")
-            else
-                -- Plot incomplete creature/object/item objective targets on this map
-                local ob=q.ob
-                if type(ob)=="table" then
-                    if type(ob[1])=="table" then
-                        for _,entry in ipairs(ob[1]) do
-                            local nid=type(entry)=="table" and entry[1] or entry
-                            local npc=W.Npc(nid); local pts=npc and npc.sp and npc.sp[mapID]
-                            if pts then for k=1,math.min(#pts,3) do AddPin("obj",pts[k][1],pts[k][2],qid,aq.title,aq.level,npc.n,"Objective") end end
+    local function AllObjsOfTypeDone(aq,otype)
+        if not aq or type(aq.objs)~="table" or #aq.objs==0 then return false end
+        local found=false
+        for _,o in ipairs(aq.objs) do
+            if o.type==otype then
+                found=true
+                if not o.done then return false end
+            end
+        end
+        return found
+    end
+
+    -- 1. Active quests: turn-ins (if complete) or full QuestieDB objective markers (if in progress)
+    if hasWorld then
+        for qid,aq in pairs(activeQuests) do
+            local q=W.Quest(qid)
+            if q then
+                if aq.complete then
+                    PlaceEntityGroup(q.fb,"turnin",qid,aq.title,aq.level,"Ready to turn in")
+                    PlotDungeonEntrance(q,qid,aq.title,aq.level,"Turn-in inside instance")
+                else
+                    local ob=q.ob
+                    if type(ob)=="table" then
+                        if type(ob[1])=="table" and not AllObjsOfTypeDone(aq,"monster") then
+                            for _,entry in ipairs(ob[1]) do
+                                local nid=type(entry)=="table" and entry[1] or entry
+                                local txt=type(entry)=="table" and type(entry[2])=="string" and entry[2] or "Slay"
+                                PlotNpc(nid,"slay",qid,aq.title,aq.level,txt)
+                            end
                         end
-                    end
-                    if type(ob[2])=="table" then
-                        for _,entry in ipairs(ob[2]) do
-                            local oid=type(entry)=="table" and entry[1] or entry
-                            local obj=W.Object(oid); local pts=obj and obj.sp and obj.sp[mapID]
-                            if pts then for k=1,math.min(#pts,3) do AddPin("obj",pts[k][1],pts[k][2],qid,aq.title,aq.level,obj.n,"Objective") end end
+                        if type(ob[2])=="table" and not AllObjsOfTypeDone(aq,"object") then
+                            for _,entry in ipairs(ob[2]) do
+                                local oid=type(entry)=="table" and entry[1] or entry
+                                local txt=type(entry)=="table" and type(entry[2])=="string" and entry[2] or "Interact"
+                                PlotObject(oid,"object",qid,aq.title,aq.level,txt)
+                            end
                         end
-                    end
-                    if type(ob[3])=="table" then
-                        for _,entry in ipairs(ob[3]) do
-                            local iid=type(entry)=="table" and entry[1] or entry
-                            local it=W.Item(iid)
-                            if it and it.nd then
-                                for k=1,math.min(#it.nd,3) do
-                                    local npc=W.Npc(it.nd[k]); local pts=npc and npc.sp and npc.sp[mapID]
-                                    if pts and pts[1] then AddPin("obj",pts[1][1],pts[1][2],qid,aq.title,aq.level,npc.n,it.n and ("Drops: "..it.n) or "Quest item") end
+                        if type(ob[3])=="table" and not AllObjsOfTypeDone(aq,"item") then
+                            for _,entry in ipairs(ob[3]) do
+                                local iid=type(entry)=="table" and entry[1] or entry
+                                PlotItemSources(iid,"loot",qid,aq.title,aq.level,"Drops: ")
+                            end
+                        end
+                        -- Group 5: Kill-credit lists ({{npcID1, npcID2, ...}, rootNpc, text, ...})
+                        if type(ob[5])=="table" and not AllObjsOfTypeDone(aq,"monster") then
+                            for _,entry in ipairs(ob[5]) do
+                                if type(entry)=="table" and type(entry[1])=="table" then
+                                    local txt=type(entry[3])=="string" and entry[3] or "Kill credit"
+                                    for _,nid in ipairs(entry[1]) do
+                                        PlotNpc(nid,"slay",qid,aq.title,aq.level,txt)
+                                    end
+                                end
+                            end
+                        end
+                        -- Group 6: Spell objectives
+                        if type(ob[6])=="table" then
+                            for _,entry in ipairs(ob[6]) do
+                                local sid=type(entry)=="table" and entry[1] or entry
+                                local txt=type(entry)=="table" and type(entry[2])=="string" and entry[2] or "Spell objective"
+                                if type(sid)=="number" and W.Npc(sid) then
+                                    PlotNpc(sid,"event",qid,aq.title,aq.level,txt)
                                 end
                             end
                         end
                     end
+                    -- Trigger-end / exploration / escort coordinates (q.tr = {text, {mapID: [[x10,y10], ...]}})
+                    if type(q.tr)=="table" and type(q.tr[2])=="table" then
+                        local tpts=q.tr[2][mapID]
+                        if type(tpts)=="table" then
+                            local tTxt=type(q.tr[1])=="string" and q.tr[1]~="" and q.tr[1] or "Quest location"
+                            for _,pt in ipairs(tpts) do
+                                AddPin("event",pt[1],pt[2],qid,aq.title,aq.level,tTxt,"Objective location")
+                            end
+                        end
+                    end
+                    -- Questie extraObjectives (cave entrances, summon spots, special clickables)
+                    if type(q.eo)=="table" then
+                        for _,row in ipairs(q.eo) do
+                            local objIdx=type(row[4])=="number" and row[4] or 0
+                            local skip=(objIdx>0 and aq.objs and aq.objs[objIdx] and aq.objs[objIdx].done) and true or false
+                            if not skip then
+                                local kind=EO_ICON_MAP[row[2]] or "event"
+                                local txt=type(row[3])=="string" and row[3]~="" and row[3] or "Special objective"
+                                if type(row[1])=="table" and type(row[1][mapID])=="table" then
+                                    for _,pt in ipairs(row[1][mapID]) do
+                                        AddPin(kind,pt[1],pt[2],qid,aq.title,aq.level,txt,"Quest marker")
+                                    end
+                                end
+                                if type(row[5])=="table" then
+                                    for _,ref in ipairs(row[5]) do
+                                        if ref[1]=="m" then PlotNpc(ref[2],kind,qid,aq.title,aq.level,txt)
+                                        elseif ref[1]=="o" then PlotObject(ref[2],kind,qid,aq.title,aq.level,txt)
+                                        elseif ref[1]=="i" then PlotItemSources(ref[2],kind,qid,aq.title,aq.level,txt..": ") end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    -- Required source items (keys, torches, quest tools not listed as formal objectives)
+                    if type(q.rs)=="table" then
+                        for _,iid in ipairs(q.rs) do
+                            PlotItemSources(iid,"loot",qid,aq.title,aq.level,"Required item: ")
+                        end
+                    end
+                    PlotDungeonEntrance(q,qid,aq.title,aq.level,"Objective inside instance")
+                end
+            end
+        end
+
+        -- 2. Available quests in this zone (O(1) lookup via X-Z-<mapID>!)
+        if cfg.visibility~="active" then
+            local showLow=(cfg.visibility=="all") or cfg.lowLevel
+            local z=W.Zone(mapID)
+            if z and z.q then
+                for _,qid in ipairs(z.q) do
+                    local q=W.Quest(qid)
+                    if IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,showLow,cfg.seasonal) then
+                        local kind=(q.sp and bit and bit.band and bit.band(q.sp,1)~=0) and "repeat" or "avail"
+                        PlaceEntityGroup(q.sb,kind,qid,q.n,q.ql or q.rl or 0,q.xp and (q.xp.." XP") or nil)
+                        PlotDungeonEntrance(q,qid,q.n,q.ql or q.rl or 0,"Available inside instance")
+                    end
                 end
             end
         end
     end
 
-    -- 2. Available quests in this zone (O(1) lookup via X-Z-<mapID>!)
-    if cfg.visibility~="active" then
-        local showLow=(cfg.visibility=="all") or cfg.lowLevel
-        local z=W.Zone(mapID)
-        if z and z.q then
-            for _,qid in ipairs(z.q) do
-                local q=W.Quest(qid)
-                if IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,showLow,cfg.seasonal) then
-                    local kind=(q.sp and bit and bit.band and bit.band(q.sp,1)~=0) and "repeat" or "avail"
-                    PlaceEntityGroup(q.sb,kind,qid,q.n,q.ql or q.rl or 0,q.xp and (q.xp.." XP") or nil)
+    -- 3. Custom user-dropped quest pins (entrances & notes)
+    local notes=cfg.notes
+    if type(notes)=="table" then
+        for qid,entry in pairs(notes) do
+            if type(entry)=="table" and type(entry.pins)=="table" and #entry.pins>0 and not IsCompleted(qid) then
+                local aq=activeQuests[qid]
+                local q=hasWorld and W.Quest(qid) or nil
+                local title=(aq and aq.title) or (q and q.n) or ("Quest #"..qid)
+                local level=(aq and aq.level) or (q and (q.ql or q.rl)) or 0
+                for idx,up in ipairs(entry.pins) do
+                    if up.map==mapID then
+                        local det=(up.kind=="entrance" and "Custom Entrance") or "Custom Note"
+                        AddPin(up.kind=="entrance" and "entrance" or "note",up.x,up.y,qid,title,level,up.label or det,det,{qid=qid,idx=idx})
+                    end
                 end
             end
         end
@@ -259,20 +579,54 @@ local PIN_ICONS={
     ["repeat"]="Interface\\GossipFrame\\DailyQuestIcon",
     turnin="Interface\\GossipFrame\\ActiveQuestIcon",
     obj="Interface\\GossipFrame\\BattleMasterGossipIcon",
+    slay="Interface\\GossipFrame\\BattleMasterGossipIcon",
+    loot="Interface\\Icons\\INV_Misc_Bag_08",
+    object="Interface\\GossipFrame\\BinderGossipIcon",
+    event="Interface\\Icons\\INV_Misc_Map_01",
+    talk="Interface\\GossipFrame\\GossipGossipIcon",
+    entrance="Interface\\Icons\\Spell_Arcane_PortalStormwind",
+    note="Interface\\Icons\\INV_Misc_Note_01",
+}
+
+local PIN_HEADINGS={
+    avail="Available Quest",
+    ["repeat"]="Repeatable Quest",
+    turnin="Quest Turn-In",
+    obj="Quest Objective",
+    slay="Quest Target",
+    loot="Quest Loot",
+    object="Quest Object",
+    event="Quest Location",
+    talk="Quest NPC",
+    entrance="Quest Entrance",
+    note="Quest Note",
 }
 
 local function ShowPinTooltip(owner,cluster)
     if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return end
     GameTooltip:SetOwner(owner,"ANCHOR_RIGHT")
-    local head=cluster.kind=="turnin" and "Quest Turn-In" or cluster.kind=="obj" and "Quest Objective" or "Available Quest"
+    local head=PIN_HEADINGS[cluster.kind] or "Quest Marker"
     local pLvl=UnitLevel and UnitLevel("player")
     if not Num(pLvl,1,200) then pLvl=60 end
     GameTooltip:SetText(head,1,.86,.48)
+    local notes=Cfg().notes
+    local shownNote={}
+    local hasUserPin=false
     for _,it in ipairs(cluster.items) do
         local hex=QuestDifficultyHex(it.level,pLvl)
         local lvl=it.level and it.level>0 and ("|cff"..hex.."["..it.level.."]|r ") or ""
         GameTooltip:AddLine(lvl..(it.title or "Quest"),1,1,1)
         if it.who then GameTooltip:AddLine("  "..it.who..(it.detail and (" - "..it.detail) or ""),.64,.84,1) end
+        if it.userPin then hasUserPin=true end
+        local ne=it.id and notes and notes[it.id]
+        if ne and type(ne.text)=="string" and ne.text~="" and not shownNote[it.id] then
+            shownNote[it.id]=true
+            GameTooltip:AddLine("  Note: "..ne.text,1,.92,.55,true)
+        end
+    end
+    GameTooltip:AddLine("Left-click: Open Quest Scroll & Notes",.68,.76,.86)
+    if hasUserPin then
+        GameTooltip:AddLine("Ctrl+Right-Click: Remove custom pin",1,.58,.52)
     end
     GameTooltip:Show()
 end
@@ -291,19 +645,43 @@ local function AvoidDiaryCollision(px,py,pts,thresh,ox,oy)
     return px,py
 end
 
+local function LayoutWorldPin(pin,c,canvasF,width,height,scale,baseLevel)
+    pin:SetScale(scale)
+    local lvl=baseLevel+(PIN_DRAW_ORDER[c.kind] or 2)
+    if pin.SetFixedFrameLevel then pin:SetFixedFrameLevel(false) end
+    pin:SetFrameLevel(lvl)
+    if pin.SetFixedFrameLevel then pin:SetFixedFrameLevel(true) end
+    local px,py=AvoidDiaryCollision(c.x*width,-c.y*height,Suite.DiaryWorldPts,16*scale,15*scale,7*scale)
+    pin:ClearAllPoints(); pin:SetPoint("CENTER",canvasF,"TOPLEFT",px/scale,py/scale)
+    if pin.fieldRing then
+        local fc=FIELD_COLORS[c.kind]
+        if fc and (c.ptCount or 1)>=2 then
+            local rw=math.max(26,math.min(140,((c.maxX-c.minX)*width+20)/scale))
+            local rh=math.max(26,math.min(140,((c.maxY-c.minY)*height+20)/scale))
+            local diam=math.max(rw,rh)
+            pin.fieldRing:SetSize(diam,diam)
+            pin.fieldRing:SetVertexColor(fc[1],fc[2],fc[3],fc[4])
+            pin.fieldRing:Show()
+        else
+            pin.fieldRing:Hide()
+        end
+    end
+end
+
 local function HideWorld() for _,p in ipairs(worldPins) do p:Hide() end end
 function Module.RepositionWorld()
     if not WorldMapFrame or not WorldMapFrame:IsShown() then return end
     local canvasF=WorldMapFrame.GetCanvas and WorldMapFrame:GetCanvas()
     if not canvasF then return end
     local width,height=canvasF:GetWidth(),canvasF:GetHeight()
+    if width<=0 or height<=0 then return end
     local zoom=WorldMapFrame.GetCanvasScale and WorldMapFrame:GetCanvasScale() or 1
     if not Num(zoom,.01,100) then zoom=1 end
     local scale=1/zoom
+    local baseLevel=math.max((canvasF:GetFrameLevel() or 1)+27,2020)
     for _,pin in ipairs(worldPins) do
         if pin:IsShown() and pin.cluster then
-            local px,py=AvoidDiaryCollision(pin.cluster.x*width,-pin.cluster.y*height,Suite.DiaryWorldPts,16*scale,15*scale,7*scale)
-            pin:ClearAllPoints(); pin:SetPoint("CENTER",canvasF,"TOPLEFT",px/scale,py/scale)
+            LayoutWorldPin(pin,pin.cluster,canvasF,width,height,scale,baseLevel)
         end
     end
 end
@@ -319,21 +697,44 @@ function Module.DrawWorld()
     local zoom=WorldMapFrame.GetCanvasScale and WorldMapFrame:GetCanvasScale() or 1
     if not Num(zoom,.01,100) then zoom=1 end
     local scale=1/zoom
-    local level=canvasF:GetFrameLevel()+27
+    -- Match Questie: WorldMapFrame.ScrollContainer / POI overlays start around FrameLevel 2000-2015
+    local baseLevel=math.max((canvasF:GetFrameLevel() or 1)+27,2020)
     local list=CollectZonePins(mapID)
-    for i=1,math.min(#list,80) do
+    for i=1,math.min(#list,160) do
         local c=list[i]; local pin=worldPins[i]
         if not pin then
-            pin=CreateFrame("Frame",nil,canvasF); pin:SetSize(16,16); pin:EnableMouse(true)
+            pin=CreateFrame("Button",nil,canvasF); pin:SetSize(18,18); pin:EnableMouse(true)
+            pin:RegisterForClicks("LeftButtonUp","RightButtonUp")
+            local ring=pin:CreateTexture(nil,"BACKGROUND")
+            ring:SetPoint("CENTER",pin,"CENTER",0,0)
+            if ring:SetTexture(FIELD_RING_TEX)==false then ring:SetTexture(FIELD_RING_FALLBACK) end
+            ring:Hide()
+            pin.fieldRing=ring
             pin.tex=pin:CreateTexture(nil,"OVERLAY"); pin.tex:SetAllPoints()
             pin:SetScript("OnEnter",function(self) if self.cluster then ShowPinTooltip(self,self.cluster) end end)
             pin:SetScript("OnLeave",HideSafeTip)
+            pin:SetScript("OnClick",function(self,btn)
+                local cl=self.cluster
+                if not cl or not cl.items or not cl.items[1] then return end
+                if btn=="RightButton" and IsControlKeyDown and IsControlKeyDown() then
+                    for _,it in ipairs(cl.items) do
+                        if it.userPin then
+                            Module.RemoveQuestPin(it.userPin.qid,it.userPin.idx)
+                            HideSafeTip()
+                            return
+                        end
+                    end
+                elseif btn=="LeftButton" and cl.items[1].id then
+                    Module.OpenParchment(cl.items[1].id)
+                end
+            end)
             worldPins[i]=pin
         end
-        pin.cluster=c; pin:SetParent(canvasF); pin:SetFrameLevel(level); pin:SetScale(scale)
-        pin.tex:SetTexture(PIN_ICONS[c.kind] or PIN_ICONS.avail)
-        local px,py=AvoidDiaryCollision(c.x*width,-c.y*height,Suite.DiaryWorldPts,16*scale,15*scale,7*scale)
-        pin:ClearAllPoints(); pin:SetPoint("CENTER",canvasF,"TOPLEFT",px/scale,py/scale)
+        pin.cluster=c; pin:SetParent(canvasF)
+        local texPath=PIN_ICONS[c.kind] or PIN_ICONS.avail
+        pin.tex:SetTexture(texPath)
+        if texPath:find("\\Icons\\",1,true) then pin.tex:SetTexCoord(.08,.92,.08,.92) else pin.tex:SetTexCoord(0,1,0,1) end
+        LayoutWorldPin(pin,c,canvasF,width,height,scale,baseLevel)
         pin:Show()
     end
 end
@@ -399,7 +800,7 @@ local function UpdateMini(force)
                 pin:ClearAllPoints(); pin:SetPoint("CENTER",Minimap,"CENTER",mx,my)
             end
             if not pin:IsShown() then pin:Show() end
-            if shown>=28 then break end
+            if shown>=48 then break end
         end
     end
     for i=shown+1,#miniPins do
@@ -409,12 +810,9 @@ local function UpdateMini(force)
 end
 
 local function OnQMiniUpdate(_,elapsed)
-    if qMiniMoving then
-        UpdateMini(false)
-    else
-        qRotAcc=qRotAcc+(elapsed or 0)
-        if qRotAcc>=.12 then qRotAcc=0; UpdateMini(false) end
-    end
+    qRotAcc=qRotAcc+(elapsed or 0)
+    local step=qMiniMoving and .06 or .15
+    if qRotAcc>=step then qRotAcc=0; UpdateMini(false) end
 end
 
 local function SyncQMiniMotion()
@@ -432,14 +830,20 @@ local function SyncQMiniMotion()
     end
 end
 
+local QMINI_EVENTS={"PLAYER_STARTED_MOVING","PLAYER_STOPPED_MOVING","MINIMAP_UPDATE_ZOOM","CVAR_UPDATE"}
+local function SyncQMiniEvents(on)
+    if not qMiniDriver then return end
+    for _,ev in ipairs(QMINI_EVENTS) do
+        if on then pcall(qMiniDriver.RegisterEvent,qMiniDriver,ev) else pcall(qMiniDriver.UnregisterEvent,qMiniDriver,ev) end
+    end
+end
+
 local function EnsureQMiniDriver()
     if qMiniDriver then return end
     qMiniDriver=CreateFrame("Frame")
-    qMiniDriver:RegisterEvent("PLAYER_STARTED_MOVING")
-    qMiniDriver:RegisterEvent("PLAYER_STOPPED_MOVING")
-    qMiniDriver:RegisterEvent("MINIMAP_UPDATE_ZOOM")
-    qMiniDriver:RegisterEvent("CVAR_UPDATE")
+    SyncQMiniEvents(Cfg().enabled==true)
     qMiniDriver:SetScript("OnEvent",function(_,ev,arg1)
+        if not Cfg().enabled then return end
         if ev=="PLAYER_STARTED_MOVING" then
             qMiniMoving=true; SyncQMiniMotion()
         elseif ev=="PLAYER_STOPPED_MOVING" then
@@ -453,15 +857,21 @@ local function EnsureQMiniDriver()
     end)
     if not qMiniHookedZoom and Minimap then
         qMiniHookedZoom=true
-        Minimap:HookScript("OnShow",function() qLastPX=nil; UpdateMini(true); SyncQMiniMotion() end)
+        Minimap:HookScript("OnShow",function() if Cfg().enabled then qLastPX=nil; UpdateMini(true); SyncQMiniMotion() end end)
         Minimap:HookScript("OnHide",function() qMiniDriver:SetScript("OnUpdate",nil); HideMini() end)
-        Minimap:HookScript("OnSizeChanged",function() qLastPX=nil; UpdateMini(true) end)
+        Minimap:HookScript("OnSizeChanged",function() if Cfg().enabled then qLastPX=nil; UpdateMini(true) end end)
     end
 end
 
 local function ConfigureMaps()
     local cfg=Cfg()
+    if not cfg.enabled then
+        if qMiniDriver then qMiniDriver:SetScript("OnUpdate",nil); SyncQMiniEvents(false) end
+        HideMini(); HideWorld()
+        return
+    end
     EnsureQMiniDriver()
+    SyncQMiniEvents(true)
     qLastPX=nil; qMiniMap=nil
     if WorldMapFrame and WorldMapFrame:IsShown() then Module.DrawWorld() end
     if cfg.enabled and cfg.minimap and Minimap and Minimap:IsShown() then
@@ -475,35 +885,45 @@ local function ConfigureMaps()
 end
 
 -- Unit & Item Tooltip Quest Objectives
+-- Preserve native quest rows; append only quests not already represented.
+local function TooltipHasQuest(tip,title)
+    if not Public(title) or type(title)~="string" then return false end
+    local name=tip.GetName and tip:GetName()
+    if not Public(name) or type(name)~="string" or not tip.NumLines then return false end
+    for i=1,tip:NumLines() do
+        local line=_G[name.."TextLeft"..i]
+        local text=line and line.GetText and line:GetText()
+        if Public(text) and type(text)=="string" then
+            text=text:gsub("|c%x%x%x%x%x%x%x%x",""):gsub("|r","")
+            if text==title or text:find(title,1,true) then return true end
+        end
+    end
+    return false
+end
+
 local function OnUnitTooltip(tip)
     if not tip or (tip.IsForbidden and tip:IsForbidden()) or not Cfg().enabled or not Cfg().tooltips then return end
+    if activeCount<=0 or not W or not W.loaded then return end
+    if not activeQuestNPCsBuilt then RebuildActiveQuestNPCIndex() end
     local _,unit=tip:GetUnit()
     if not Public(unit) or type(unit)~="string" then return end
     local guid=UnitGUID and UnitGUID(unit)
     if not Public(guid) or type(guid)~="string" then return end
     local npcID=tonumber(guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-"))
-    if not npcID or not W or not W.loaded then return end
-    for qid,aq in pairs(activeQuests) do
-        if not aq.complete then
-            local q=W.Quest(qid)
-            local matched=false
-            if q and type(q.ob)=="table" then
-                if type(q.ob[1])=="table" then
-                    for _,e in ipairs(q.ob[1]) do if (type(e)=="table" and e[1] or e)==npcID then matched=true; break end end
-                end
-                if not matched and type(q.ob[3])=="table" then
-                    for _,e in ipairs(q.ob[3]) do
-                        local it=W.Item(type(e)=="table" and e[1] or e)
-                        if it and it.nd then for _,dn in ipairs(it.nd) do if dn==npcID then matched=true; break end end end
-                        if matched then break end
-                    end
-                end
+    if not npcID then return end
+    local qids=activeQuestNPCs[npcID]
+    if not qids then return end
+    for i=1,#qids do
+        local qid=qids[i]
+        local aq=activeQuests[qid]
+        if aq and not aq.complete and not TooltipHasQuest(tip,aq.title) then
+            tip:AddLine("|cffffd670Quester:|r "..aq.title,1,.92,.72)
+            for _,o in ipairs(aq.objs) do
+                if not o.done then tip:AddLine("  - "..o.text,.85,.88,.94) end
             end
-            if matched then
-                tip:AddLine("|cffffd670Quest:|r "..aq.title,1,.92,.72)
-                for _,o in ipairs(aq.objs) do
-                    if not o.done then tip:AddLine("  - "..o.text,.85,.88,.94) end
-                end
+            local ne=GetNoteEntry(qid,false)
+            if ne and type(ne.text)=="string" and ne.text~="" then
+                tip:AddLine("  Note: "..ne.text,1,.90,.52,true)
             end
         end
     end
@@ -617,56 +1037,143 @@ end
 local function EnsureParchment()
     if parchmentFrame then return parchmentFrame end
     local f=CreateFrame("Frame","SmyrnaQuestsParchment",UIParent,"BackdropTemplate")
-    f:SetSize(384,512); f:SetPoint("CENTER"); f:SetFrameStrata("FULLSCREEN_DIALOG"); f:SetFrameLevel(165); f:SetClampedToScreen(true)
+    f:SetSize(400,520); f:SetPoint("CENTER"); f:SetFrameStrata("FULLSCREEN_DIALOG"); f:SetFrameLevel(165); f:SetClampedToScreen(true)
     f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart",function(self) if not (InCombatLockdown and InCombatLockdown()) then self:StartMoving() end end)
     f:SetScript("OnDragStop",function(self) self:StopMovingOrSizing() end)
-    Suite.StylePanel(f,true); Suite.HeaderStrip(f,34); Suite.CloseButton(f)
+    Suite.StylePanel(f,true); Suite.HeaderStrip(f,36); Suite.CloseButton(f)
     local hTitle=f:CreateFontString(nil,"OVERLAY","GameFontNormal")
-    hTitle:SetPoint("TOPLEFT",14,-10); hTitle:SetText("Quest"); hTitle:SetTextColor(1,.86,.48)
+    hTitle:SetPoint("TOPLEFT",14,-11); hTitle:SetText("Smyrna Quest Details"); hTitle:SetTextColor(1,.86,.48)
 
-    -- Authentic WoW QuestFrame parchment sheet (384x512 native proportion)
+    -- Obsidian & Gold container matching Smyrna Suite aesthetic
     local sheet=CreateFrame("Frame",nil,f,"BackdropTemplate")
-    sheet:SetPoint("TOPLEFT",8,-36); sheet:SetPoint("BOTTOMRIGHT",-8,8)
-    sheet:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
-    sheet:SetBackdropColor(.95,.89,.74,1)
-    sheet:SetBackdropBorderColor(.52,.38,.20,.95)
-    local pTex=sheet:CreateTexture(nil,"BACKGROUND",nil,1)
-    pTex:SetAllPoints()
-    if pTex:SetTexture("Interface\\QuestFrame\\UI-QuestLog-BookBg")==false then
-        pTex:SetColorTexture(.95,.89,.74,1)
-    else
-        pTex:SetTexCoord(0,.62,0,.78); pTex:SetAlpha(1)
-    end
+    sheet:SetPoint("TOPLEFT",10,-42); sheet:SetPoint("BOTTOMRIGHT",-10,10)
+    Suite.StyleCard(sheet,.055,.064,.090)
     f.sheet=sheet
 
-    f.qTitle=sheet:CreateFontString(nil,"OVERLAY","QuestTitleFont")
-    if not f.qTitle then f.qTitle=sheet:CreateFontString(nil,"OVERLAY","GameFontNormalLarge") end
-    f.qTitle:SetPoint("TOPLEFT",16,-14); f.qTitle:SetWidth(378); f.qTitle:SetJustifyH("LEFT"); f.qTitle:SetTextColor(.18,.10,.04)
+    -- Top quest header card
+    local headCard=CreateFrame("Frame",nil,sheet,"BackdropTemplate")
+    headCard:SetPoint("TOPLEFT",10,-10); headCard:SetPoint("TOPRIGHT",-10,-10); headCard:SetHeight(144)
+    Suite.StyleCard(headCard,.082,.094,.130)
+    headCard:SetBackdropBorderColor(.82,.67,.34,.62)
 
-    f.qMeta=sheet:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
-    f.qMeta:SetPoint("TOPLEFT",16,-38); f.qMeta:SetWidth(378); f.qMeta:SetJustifyH("LEFT"); f.qMeta:SetTextColor(.36,.24,.12)
+    f.qTitle=headCard:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
+    f.qTitle:SetPoint("TOPLEFT",12,-10); f.qTitle:SetPoint("TOPRIGHT",-12,-10); f.qTitle:SetJustifyH("LEFT"); f.qTitle:SetMaxLines(1); f.qTitle:SetTextColor(1,.86,.48)
 
-    local div1=sheet:CreateTexture(nil,"ARTWORK")
-    div1:SetPoint("TOPLEFT",14,-60); div1:SetPoint("TOPRIGHT",-14,-60); div1:SetHeight(1); div1:SetColorTexture(.48,.34,.18,.55)
+    f.qMeta=headCard:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    f.qMeta:SetPoint("TOPLEFT",12,-32); f.qMeta:SetPoint("TOPRIGHT",-12,-32); f.qMeta:SetJustifyH("LEFT"); f.qMeta:SetTextColor(.74,.80,.88)
 
-    f.qNPCs=sheet:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-    f.qNPCs:SetPoint("TOPLEFT",16,-68); f.qNPCs:SetWidth(378); f.qNPCs:SetJustifyH("LEFT"); f.qNPCs:SetSpacing(3); f.qNPCs:SetTextColor(.22,.14,.06)
+    local div1=headCard:CreateTexture(nil,"ARTWORK")
+    div1:SetPoint("TOPLEFT",10,-50); div1:SetPoint("TOPRIGHT",-10,-50); div1:SetHeight(1)
+    Suite.ApplyGradient(div1,"HORIZONTAL",.92,.76,.36,.65,.92,.76,.36,.06)
+
+    f.qNPCs=headCard:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    f.qNPCs:SetPoint("TOPLEFT",12,-58); f.qNPCs:SetPoint("TOPRIGHT",-12,-58); f.qNPCs:SetJustifyH("LEFT"); f.qNPCs:SetSpacing(3); f.qNPCs:SetTextColor(.88,.91,.96)
+
+    f.qObjText=headCard:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    f.qObjText:SetPoint("TOPLEFT",12,-94); f.qObjText:SetPoint("BOTTOMRIGHT",-12,8); f.qObjText:SetJustifyH("LEFT"); f.qObjText:SetJustifyV("TOP"); f.qObjText:SetSpacing(2); f.qObjText:SetTextColor(.82,.78,.68)
 
     f.chainHeader=sheet:CreateFontString(nil,"OVERLAY","GameFontNormal")
-    f.chainHeader:SetPoint("TOPLEFT",16,-116); f.chainHeader:SetText("Quest Chain Flow"); f.chainHeader:SetTextColor(.28,.16,.06)
+    f.chainHeader:SetPoint("TOPLEFT",12,-164); f.chainHeader:SetText("Quest Chain"); f.chainHeader:SetTextColor(.95,.80,.42)
 
     local div2=sheet:CreateTexture(nil,"ARTWORK")
-    div2:SetPoint("TOPLEFT",14,-134); div2:SetPoint("TOPRIGHT",-14,-134); div2:SetHeight(1); div2:SetColorTexture(.48,.34,.18,.55)
+    div2:SetPoint("TOPLEFT",12,-182); div2:SetPoint("TOPRIGHT",-12,-182); div2:SetHeight(1)
+    Suite.ApplyGradient(div2,"HORIZONTAL",.92,.76,.36,.55,.92,.76,.36,.05)
 
     f.scroll=CreateFrame("ScrollFrame",nil,sheet,"UIPanelScrollFrameTemplate")
-    f.scroll:SetPoint("TOPLEFT",12,-142); f.scroll:SetPoint("BOTTOMRIGHT",-30,12)
-    f.canvas=CreateFrame("Frame",nil,f.scroll); f.canvas:SetSize(360,240); f.scroll:SetScrollChild(f.canvas)
+    f.scroll:SetPoint("TOPLEFT",10,-188); f.scroll:SetPoint("BOTTOMRIGHT",-30,136)
+    f.canvas=CreateFrame("Frame",nil,f.scroll); f.canvas:SetSize(336,140); f.scroll:SetScrollChild(f.canvas)
     f.scroll:EnableMouseWheel(true)
     f.scroll:SetScript("OnMouseWheel",function(self,delta)
         local cur,max=self:GetVerticalScroll(),self:GetVerticalScrollRange()
         if type(cur)=="number" and type(max)=="number" then self:SetVerticalScroll(math.max(0,math.min(max,cur-delta*32))) end
     end)
+
+    -- Personal Quest Note & Custom Map Pins card (obsidian & gold)
+    local noteCard=CreateFrame("Frame",nil,sheet,"BackdropTemplate")
+    noteCard:SetPoint("BOTTOMLEFT",10,10); noteCard:SetPoint("BOTTOMRIGHT",-10,10); noteCard:SetHeight(118)
+    Suite.StyleCard(noteCard,.074,.085,.118)
+    noteCard:SetBackdropBorderColor(.82,.67,.34,.58)
+
+    f.noteHeader=noteCard:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+    f.noteHeader:SetPoint("TOPLEFT",10,-8); f.noteHeader:SetText("My Quest Note & Map Pins"); f.noteHeader:SetTextColor(1,.86,.48)
+
+    local noteBox=CreateFrame("EditBox",nil,noteCard,"BackdropTemplate")
+    noteBox:SetPoint("TOPLEFT",10,-26); noteBox:SetPoint("TOPRIGHT",-10,-26); noteBox:SetHeight(24)
+    noteBox:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=2,right=2,top=2,bottom=2}})
+    noteBox:SetBackdropColor(.035,.042,.062,.96); noteBox:SetBackdropBorderColor(.74,.60,.30,.72)
+    noteBox:SetFontObject(ChatFontNormal); noteBox:SetTextColor(.95,.92,.84); noteBox:SetAutoFocus(false); noteBox:SetMaxLetters(240)
+    noteBox:SetTextInsets(6,6,2,2)
+    noteBox:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+    noteBox:SetScript("OnEnterPressed",function(self)
+        if f.activeQID then
+            Module.SetQuestNote(f.activeQID,self:GetText())
+            Module.OpenParchment(f.activeQID)
+        end
+        self:ClearFocus()
+    end)
+    f.noteEdit=noteBox
+
+    local function SayNote(msg)
+        if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+            DEFAULT_CHAT_FRAME:AddMessage("|cffdfb66bSmyrna Quests:|r "..msg)
+        end
+    end
+
+    local saveBtn=CreateFrame("Button",nil,noteCard,"UIPanelButtonTemplate")
+    saveBtn:SetSize(78,22); saveBtn:SetPoint("TOPLEFT",10,-56); saveBtn:SetText("Save Note"); Suite.StyleButton(saveBtn)
+    saveBtn:SetScript("OnClick",function()
+        if not f.activeQID then return end
+        noteBox:ClearFocus()
+        Module.SetQuestNote(f.activeQID,noteBox:GetText())
+        Module.OpenParchment(f.activeQID)
+        SayNote("Saved note for quest #"..f.activeQID..".")
+    end)
+
+    local entBtn=CreateFrame("Button",nil,noteCard,"UIPanelButtonTemplate")
+    entBtn:SetSize(86,22); entBtn:SetPoint("LEFT",saveBtn,"RIGHT",6,0); entBtn:SetText("+ Entrance"); Suite.StyleButton(entBtn)
+    entBtn:SetScript("OnClick",function()
+        if not f.activeQID then return end
+        noteBox:ClearFocus()
+        local lbl=TrimText(noteBox:GetText(),80)
+        local ok,res=Module.AddQuestPin(f.activeQID,"entrance",lbl~="" and lbl or "Entrance")
+        if ok then
+            Module.OpenParchment(f.activeQID)
+            SayNote(string.format("Marked entrance (%.1f, %.1f) for quest #%d.",res.x/10,res.y/10,f.activeQID))
+        else
+            SayNote(tostring(res or "Could not mark entrance here."))
+        end
+    end)
+    Suite.AttachTooltip(entBtn,"Mark Entrance Here","Drop a custom Entrance pin on the World Map & Minimap at your current location for this quest.")
+
+    local pinBtn=CreateFrame("Button",nil,noteCard,"UIPanelButtonTemplate")
+    pinBtn:SetSize(84,22); pinBtn:SetPoint("LEFT",entBtn,"RIGHT",6,0); pinBtn:SetText("+ Note Pin"); Suite.StyleButton(pinBtn)
+    pinBtn:SetScript("OnClick",function()
+        if not f.activeQID then return end
+        noteBox:ClearFocus()
+        local lbl=TrimText(noteBox:GetText(),80)
+        local ok,res=Module.AddQuestPin(f.activeQID,"note",lbl~="" and lbl or "Note")
+        if ok then
+            Module.OpenParchment(f.activeQID)
+            SayNote(string.format("Dropped note pin (%.1f, %.1f) for quest #%d.",res.x/10,res.y/10,f.activeQID))
+        else
+            SayNote(tostring(res or "Could not drop pin here."))
+        end
+    end)
+    Suite.AttachTooltip(pinBtn,"Drop Note Pin Here","Drop a custom Note marker on the World Map & Minimap at your current position.")
+
+    local clrBtn=CreateFrame("Button",nil,noteCard,"UIPanelButtonTemplate")
+    clrBtn:SetSize(74,22); clrBtn:SetPoint("LEFT",pinBtn,"RIGHT",6,0); clrBtn:SetText("Clear Pins"); Suite.StyleButton(clrBtn)
+    clrBtn:SetScript("OnClick",function()
+        if not f.activeQID then return end
+        Module.ClearQuestPins(f.activeQID)
+        Module.OpenParchment(f.activeQID)
+    end)
+    f.clearPinsBtn=clrBtn
+
+    f.pinSummary=noteCard:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    f.pinSummary:SetPoint("TOPLEFT",10,-84); f.pinSummary:SetPoint("BOTTOMRIGHT",-10,6)
+    f.pinSummary:SetJustifyH("LEFT"); f.pinSummary:SetJustifyV("TOP"); f.pinSummary:SetTextColor(.70,.76,.86)
 
     UISpecialFrames[#UISpecialFrames+1]="SmyrnaQuestsParchment"
     f:Hide()
@@ -674,21 +1181,48 @@ local function EnsureParchment()
     return f
 end
 
+local function ResolveEntityGroupName(group)
+    if type(group)~="table" or not W then return "Unknown" end
+    if type(group[1])=="table" and group[1][1] then
+        local n=W.Npc and W.Npc(group[1][1])
+        if n and n.n then return n.n end
+    end
+    if type(group[2])=="table" and group[2][1] then
+        local o=W.Object and W.Object(group[2][1])
+        if o and o.n then return o.n.." (Object)" end
+    end
+    if type(group[3])=="table" and group[3][1] then
+        local it=W.Item and W.Item(group[3][1])
+        if it and it.n then return it.n.." (Item)" end
+    end
+    return "Unknown"
+end
+
 function Module.OpenParchment(qid)
-    if not qid or not W or not W.Quest then return end
-    local q=W.Quest(qid)
-    if not q then return end
+    if not qid then return end
+    local q=W and W.Quest and W.Quest(qid) or nil
+    local aq=activeQuests[qid]
+    if not q and not aq then return end
+    q=q or {n=aq.title,ql=aq.level,rl=aq.level}
     local f=EnsureParchment()
+    f.activeQID=qid
     local done=IsCompleted(qid)
     local active=activeQuests[qid]~=nil
-    local statusTxt=done and "|cff1b6e2e[Completed]|r" or (active and "|cff1b4e8c[In Quest Log]|r" or "|cff7a4b00[Available]|r")
+    local statusTxt=done and "|cff55d86e[Completed]|r" or (active and "|cff7cc4ff[In Quest Log]|r" or "|cffffd670[Available]|r")
     f.qTitle:SetText((q.n or ("Quest #"..qid)))
     f.qMeta:SetText(string.format("Level %d  ·  Req %d%s  ·  %s",q.ql or 0,q.rl or 0,q.xp and ("  ·  "..q.xp.." XP") or "",statusTxt))
 
-    local startName,endName="Unknown","Unknown"
-    if q.sb and q.sb[1] and q.sb[1][1] then local n=W.Npc(q.sb[1][1]); if n and n.n then startName=n.n end end
-    if q.fb and q.fb[1] and q.fb[1][1] then local n=W.Npc(q.fb[1][1]); if n and n.n then endName=n.n end end
-    f.qNPCs:SetText("Starts at: "..startName.."\nTurns in at: "..endName)
+    local startName=ResolveEntityGroupName(q.sb)
+    local endName=ResolveEntityGroupName(q.fb)
+    f.qNPCs:SetText("|cffdfb66bStarts at:|r "..startName.."\n|cffdfb66bTurns in at:|r "..endName)
+
+    local objTxt=(type(q.ot)=="table" and type(q.ot[1])=="string" and q.ot[1]~="") and q.ot[1] or ""
+    if objTxt=="" and aq and type(aq.objs)=="table" and #aq.objs>0 then
+        local lines={}
+        for i=1,math.min(#aq.objs,2) do lines[#lines+1]=aq.objs[i].text end
+        objTxt=table.concat(lines,"  ·  ")
+    end
+    f.qObjText:SetText(objTxt)
 
     local chain=BuildQuestChain(qid)
     f.chainHeader:SetText(#chain>1 and ("Quest Chain ("..#chain.." steps — click any step)") or "Standalone Quest")
@@ -696,12 +1230,12 @@ function Module.OpenParchment(qid)
         local row=chainRows[i]
         if not row then
             row=CreateFrame("Button",nil,f.canvas,"BackdropTemplate")
-            row:SetSize(356,28)
+            row:SetSize(332,28)
             row:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
             row:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
-            local hl=row:GetHighlightTexture(); if hl then hl:SetVertexColor(.55,.38,.12,.18) end
+            local hl=row:GetHighlightTexture(); if hl then hl:SetVertexColor(.92,.76,.36,.16) end
             row.txt=row:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-            row.txt:SetPoint("LEFT",8,0); row.txt:SetWidth(272); row.txt:SetJustifyH("LEFT"); row.txt:SetMaxLines(1)
+            row.txt:SetPoint("LEFT",8,0); row.txt:SetWidth(252); row.txt:SetJustifyH("LEFT"); row.txt:SetMaxLines(1)
             row.tag=row:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
             row.tag:SetPoint("RIGHT",-8,0); row.tag:SetJustifyH("RIGHT")
             row:SetScript("OnClick",function(self) if self.qid then Module.OpenParchment(self.qid) end end)
@@ -714,20 +1248,39 @@ function Module.OpenParchment(qid)
         row.qid=cid
         row:ClearAllPoints(); row:SetPoint("TOPLEFT",0,-(i-1)*32)
         if isSel then
-            row:SetBackdropColor(.84,.74,.52,.95); row:SetBackdropBorderColor(.62,.42,.12,1)
+            row:SetBackdropColor(.16,.13,.08,.96); row:SetBackdropBorderColor(.92,.76,.36,.95)
+            row.txt:SetTextColor(1,.90,.62)
         else
-            row:SetBackdropColor(.89,.82,.65,.78); row:SetBackdropBorderColor(.66,.54,.34,.65)
+            row:SetBackdropColor(.078,.090,.124,.92); row:SetBackdropBorderColor(.28,.32,.40,.65)
+            row.txt:SetTextColor(.86,.89,.94)
         end
         row.txt:SetText(string.format("%d. [%d] %s",i,(cq and (cq.ql or cq.rl) or 0),(cq and cq.n) or ("Quest #"..cid)))
-        row.txt:SetTextColor(.18,.10,.04)
-        if cDone then row.tag:SetText("|cff1b6e2eDone|r")
-        elseif cAct then row.tag:SetText("|cff1b4e8cActive|r")
-        else row.tag:SetText("|cff7a4b00Next|r") end
+        if cDone then row.tag:SetText("|cff55d86eDone|r")
+        elseif cAct then row.tag:SetText("|cff7cc4ffActive|r")
+        else row.tag:SetText("|cffffd670Next|r") end
         row:Show()
     end
     for i=#chain+1,#chainRows do chainRows[i]:Hide() end
-    f.canvas:SetHeight(math.max(220,#chain*32+8))
+    f.canvas:SetHeight(math.max(120,#chain*32+8))
     f.scroll:UpdateScrollChildRect()
+
+    local ne=GetNoteEntry(qid,false)
+    f.noteEdit:SetText(ne and ne.text or "")
+    f.noteEdit:SetCursorPosition(0)
+    local pList=ne and ne.pins or {}
+    f.noteHeader:SetText(#pList>0 and ("My Quest Note & Map Pins ("..#pList.." saved)") or "My Quest Note & Map Pins")
+    f.clearPinsBtn:SetShown(#pList>0)
+    if #pList>0 then
+        local parts={}
+        for i=1,math.min(#pList,3) do
+            local p=pList[i]
+            parts[#parts+1]=string.format("|cffffd670%s|r (%.1f, %.1f)",p.label or p.kind,(p.x or 0)/10,(p.y or 0)/10)
+        end
+        if #pList>3 then parts[#parts+1]="+"..(#pList-3).." more" end
+        f.pinSummary:SetText("Pins: "..table.concat(parts,"  ·  "))
+    else
+        f.pinSummary:SetText("Write a note or mark a cave/dungeon entrance at your current spot.")
+    end
     f:Show()
 end
 
@@ -774,7 +1327,8 @@ function Module.RefreshUI()
                     end
                     local isChain=((q.pg and #q.pg>0) or (q.ps and #q.ps>0) or (q.nq and q.nq>0)) and true or false
                     local isSeasonal=IsSeasonalQuest(q)
-                    list[#list+1]={id=qid,name=q.n,level=q.ql or q.rl or 0,xp=q.xp,giver=giver,isChain=isChain,isSeasonal=isSeasonal}
+                    local hasNote=GetNoteEntry(qid,false)~=nil
+                    list[#list+1]={id=qid,name=q.n,level=q.ql or q.rl or 0,xp=q.xp,giver=giver,isChain=isChain,isSeasonal=isSeasonal,hasNote=hasNote}
                 end
             end
         end
@@ -795,7 +1349,8 @@ function Module.RefreshUI()
             row:ClearAllPoints(); row:SetPoint("TOPLEFT",0,-(i-1)*42)
             local chainTag=e.isChain and "  |cff8ecfff[Chain]|r" or ""
             local seasTag=e.isSeasonal and "  |cffffa64d[Seasonal]|r" or ""
-            row.title:SetText("|cff"..hex.."["..e.level.."]|r "..e.name..chainTag..seasTag); row.title:SetTextColor(1,.90,.62)
+            local noteTag=e.hasNote and "  |cff7cd4ff[Note]|r" or ""
+            row.title:SetText("|cff"..hex.."["..e.level.."]|r "..e.name..chainTag..seasTag..noteTag); row.title:SetTextColor(1,.90,.62)
             row.sub:SetText(e.giver~="" and ("Quest giver: "..e.giver) or ("Quest #"..e.id))
             row.xp:SetText(e.xp and (e.xp.." XP") or "")
             row:Show()
@@ -875,9 +1430,13 @@ function Module.Open()
 end
 
 local autoDriver=CreateFrame("Frame")
-autoDriver:RegisterEvent("QUEST_DETAIL")
-autoDriver:RegisterEvent("QUEST_PROGRESS")
-autoDriver:RegisterEvent("QUEST_COMPLETE")
+local AUTO_EVENTS={"QUEST_DETAIL","QUEST_PROGRESS","QUEST_COMPLETE"}
+local function SyncAutoEvents(on)
+    for _,ev in ipairs(AUTO_EVENTS) do
+        if on then pcall(autoDriver.RegisterEvent,autoDriver,ev) else pcall(autoDriver.UnregisterEvent,autoDriver,ev) end
+    end
+end
+SyncAutoEvents(Cfg().enabled==true)
 autoDriver:SetScript("OnEvent",function(_,event)
     local cfg=Cfg()
     if not cfg.enabled or not cfg.autoQuest then return end
@@ -946,7 +1505,8 @@ local function HookAll()
 end
 
 local logPending,logGen=false,0
-local function ApplyQuestRefresh()
+ApplyQuestRefresh=function()
+    if not Cfg().enabled then return end
     RefreshActiveQuests(); qLastPX=nil; qMiniMap=nil; UpdateMini(true)
     if WorldMapFrame and WorldMapFrame:IsShown() then Module.DrawWorld() end
     RefreshTracker()
@@ -954,14 +1514,40 @@ local function ApplyQuestRefresh()
 end
 
 local driver=CreateFrame("Frame")
+local DRIVER_EVENTS={"QUEST_LOG_UPDATE","ZONE_CHANGED_NEW_AREA","PLAYER_LEVEL_UP"}
+local function SyncQuestDriverEvents(on)
+    for _,ev in ipairs(DRIVER_EVENTS) do
+        if on then pcall(driver.RegisterEvent,driver,ev) else pcall(driver.UnregisterEvent,driver,ev) end
+    end
+end
+
+function Module.SetEnabled(on)
+    local en=on and true or false
+    Cfg().enabled=en
+    SyncQuestDriverEvents(en)
+    SyncAutoEvents(en)
+    ConfigureMaps()
+    RefreshTracker()
+    if en then
+        RefreshActiveQuests()
+        Module.RefreshUI()
+        local mb=_G.SmyrnaQuestsMapToggle; if mb and mb.Show then mb:Show() end
+    else
+        logPending=false
+        if window and window.Hide then window:Hide() end
+        if parchmentFrame and parchmentFrame.Hide then parchmentFrame:Hide() end
+        local mb=_G.SmyrnaQuestsMapToggle; if mb and mb.Hide then mb:Hide() end
+    end
+end
+
 driver:RegisterEvent("PLAYER_LOGIN")
-driver:RegisterEvent("QUEST_LOG_UPDATE")
-driver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-driver:RegisterEvent("PLAYER_LEVEL_UP")
+SyncQuestDriverEvents(Cfg().enabled==true)
 driver:SetScript("OnEvent",function(self,event)
     if event=="PLAYER_LOGIN" then
         self:UnregisterEvent("PLAYER_LOGIN")
         HookAll(); RefreshActiveQuests(); ConfigureMaps(); RefreshTracker()
+    elseif not Cfg().enabled then
+        return
     elseif event=="QUEST_LOG_UPDATE" then
         -- Coalesce bursty QUEST_LOG_UPDATE events before rebuilding zone/city pins.
         logGen=logGen+1
