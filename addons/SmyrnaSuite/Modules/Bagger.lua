@@ -163,9 +163,61 @@ local function ApplyBagAppearance()
     end
 end
 
+local activeCatFilter,catBtns="all",{}
+
+local function MatchesCatAndQuery(itemID,link,tex,quality,query)
+    if activeCatFilter~="all" then
+        if not itemID then return false end
+        local infoInstFn=(C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+        local _,_,_,_,_,classID=infoInstFn and infoInstFn(itemID)
+        if type(classID)~="number" then
+            local getInfo=(C_Item and C_Item.GetItemInfo) or GetItemInfo
+            if getInfo then classID=select(12,getInfo(link or itemID)) end
+        end
+        local qual=Public(quality) and quality or (C_Item and C_Item.GetItemQualityByID and C_Item.GetItemQualityByID(itemID))
+        if not Public(qual) then qual=nil end
+        if activeCatFilter=="gear" then
+            if classID~=2 and classID~=4 then return false end
+        elseif activeCatFilter=="use" then
+            if classID~=0 then return false end
+        elseif activeCatFilter=="trade" then
+            if classID~=5 and classID~=7 and classID~=9 then return false end
+        elseif activeCatFilter=="quest" then
+            if classID~=12 then return false end
+        elseif activeCatFilter=="junk" then
+            if qual~=0 then return false end
+        end
+    end
+    if query and query~="" then
+        if not tex then return false end
+        local iname
+        if link and Public(link) and type(link)=="string" then iname=link:match("%[(.-)%]") end
+        if not iname and itemID and C_Item and C_Item.GetItemNameByID then
+            local n=C_Item.GetItemNameByID(itemID)
+            if Public(n) and type(n)=="string" then iname=n end
+        end
+        if not (iname and string.lower(iname):find(query,1,true)) then return false end
+    end
+    return true
+end
+
+local function SafeResetCursor()
+    if ResetCursor and not (CursorHasItem and CursorHasItem()) then pcall(ResetCursor) end
+end
+
+local function HideOwnedTooltip(owner)
+    if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return false end
+    if GameTooltip:IsShown() and GameTooltip.IsOwned and GameTooltip:IsOwned(owner) then
+        GameTooltip:Hide()
+        return true
+    end
+    return false
+end
+
 local function UpdateSlotVisual(btn,bag,slot,query)
     local tex,count,locked,quality,link,itemID=SlotInfo(bag,slot)
     local isLocked=(Public(locked) and locked) and true or false
+    btn.hasItem=(tex and itemID) and true or nil
     if SetItemButtonTexture then SetItemButtonTexture(btn,tex)
     elseif btn.icon then btn.icon:SetTexture(tex or "") end
     local iconTex=btn.icon or (btn.GetName and _G[btn:GetName().."IconTexture"])
@@ -206,36 +258,61 @@ local function UpdateSlotVisual(btn,bag,slot,query)
         end
     end
 
-    -- Search dim/highlight
-    if query and query~="" then
-        local match=false
-        if tex then
-            local iname
-            if link and Public(link) and type(link)=="string" then iname=link:match("%[(.-)%]") end
-            if not iname and itemID and C_Item and C_Item.GetItemNameByID then
-                local n=C_Item.GetItemNameByID(itemID)
-                if Public(n) and type(n)=="string" then iname=n end
-            end
-            if iname and string.lower(iname):find(query,1,true) then match=true end
-        end
-        btn:SetAlpha(match and 1.0 or .22)
+    -- Search + category dim/highlight
+    local match=true
+    if (query and query~="") or activeCatFilter~="all" then
+        match=MatchesCatAndQuery(itemID,link,tex,quality,query)
+        btn:SetAlpha(match and 1.0 or .20)
+        if not match and btn.smyrnaBorder then btn.smyrnaBorder:Hide() end
     else
         btn:SetAlpha(1.0)
     end
-    -- Equipment Manager set protection glow along bottom edge of slot
-    local inSet=(itemID and equipSetLabel[itemID]) and true or false
-    if inSet then
+    -- Junk coin badge for gray vendor trash (Baganator/Leatrix style)
+    local qGray=(itemID and tex and Public(quality) and quality==0) and true or false
+    if qGray then
+        if not btn.smyrnaJunkCoin then
+            local coin=btn:CreateTexture(nil,"OVERLAY",nil,6)
+            coin:SetSize(13,13); coin:SetPoint("TOPLEFT",2,-2)
+            coin:SetTexture("Interface\\MoneyFrame\\UI-GoldIcon")
+            btn.smyrnaJunkCoin=coin
+        end
+        btn.smyrnaJunkCoin:Show()
+    elseif btn.smyrnaJunkCoin then
+        btn.smyrnaJunkCoin:Hide()
+    end
+    -- Equipment Manager set protection glow along bottom edge of slot (distinct color per set)
+    local setLbl=itemID and equipSetLabel[itemID]
+    if setLbl then
+        local SET_COLORS={
+            {.35,.85,1.0},{1.0,.82,.28},{.42,.92,.58},{.82,.52,1.0},
+            {1.0,.48,.42},{.38,.92,.88},{1.0,.56,.82},{.72,.92,.38},
+        }
+        local h=0
+        for idx=1,#setLbl do h=(h*31+setLbl:byte(idx))%8 end
+        local sc=SET_COLORS[h+1]
         if not btn.smyrnaSetGlow then
             local g=btn:CreateTexture(nil,"OVERLAY",nil,5)
             g:SetHeight(3)
             g:SetPoint("BOTTOMLEFT",btn,"BOTTOMLEFT",2,2)
             g:SetPoint("BOTTOMRIGHT",btn,"BOTTOMRIGHT",-2,2)
-            g:SetColorTexture(.35,.85,1.0,.95)
             btn.smyrnaSetGlow=g
         end
+        btn.smyrnaSetGlow:SetColorTexture(sc[1],sc[2],sc[3],.95)
         btn.smyrnaSetGlow:Show()
     elseif btn.smyrnaSetGlow then
         btn.smyrnaSetGlow:Hide()
+    end
+    if not btn.hasItem then
+        btn:SetScript("OnUpdate",nil)
+    end
+    if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) and GameTooltip.IsOwned and GameTooltip:IsOwned(btn) then
+        if btn.hasItem then
+            local onEnter=btn:GetScript("OnEnter")
+            if onEnter and btn.GetRight and btn:GetRight() then pcall(onEnter,btn) end
+        else
+            GameTooltip:Hide()
+            SafeResetCursor()
+        end
     end
 end
 
@@ -371,6 +448,31 @@ local function EnsureSlotButton(bag,slot)
     -- Prevent Blizzard's ContainerFrameItemButtonMixin OnShow/OnEvent from darkening slots with searchOverlay
     created:SetScript("OnEvent",nil)
     created:SetScript("OnShow",nil)
+    local origEnter=created:GetScript("OnEnter")
+    created:SetScript("OnEnter",function(self,...)
+        if not self.hasItem or not (self.GetRight and self:GetRight()) then
+            HideOwnedTooltip(self)
+            SafeResetCursor()
+            return
+        end
+        if origEnter then origEnter(self,...) end
+    end)
+    local origDrag=created:GetScript("OnDragStart")
+    created:SetScript("OnDragStart",function(self,...)
+        if not self.hasItem then return end
+        if origDrag then origDrag(self,...) end
+    end)
+    created:HookScript("OnLeave",function(self)
+        self:SetScript("OnUpdate",nil)
+        HideOwnedTooltip(self)
+        SafeResetCursor()
+    end)
+    created:HookScript("OnHide",function(self)
+        self:SetScript("OnUpdate",nil)
+        if self.UnlockHighlight then pcall(self.UnlockHighlight,self) end
+        HideOwnedTooltip(self)
+        SafeResetCursor()
+    end)
     if created.searchOverlay then created.searchOverlay:Hide() end
     if created.SearchOverlay then created.SearchOverlay:Hide() end
     if created.ItemContextOverlay then created.ItemContextOverlay:Hide() end
@@ -411,9 +513,35 @@ local function EnsureBagFrame()
     gearBtn:SetSize(56,20); gearBtn:SetPoint("RIGHT",closeBtn,"LEFT",-5,0); gearBtn:SetText("Style"); Suite.StyleButton(gearBtn)
     gearBtn:SetScript("OnClick",function() Module.Open() end)
 
+    local junkBtn=CreateFrame("Button",nil,f,"UIPanelButtonTemplate")
+    junkBtn:SetSize(66,20); junkBtn:SetPoint("RIGHT",gearBtn,"LEFT",-4,0); junkBtn:SetText("Sell Junk"); Suite.StyleButton(junkBtn)
+    junkBtn:SetScript("OnClick",function()
+        if not (MerchantFrame and MerchantFrame:IsShown()) then return end
+        if CursorHasItem and CursorHasItem() then return end
+        local sold=0
+        for bag=0,4 do
+            local n=C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerNumSlots(bag) or 0
+            for slot=1,n do
+                local info=C_Container and C_Container.GetContainerItemInfo and C_Container.GetContainerItemInfo(bag,slot)
+                if info and not info.isLocked and info.quality==0 and C_Container.UseContainerItem then
+                    pcall(C_Container.UseContainerItem,bag,slot)
+                    sold=sold+1
+                end
+            end
+        end
+        if sold>0 then
+            SafeResetCursor()
+            if DEFAULT_CHAT_FRAME then
+                DEFAULT_CHAT_FRAME:AddMessage("|cffdfb66bSmyrna Bagger:|r Sold "..sold.." gray junk item(s).")
+            end
+        end
+    end)
+    junkBtn:Hide()
+    f.junkBtn=junkBtn
+
     -- Search bar
     local search=CreateFrame("EditBox",nil,f,"InputBoxTemplate")
-    search:SetHeight(20); search:SetPoint("TOPLEFT",14,-44); search:SetPoint("TOPRIGHT",-14,-44)
+    search:SetHeight(20); search:SetPoint("TOPLEFT",14,-42); search:SetPoint("TOPRIGHT",-14,-42)
     search:SetAutoFocus(false)
     local ph=search:CreateFontString(nil,"OVERLAY","GameFontDisableSmall")
     ph:SetPoint("LEFT",6,0); ph:SetText("Search bags...")
@@ -425,9 +553,26 @@ local function EnsureBagFrame()
     search:SetScript("OnEscapePressed",function(self) self:SetText(""); self:ClearFocus() end)
     f.search=search
 
+    -- Baganator-style category filter pills
+    local catSpec={{"all","All",30},{"gear","Gear",38},{"use","Use",34},{"trade","Trade",42},{"quest","Quest",42},{"junk","Junk",38}}
+    local cx=12
+    for idx,sp in ipairs(catSpec) do
+        local key,lbl,w=sp[1],sp[2],sp[3]
+        local b=CreateFrame("Button",nil,f,"UIPanelButtonTemplate")
+        b:SetSize(w,18); b:SetPoint("TOPLEFT",cx,-66); b:SetText(lbl); Suite.StyleButton(b)
+        b:SetScript("OnClick",function()
+            activeCatFilter=key
+            for k,btn in pairs(catBtns) do Suite.SetButtonSelected(btn,k==activeCatFilter) end
+            Module.RefreshBags(false)
+        end)
+        Suite.SetButtonSelected(b,key==activeCatFilter)
+        catBtns[key]=b
+        cx=cx+w+3
+    end
+
     -- Bag filter bar + iconic broom/sweeper Sort button right beside the bags (like Bagnon)
     local bagBar=CreateFrame("Frame",nil,f)
-    bagBar:SetHeight(26); bagBar:SetPoint("TOPLEFT",12,-68); bagBar:SetPoint("TOPRIGHT",-12,-68)
+    bagBar:SetHeight(26); bagBar:SetPoint("TOPLEFT",12,-90); bagBar:SetPoint("TOPRIGHT",-12,-90)
     f.bagBar=bagBar
 
     local sortBtn=CreateFrame("Button",nil,bagBar,"BackdropTemplate")
@@ -473,14 +618,24 @@ local function EnsureBagFrame()
     moneyText:SetPoint("BOTTOMRIGHT",-12,9); moneyText:SetJustifyH("RIGHT")
     f.moneyText=moneyText
 
+    f:SetScript("OnHide",function(self)
+        if self.search and self.search.ClearFocus then self.search:ClearFocus() end
+        if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) and GameTooltip:IsShown() then
+            local owner=GameTooltip.GetOwner and GameTooltip:GetOwner()
+            if owner and (owner==self or (owner.GetParent and owner:GetParent() and owner:GetParent():GetParent()==self)) then
+                GameTooltip:Hide()
+            end
+        end
+        SafeResetCursor()
+    end)
     f:Hide()
     bagFrame=f
     ApplyBagAppearance()
     return f
 end
 
-function Module.RefreshBags(relayout)
-    if not bagFrame or not bagFrame:IsShown() then return end
+function Module.RefreshBags(relayout,allowHidden)
+    if not bagFrame or (not allowHidden and not bagFrame:IsShown()) then return end
     ApplyBagAppearance()
     UpdateBagBar()
     local c=Cfg()
@@ -489,7 +644,8 @@ function Module.RefreshBags(relayout)
     if relayout and inCombat then pendingLayout=true; relayout=false end
 
     local PAD_X,SLOT,GAP=12,37,4
-    local topY=c.showBagBar and 98 or 70
+    local topY=c.showBagBar and 120 or 90
+    if bagFrame.junkBtn then bagFrame.junkBtn:SetShown(MerchantFrame and MerchantFrame:IsShown() and true or false) end
     local idx=0
     local maxB=MaxBagID()
     for bag=0,maxB do
@@ -503,9 +659,11 @@ function Module.RefreshBags(relayout)
                     if relayout or not btn.placed then
                         local col=idx%cols
                         local row=math.floor(idx/cols)
-                        btn:ClearAllPoints()
-                        btn:SetPoint("TOPLEFT",bagFrame,"TOPLEFT",PAD_X+col*(SLOT+GAP),-(topY+row*(SLOT+GAP)))
-                        btn.placed=true
+                        if not btn.placed or btn.placedCol~=col or btn.placedRow~=row or btn.placedTopY~=topY then
+                            btn:ClearAllPoints()
+                            btn:SetPoint("TOPLEFT",bagFrame,"TOPLEFT",PAD_X+col*(SLOT+GAP),-(topY+row*(SLOT+GAP)))
+                            btn.placed=true; btn.placedCol=col; btn.placedRow=row; btn.placedTopY=topY
+                        end
                     end
                     if not inCombat then btn:Show() end
                     UpdateSlotVisual(btn,bag,slot,searchText)
@@ -515,7 +673,10 @@ function Module.RefreshBags(relayout)
         end
         if btns and not inCombat then
             for slot,btn in pairs(btns) do
-                if hideThis or slot>n then btn:Hide(); btn.placed=nil end
+                if hideThis or slot>n then
+                    btn:Hide(); btn:SetScript("OnUpdate",nil)
+                    btn.placed=nil; btn.placedCol=nil; btn.placedRow=nil; btn.placedTopY=nil
+                end
             end
         end
     end
@@ -524,15 +685,31 @@ function Module.RefreshBags(relayout)
         local rows=math.max(1,math.ceil(math.max(1,idx)/cols))
         local w=PAD_X*2+cols*SLOT+(cols-1)*GAP
         local h=topY+rows*SLOT+(rows-1)*GAP+38
-        bagFrame:SetSize(w,h)
-        bagFrame.sized=true
+        if not bagFrame.sized or bagFrame.lastW~=w or bagFrame.lastH~=h then
+            bagFrame:SetSize(w,h)
+            bagFrame.sized=true; bagFrame.lastW=w; bagFrame.lastH=h
+        end
     end
     UpdateMoneyAndCounts()
 end
 
-function Module.OpenBags()
+local function PrewarmBags()
     if not Cfg().enabled then return end
     if InCombatLockdown and InCombatLockdown() then return end
+    EnsureBagFrame()
+    Module.RefreshBags(true,true)
+end
+
+function Module.OpenBags()
+    if not Cfg().enabled then return end
+    if InCombatLockdown and InCombatLockdown() then
+        -- Allow opening pre-allocated bags during combat without creating or moving frames under lockdown.
+        if bagFrame and bagFrame.sized then
+            bagFrame:Show()
+            Module.RefreshBags(false)
+        end
+        return
+    end
     EnsureBagFrame()
     HideBlizzardBags()
     bagFrame:Show()
@@ -540,13 +717,11 @@ function Module.OpenBags()
 end
 
 function Module.CloseBags()
-    if InCombatLockdown and InCombatLockdown() then return end
     if bagFrame and bagFrame:IsShown() then bagFrame:Hide() end
 end
 
 function Module.ToggleBags()
     if not Cfg().enabled then return end
-    if InCombatLockdown and InCombatLockdown() then return end
     if bagFrame and bagFrame:IsShown() then Module.CloseBags() else Module.OpenBags() end
 end
 
@@ -665,6 +840,7 @@ function Module.Open()
             local r,g,b=BgRGB()
             local function Apply() SetBgRGB(picker:GetColorRGB()) end
             local function Cancel() SetBgRGB(r,g,b) end
+            if picker.SetFrameStrata then picker:SetFrameStrata("FULLSCREEN_DIALOG") end
             if picker.SetupColorPickerAndShow then
                 picker:SetupColorPickerAndShow({r=r,g=g,b=b,hasOpacity=false,swatchFunc=Apply,cancelFunc=Cancel})
             elseif picker.SetColorRGB then
@@ -672,6 +848,7 @@ function Module.Open()
                 picker:SetColorRGB(r,g,b); picker.hasOpacity=false; picker.func=Apply; picker.cancelFunc=Cancel
                 picker:Show()
             end
+            if picker.Raise then picker:Raise() end
         end)
 
         local resetBtn=CreateFrame("Button",nil,card,"UIPanelButtonTemplate"); resetBtn:SetSize(118,24); resetBtn:SetPoint("LEFT",bgBtn,"RIGHT",8,0); resetBtn:SetText("Reset defaults"); Suite.StyleButton(resetBtn)
@@ -710,6 +887,8 @@ driver:RegisterEvent("BAG_UPDATE_COOLDOWN")
 driver:RegisterEvent("ITEM_LOCK_CHANGED")
 driver:RegisterEvent("PLAYER_MONEY")
 driver:RegisterEvent("PLAYER_REGEN_ENABLED")
+pcall(driver.RegisterEvent,driver,"MERCHANT_SHOW")
+pcall(driver.RegisterEvent,driver,"MERCHANT_CLOSED")
 pcall(driver.RegisterEvent,driver,"EQUIPMENT_SETS_CHANGED")
 driver:SetScript("OnEvent",function(self,event)
     if event=="PLAYER_LOGIN" then
@@ -718,6 +897,12 @@ driver:SetScript("OnEvent",function(self,event)
         HookEquipSetTooltips()
         InstallBagHooks()
         SyncBlizzardBags()
+        PrewarmBags()
+    elseif event=="MERCHANT_SHOW" or event=="MERCHANT_CLOSED" then
+        if bagFrame and bagFrame.junkBtn then
+            bagFrame.junkBtn:SetShown(event=="MERCHANT_SHOW" or (MerchantFrame and MerchantFrame:IsShown() and true or false))
+        end
+        if event=="MERCHANT_CLOSED" then SafeResetCursor() end
     elseif event=="EQUIPMENT_SETS_CHANGED" then
         RebuildEquipmentSets()
         if bagFrame and bagFrame:IsShown() then Module.RefreshBags(false) end

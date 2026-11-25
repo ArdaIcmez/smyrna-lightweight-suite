@@ -172,13 +172,24 @@ local function CaptureUnit(unit)
     MergeNpc(nid,nname,Num(lvl,1,200) and lvl or 0,rank,m,x10,y10,Store().origin)
 end
 
+local function AddonSendSucceeded(res)
+    if type(res)=="boolean" then return res end
+    if type(res)=="number" then
+        local succ=Enum and Enum.SendAddonMessageResult and Enum.SendAddonMessageResult.Success or 0
+        return res==succ or res==0
+    end
+    return true
+end
+
 -- Delta-only Guild Sync over SMYRNADISC1
 local function Send(payload)
-    if not IsInGuild or not IsInGuild() or not C_ChatInfo or not C_ChatInfo.SendAddonMessage then return false end
-    if C_ChatInfo.AreOutgoingAddonChatMessagesRestricted and C_ChatInfo.AreOutgoingAddonChatMessagesRestricted() then return false end
-    if type(payload)~="string" or #payload>245 then return false end
-    C_ChatInfo.SendAddonMessage(PREFIX,payload,"GUILD")
-    return true
+    if not IsInGuild or not IsInGuild() or not C_ChatInfo or not C_ChatInfo.SendAddonMessage then return false,false end
+    if C_ChatInfo.AreOutgoingAddonChatMessagesRestricted and C_ChatInfo.AreOutgoingAddonChatMessagesRestricted() then return false,false end
+    if type(payload)~="string" or #payload>245 then return false,false end
+    local callOk,res=pcall(C_ChatInfo.SendAddonMessage,PREFIX,payload,"GUILD")
+    if not callOk then return false,true end
+    if not AddonSendSucceeded(res) then return false,true end
+    return true,false
 end
 
 function D.SyncWithGuild()
@@ -196,23 +207,33 @@ local function StreamDeltas()
     local st=Store()
     local pkts={}
     for _,q in pairs(st.quests) do
-        pkts[#pkts+1]=table.concat({"Q",st.origin,q.id,q.ql or 0,q.zn or 0,q.x or 0,q.y or 0,q.g or 0,q.n or ""},"|")
+        local p=table.concat({"Q",st.origin,q.id,q.ql or 0,q.zn or 0,q.x or 0,q.y or 0,q.g or 0,q.n or ""},"|")
+        if #p<=245 then pkts[#pkts+1]=p end
         if #pkts>=80 then break end
     end
     for _,n in pairs(st.npcs) do
         local m,pt=next(n.sp or {})
         local x10,y10=(pt and pt[1] and pt[1][1]) or 0,(pt and pt[1] and pt[1][2]) or 0
-        pkts[#pkts+1]=table.concat({"N",st.origin,n.id,n.l or 0,n.r or 0,m or 0,x10,y10,n.n or ""},"|")
+        local p=table.concat({"N",st.origin,n.id,n.l or 0,n.r or 0,m or 0,x10,y10,n.n or ""},"|")
+        if #p<=245 then pkts[#pkts+1]=p end
         if #pkts>=160 then break end
     end
     if #pkts==0 then return end
     sendQueue=pkts; sendIdx=1
-    sendTicker=C_Timer.NewTicker(.25,function()
+    local retries=0
+    sendTicker=C_Timer.NewTicker(.6,function()
         if not IsInGuild or not IsInGuild() or not sendQueue or sendIdx>#sendQueue then
             if sendTicker then sendTicker:Cancel(); sendTicker=nil end
             sendQueue=nil; sendIdx=nil; return
         end
-        Send(sendQueue[sendIdx]); sendIdx=sendIdx+1
+        local ok,throttled=Send(sendQueue[sendIdx])
+        if ok then
+            retries=0; sendIdx=sendIdx+1
+        elseif throttled and retries<6 then
+            retries=retries+1
+        else
+            retries=0; sendIdx=sendIdx+1
+        end
     end)
 end
 

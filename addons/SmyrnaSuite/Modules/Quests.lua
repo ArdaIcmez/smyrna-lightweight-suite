@@ -96,16 +96,43 @@ local function RefreshActiveQuests()
     end
 end
 
-local function IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,showLow)
+local function QuestGreenRange(lvl)
+    if GetQuestGreenRange then
+        local ok,r=pcall(GetQuestGreenRange)
+        if ok and Public(r) and type(r)=="number" and r>0 then return r end
+    end
+    if lvl<=5 then return 4
+    elseif lvl<=39 then return math.floor(lvl/10)+4
+    else return math.min(12,math.floor(lvl/5)+1) end
+end
+
+local function QuestDifficultyHex(qLvl,pLvl)
+    if not qLvl or qLvl<=0 or not pLvl or pLvl<=0 then return "ffd670" end
+    local diff=qLvl-pLvl
+    if diff>=5 then return "ff4a4a"
+    elseif diff>=3 then return "ff9933"
+    elseif diff>=-2 then return "ffd670"
+    elseif qLvl>=(pLvl-QuestGreenRange(pLvl)) then return "55d86e"
+    else return "9a9ea8" end
+end
+
+local function IsSeasonalQuest(q)
+    if not q or not q.sp or q.sp==0 then return false end
+    if bit and bit.band then
+        return bit.band(q.sp,1)==0
+    end
+    return true
+end
+
+local function IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,showLow,showSeasonal)
     if not q or not q.n then return false end
     if activeQuests[qid] or IsCompleted(qid) then return false end
     if (q.rl or 0)>playerLvl then return false end
     if q.ml and q.ml>0 and playerLvl>q.ml then return false end
-    if not showLow and (q.ql or playerLvl)>0 and (q.ql or playerLvl)<(playerLvl-8) then return false end
+    if not showLow and (q.ql or playerLvl)>0 and (q.ql or playerLvl)<(playerLvl-QuestGreenRange(playerLvl)) then return false end
     if not MaskAllows(q.rc,raceBit) then return false end
     if not MaskAllows(q.cl,classBit) then return false end
-    -- Skip event/monthly special flags (bit 4/64) unless normal
-    if q.sp and bit and bit.band and bit.band(q.sp,64)~=0 then return false end
+    if IsSeasonalQuest(q) and not showSeasonal then return false end
     if q.pg then
         for _,pre in ipairs(q.pg) do
             if pre>0 and not IsCompleted(pre) then return false end
@@ -211,13 +238,16 @@ local function CollectZonePins(mapID)
     end
 
     -- 2. Available quests in this zone (O(1) lookup via X-Z-<mapID>!)
-    local z=W.Zone(mapID)
-    if z and z.q then
-        for _,qid in ipairs(z.q) do
-            local q=W.Quest(qid)
-            if IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,cfg.lowLevel) then
-                local kind=(q.sp and bit and bit.band and bit.band(q.sp,1)~=0) and "repeat" or "avail"
-                PlaceEntityGroup(q.sb,kind,qid,q.n,q.ql or q.rl or 0,q.xp and (q.xp.." XP") or nil)
+    if cfg.visibility~="active" then
+        local showLow=(cfg.visibility=="all") or cfg.lowLevel
+        local z=W.Zone(mapID)
+        if z and z.q then
+            for _,qid in ipairs(z.q) do
+                local q=W.Quest(qid)
+                if IsQuestAvailable(qid,q,playerLvl,raceBit,classBit,showLow,cfg.seasonal) then
+                    local kind=(q.sp and bit and bit.band and bit.band(q.sp,1)~=0) and "repeat" or "avail"
+                    PlaceEntityGroup(q.sb,kind,qid,q.n,q.ql or q.rl or 0,q.xp and (q.xp.." XP") or nil)
+                end
             end
         end
     end
@@ -235,9 +265,12 @@ local function ShowPinTooltip(owner,cluster)
     if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return end
     GameTooltip:SetOwner(owner,"ANCHOR_RIGHT")
     local head=cluster.kind=="turnin" and "Quest Turn-In" or cluster.kind=="obj" and "Quest Objective" or "Available Quest"
+    local pLvl=UnitLevel and UnitLevel("player")
+    if not Num(pLvl,1,200) then pLvl=60 end
     GameTooltip:SetText(head,1,.86,.48)
     for _,it in ipairs(cluster.items) do
-        local lvl=it.level and it.level>0 and ("["..it.level.."] ") or ""
+        local hex=QuestDifficultyHex(it.level,pLvl)
+        local lvl=it.level and it.level>0 and ("|cff"..hex.."["..it.level.."]|r ") or ""
         GameTooltip:AddLine(lvl..(it.title or "Quest"),1,1,1)
         if it.who then GameTooltip:AddLine("  "..it.who..(it.detail and (" - "..it.detail) or ""),.64,.84,1) end
     end
@@ -489,23 +522,53 @@ local function RefreshTracker()
         Suite.StylePanel(tracker,true); Suite.HeaderStrip(tracker,28)
         local t=tracker:CreateFontString(nil,"OVERLAY","GameFontNormal"); t:SetPoint("TOPLEFT",10,-7); t:SetText("Smyrna Quests"); t:SetTextColor(1,.86,.48)
     end
+    local pLvl=UnitLevel and UnitLevel("player")
+    if not Num(pLvl,1,200) then pLvl=60 end
     local sorted={}
     for _,aq in pairs(activeQuests) do sorted[#sorted+1]=aq end
     table.sort(sorted,function(a,b) if a.level~=b.level then return a.level<b.level end return a.title<b.title end)
     local y,idx=34,0
     for _,aq in ipairs(sorted) do
         idx=idx+1
-        local fs=trackerLines[idx]
-        if not fs then
-            fs=tracker:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-            fs:SetWidth(228); fs:SetJustifyH("LEFT"); trackerLines[idx]=fs
+        local btn=trackerLines[idx]
+        if not btn then
+            btn=CreateFrame("Button",nil,tracker)
+            btn:SetWidth(230); btn:RegisterForClicks("LeftButtonUp","RightButtonUp")
+            btn:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
+            local hl=btn:GetHighlightTexture(); if hl then hl:SetVertexColor(.92,.76,.36,.12) end
+            btn.fs=btn:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+            btn.fs:SetPoint("TOPLEFT",0,0); btn.fs:SetWidth(228); btn.fs:SetJustifyH("LEFT")
+            btn:SetScript("OnClick",function(self,mouseBtn)
+                if not self.qid then return end
+                if mouseBtn=="RightButton" then
+                    Module.OpenParchment(self.qid)
+                elseif SelectQuestLogEntry and self.logIndex then
+                    pcall(SelectQuestLogEntry,self.logIndex)
+                    if ToggleQuestLog and not (QuestLogFrame and QuestLogFrame:IsShown()) then pcall(ToggleQuestLog) end
+                else
+                    Module.OpenParchment(self.qid)
+                end
+            end)
+            btn:SetScript("OnEnter",function(self)
+                if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return end
+                GameTooltip:SetOwner(self,"ANCHOR_LEFT")
+                GameTooltip:SetText(self.qtitle or "Quest",1,.86,.48)
+                GameTooltip:AddLine("Left-click: Open Quest Log  ·  Right-click: Quest Scroll & Chain",.75,.82,.92)
+                GameTooltip:Show()
+            end)
+            btn:SetScript("OnLeave",HideSafeTip)
+            trackerLines[idx]=btn
         end
-        local lines={"|cffffd670["..aq.level.."] "..aq.title..(aq.complete and " |cff78d49b(Ready)|r" or "").."|r"}
+        local hex=QuestDifficultyHex(aq.level,pLvl)
+        local lines={"|cff"..hex.."["..aq.level.."]|r |cffffffff"..aq.title..(aq.complete and " |cff78d49b(Ready)|r" or "").."|r"}
         for _,o in ipairs(aq.objs) do
             lines[#lines+1]=(o.done and "|cff78d49b  [x] " or "|cffc8d0dc  - ")..o.text.."|r"
         end
-        fs:ClearAllPoints(); fs:SetPoint("TOPLEFT",10,-y); fs:SetText(table.concat(lines,"\n")); fs:Show()
-        y=y+(fs:GetStringHeight() or 14)+8
+        btn.qid=aq.id; btn.logIndex=aq.logIndex; btn.qtitle=aq.title
+        btn.fs:SetText(table.concat(lines,"\n"))
+        local h=math.max(14,(btn.fs:GetStringHeight() or 14)+2)
+        btn:SetHeight(h); btn:ClearAllPoints(); btn:SetPoint("TOPLEFT",10,-y); btn:Show()
+        y=y+h+6
         if idx>=12 then break end
     end
     for i=idx+1,#trackerLines do trackerLines[i]:Hide() end
@@ -554,26 +617,26 @@ end
 local function EnsureParchment()
     if parchmentFrame then return parchmentFrame end
     local f=CreateFrame("Frame","SmyrnaQuestsParchment",UIParent,"BackdropTemplate")
-    f:SetSize(430,450); f:SetPoint("CENTER"); f:SetFrameStrata("FULLSCREEN_DIALOG"); f:SetFrameLevel(165); f:SetClampedToScreen(true)
+    f:SetSize(384,512); f:SetPoint("CENTER"); f:SetFrameStrata("FULLSCREEN_DIALOG"); f:SetFrameLevel(165); f:SetClampedToScreen(true)
     f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart",function(self) if not (InCombatLockdown and InCombatLockdown()) then self:StartMoving() end end)
     f:SetScript("OnDragStop",function(self) self:StopMovingOrSizing() end)
-    Suite.StylePanel(f,true); Suite.HeaderStrip(f,38); Suite.CloseButton(f)
+    Suite.StylePanel(f,true); Suite.HeaderStrip(f,34); Suite.CloseButton(f)
     local hTitle=f:CreateFontString(nil,"OVERLAY","GameFontNormal")
-    hTitle:SetPoint("TOPLEFT",14,-12); hTitle:SetText("Smyrna Quest Scroll"); hTitle:SetTextColor(1,.86,.48)
+    hTitle:SetPoint("TOPLEFT",14,-10); hTitle:SetText("Quest"); hTitle:SetTextColor(1,.86,.48)
 
-    -- Aged WoW parchment sheet inside the gilded frame
+    -- Authentic WoW QuestFrame parchment sheet (384x512 native proportion)
     local sheet=CreateFrame("Frame",nil,f,"BackdropTemplate")
-    sheet:SetPoint("TOPLEFT",10,-42); sheet:SetPoint("BOTTOMRIGHT",-10,10)
+    sheet:SetPoint("TOPLEFT",8,-36); sheet:SetPoint("BOTTOMRIGHT",-8,8)
     sheet:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1,insets={left=1,right=1,top=1,bottom=1}})
-    sheet:SetBackdropColor(.93,.87,.72,1)
-    sheet:SetBackdropBorderColor(.58,.44,.24,.92)
+    sheet:SetBackdropColor(.95,.89,.74,1)
+    sheet:SetBackdropBorderColor(.52,.38,.20,.95)
     local pTex=sheet:CreateTexture(nil,"BACKGROUND",nil,1)
     pTex:SetAllPoints()
     if pTex:SetTexture("Interface\\QuestFrame\\UI-QuestLog-BookBg")==false then
-        pTex:SetColorTexture(.93,.87,.72,1)
+        pTex:SetColorTexture(.95,.89,.74,1)
     else
-        pTex:SetTexCoord(0,.62,0,.78); pTex:SetAlpha(.45)
+        pTex:SetTexCoord(0,.62,0,.78); pTex:SetAlpha(1)
     end
     f.sheet=sheet
 
@@ -695,24 +758,31 @@ function Module.RefreshUI()
     local zoneName=info and info.name or "Current zone"
     local list={}
     local completedZone=0
+    local pLvl,rBit,cBit=PlayerMasks()
+    local showLow=(cfg.visibility=="all") or cfg.lowLevel
     if mapID and W and W.Ensure and W.Ensure() then
         local z=W.Zone(mapID)
-        local pLvl,rBit,cBit=PlayerMasks()
         for _,qid in ipairs((z and z.q) or {}) do
             if IsCompleted(qid) then
                 completedZone=completedZone+1
-            else
+            elseif cfg.visibility~="active" then
                 local q=W.Quest(qid)
-                if IsQuestAvailable(qid,q,pLvl,rBit,cBit,cfg.lowLevel) then
+                if IsQuestAvailable(qid,q,pLvl,rBit,cBit,showLow,cfg.seasonal) then
                     local giver=""
                     if q.sb and q.sb[1] and q.sb[1][1] then
                         local npc=W.Npc(q.sb[1][1]); giver=npc and npc.n or ""
                     end
-                    list[#list+1]={id=qid,name=q.n,level=q.ql or q.rl or 0,xp=q.xp,giver=giver}
+                    local isChain=((q.pg and #q.pg>0) or (q.ps and #q.ps>0) or (q.nq and q.nq>0)) and true or false
+                    local isSeasonal=IsSeasonalQuest(q)
+                    list[#list+1]={id=qid,name=q.n,level=q.ql or q.rl or 0,xp=q.xp,giver=giver,isChain=isChain,isSeasonal=isSeasonal}
                 end
             end
         end
-        table.sort(list,function(a,b) if a.level~=b.level then return a.level<b.level end return a.name<b.name end)
+        table.sort(list,function(a,b)
+            if (a.isSeasonal and true or false)~=(b.isSeasonal and true or false) then return not a.isSeasonal end
+            if a.level~=b.level then return a.level<b.level end
+            return a.name<b.name
+        end)
     end
     statusLabel:SetText(string.format("%s: %d available  ·  %d completed  ·  %d active in log  (click any quest to view its parchment chain)",zoneName,#list,completedZone,activeCount))
     local shown=math.min(#list,100)
@@ -720,9 +790,12 @@ function Module.RefreshUI()
         local e=i<=shown and list[i] or nil
         local row=questRows[i] or MakeQuestRow(i)
         if e then
+            local hex=QuestDifficultyHex(e.level,pLvl)
             row.qid=e.id
             row:ClearAllPoints(); row:SetPoint("TOPLEFT",0,-(i-1)*42)
-            row.title:SetText("["..e.level.."] "..e.name); row.title:SetTextColor(1,.90,.62)
+            local chainTag=e.isChain and "  |cff8ecfff[Chain]|r" or ""
+            local seasTag=e.isSeasonal and "  |cffffa64d[Seasonal]|r" or ""
+            row.title:SetText("|cff"..hex.."["..e.level.."]|r "..e.name..chainTag..seasTag); row.title:SetTextColor(1,.90,.62)
             row.sub:SetText(e.giver~="" and ("Quest giver: "..e.giver) or ("Quest #"..e.id))
             row.xp:SetText(e.xp and (e.xp.." XP") or "")
             row:Show()
@@ -757,10 +830,29 @@ function Module.Open()
         AddCheck("enabled","Enabled","Turn Smyrna Quests on or off immediately without reloading.",16,-58)
         AddCheck("worldMap","World Map","Show available, active, and turn-in quest pins on the World Map (auto-offset from Field Diary nodes).",116,-58)
         AddCheck("minimap","Minimap","Show nearby quest pins around your Minimap.",236,-58)
-        AddCheck("lowLevel","Low-level","Include trivial quests more than 8 levels below your character.",344,-58)
+        AddCheck("lowLevel","Low-level","Include trivial (gray) quests below your green-quest range cutoff.",344,-58)
         AddCheck("tooltips","Tooltips","Append active quest objective progress when hovering quest creatures.",458,-58)
         AddCheck("tracker","Tracker","Show a compact, draggable floating tracker for your active quests.",564,-58)
         AddCheck("autoQuest","Auto accept/turn-in","Automatically accept quests and turn in single-reward quests (hold Shift to bypass).",668,-58)
+        AddCheck("seasonal","Seasonal","Show seasonal / holiday event quests (e.g. Lunar Festival) in their own section and on the map.",16,-78)
+
+        local visBtn=CreateFrame("Button",nil,window,"UIPanelButtonTemplate")
+        visBtn:SetSize(164,22); visBtn:SetPoint("TOPRIGHT",-46,-14); Suite.StyleButton(visBtn)
+        local function UpdateVisBtn()
+            local v=Cfg().visibility or (Cfg().lowLevel and "all" or "range")
+            local lbl=(v=="active" and "Active Only") or (v=="all" and "All (+Low)") or "In Range"
+            visBtn:SetText("Quests: "..lbl)
+        end
+        visBtn:SetScript("OnClick",function()
+            local c=Cfg()
+            local v=c.visibility or (c.lowLevel and "all" or "range")
+            if v=="range" then c.visibility="all"; c.lowLevel=true
+            elseif v=="all" then c.visibility="active"; c.lowLevel=false
+            else c.visibility="range"; c.lowLevel=false end
+            UpdateVisBtn(); ConfigureMaps(); RefreshTracker(); Module.RefreshUI()
+        end)
+        Suite.AttachTooltip(visBtn,"Quest Visibility","Cycle quest visibility across the list, World Map, and Minimap: In Range / All (+Low) / Active Only.")
+        UpdateVisBtn()
 
         Suite.OptionSection(window,"Available Quests in Your Current Zone",16,-96,808)
         statusLabel=window:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); statusLabel:SetPoint("TOPLEFT",18,-114); statusLabel:SetWidth(800); statusLabel:SetJustifyH("LEFT"); statusLabel:SetTextColor(.74,.80,.88)
@@ -807,10 +899,41 @@ local function HookAll()
         WorldMapFrame:HookScript("OnHide",HideWorld)
         if hooksecurefunc then
             if WorldMapFrame.SetMapID then hooksecurefunc(WorldMapFrame,"SetMapID",Module.DrawWorld) end
-            if WorldMapFrame.OnCanvasScaleChanged then hooksecurefunc(WorldMapFrame,"OnCanvasScaleChanged",Module.DrawWorld) end
+            if WorldMapFrame.OnCanvasScaleChanged then
+                hooksecurefunc(WorldMapFrame,"OnCanvasScaleChanged",function()
+                    if Module.RepositionWorld then Module.RepositionWorld() else Module.DrawWorld() end
+                end)
+            end
         end
         local canvasF=WorldMapFrame:GetCanvas()
         if canvasF then canvasF:HookScript("OnSizeChanged",Module.DrawWorld) end
+        -- Quick Questie-style World Map toggle pill matching Smyrna's gold/dark palette
+        local mapBtn=CreateFrame("Button","SmyrnaQuestsMapToggle",WorldMapFrame,"UIPanelButtonTemplate")
+        mapBtn:SetSize(76,20); mapBtn:SetPoint("TOPRIGHT",WorldMapFrame,"TOPRIGHT",-38,-4)
+        mapBtn:SetFrameLevel((WorldMapFrame:GetFrameLevel() or 1)+25)
+        mapBtn:RegisterForClicks("LeftButtonUp","RightButtonUp")
+        Suite.StyleButton(mapBtn)
+        local function UpdateMapBtn()
+            local cfg=Cfg()
+            mapBtn:SetText(cfg.worldMap and "Quests: On" or "Quests: Off")
+            Suite.SetButtonSelected(mapBtn,cfg.worldMap==true)
+        end
+        mapBtn:SetScript("OnClick",function(_,btn)
+            local cfg=Cfg()
+            if btn=="RightButton" then cfg.lowLevel=not cfg.lowLevel else cfg.worldMap=not cfg.worldMap end
+            UpdateMapBtn(); ConfigureMaps(); Module.RefreshUI()
+        end)
+        mapBtn:SetScript("OnEnter",function(self)
+            if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return end
+            local cfg=Cfg()
+            GameTooltip:SetOwner(self,"ANCHOR_BOTTOMLEFT")
+            GameTooltip:SetText("Smyrna Quests Map Filter",1,.86,.48)
+            GameTooltip:AddLine("Left-click: Toggle World Map pins ("..(cfg.worldMap and "On" or "Off")..")",.85,.90,.96)
+            GameTooltip:AddLine("Right-click: Toggle trivial Low-Level quests ("..(cfg.lowLevel and "Shown" or "Hidden")..")",.85,.90,.96)
+            GameTooltip:Show()
+        end)
+        mapBtn:SetScript("OnLeave",HideSafeTip)
+        UpdateMapBtn()
     end
     if not tipHooked then
         tipHooked=true
@@ -822,6 +945,14 @@ local function HookAll()
     end
 end
 
+local logPending,logGen=false,0
+local function ApplyQuestRefresh()
+    RefreshActiveQuests(); qLastPX=nil; qMiniMap=nil; UpdateMini(true)
+    if WorldMapFrame and WorldMapFrame:IsShown() then Module.DrawWorld() end
+    RefreshTracker()
+    if window and window:IsShown() then Module.RefreshUI() end
+end
+
 local driver=CreateFrame("Frame")
 driver:RegisterEvent("PLAYER_LOGIN")
 driver:RegisterEvent("QUEST_LOG_UPDATE")
@@ -831,11 +962,23 @@ driver:SetScript("OnEvent",function(self,event)
     if event=="PLAYER_LOGIN" then
         self:UnregisterEvent("PLAYER_LOGIN")
         HookAll(); RefreshActiveQuests(); ConfigureMaps(); RefreshTracker()
+    elseif event=="QUEST_LOG_UPDATE" then
+        -- Coalesce bursty QUEST_LOG_UPDATE events before rebuilding zone/city pins.
+        logGen=logGen+1
+        if C_Timer and C_Timer.After then
+            if not logPending then
+                logPending=true
+                C_Timer.After(.2,function()
+                    logPending=false
+                    ApplyQuestRefresh()
+                end)
+            end
+        else
+            ApplyQuestRefresh()
+        end
     else
-        RefreshActiveQuests(); qLastPX=nil; qMiniMap=nil; UpdateMini(true)
-        if WorldMapFrame and WorldMapFrame:IsShown() then Module.DrawWorld() end
-        RefreshTracker()
-        if window and window:IsShown() then Module.RefreshUI() end
+        logGen=logGen+1; logPending=false
+        ApplyQuestRefresh()
     end
 end)
 

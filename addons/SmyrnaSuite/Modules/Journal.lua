@@ -1140,43 +1140,76 @@ end
 -- Upgrader -> Dungeon Journal Deep-Link API (Lazy Shared Index)
 -- ============================================================
 
+local itemIndexCursor,itemIndexScheduled=0,false
+
+local function IndexDungeonMeta(meta)
+    local d=meta and Suite.WorldDB.Dungeon(meta.s)
+    if not d then return end
+    for _,boss in ipairs(d.b or {}) do
+        for _,it in ipairs(boss.lt or {}) do
+            if it[1] and not itemToDungeon[it[1]] then
+                itemToDungeon[it[1]]={slug=d.s,boss=boss.n}
+            end
+        end
+    end
+    for _,q in ipairs(d.q or {}) do
+        for _,ri in ipairs(q.rw or {}) do
+            if ri[1] and not itemToDungeon[ri[1]] then
+                itemToDungeon[ri[1]]={slug=d.s,quest=q.n}
+            end
+        end
+    end
+end
+
+local function ScheduleItemIndexStep()
+    if itemIndexBuilt or itemIndexScheduled then return end
+    if not C_Timer or not C_Timer.After then return end
+    if not Suite.WorldDB or not Suite.WorldDB.Dungeons then return end
+    local all=Suite.WorldDB.Dungeons()
+    if not all or #all==0 then return end
+    itemToDungeon=itemToDungeon or {}
+    itemIndexScheduled=true
+    local function Step()
+        itemIndexScheduled=false
+        if itemIndexBuilt then return end
+        itemIndexCursor=itemIndexCursor+1
+        local meta=all[itemIndexCursor]
+        if meta then
+            IndexDungeonMeta(meta)
+            if itemIndexCursor<#all then
+                itemIndexScheduled=true
+                C_Timer.After(.02,Step)
+            else
+                itemIndexBuilt=true
+            end
+        else
+            itemIndexBuilt=true
+        end
+    end
+    C_Timer.After(.02,Step)
+end
+
 local function EnsureItemIndex()
     if itemIndexBuilt then return itemToDungeon end
     if not Suite.WorldDB or not Suite.WorldDB.Dungeons then return nil end
     local all=Suite.WorldDB.Dungeons()
     if not all or #all==0 then return nil end
-    itemToDungeon={}
-    for _,meta in ipairs(all) do
-        local d=Suite.WorldDB.Dungeon(meta.s)
-        if d then
-            for _,boss in ipairs(d.b or {}) do
-                for _,it in ipairs(boss.lt or {}) do
-                    if it[1] and not itemToDungeon[it[1]] then
-                        itemToDungeon[it[1]]={slug=d.s,boss=boss.n}
-                    end
-                end
-            end
-            for _,q in ipairs(d.q or {}) do
-                for _,ri in ipairs(q.rw or {}) do
-                    if ri[1] and not itemToDungeon[ri[1]] then
-                        itemToDungeon[ri[1]]={slug=d.s,quest=q.n}
-                    end
-                end
-            end
-        end
+    itemToDungeon=itemToDungeon or {}
+    for i=itemIndexCursor+1,#all do
+        IndexDungeonMeta(all[i])
+        itemIndexCursor=i
     end
     itemIndexBuilt=true
     return itemToDungeon
 end
 
 function Module.HasItemOrZone(itemID,zoneHint)
-    if itemID then
-        local idx=EnsureItemIndex()
-        if idx and idx[itemID] then return true end
-    end
+    -- Never synchronously decompress all 35 dungeons during row/tooltip hover.
+    if itemID and itemToDungeon and itemToDungeon[itemID] then return true end
     if zoneHint and zoneHint~="" then
         if FindSlugByName(zoneHint) then return true end
     end
+    if itemID and not itemIndexBuilt then ScheduleItemIndexStep() end
     return false
 end
 

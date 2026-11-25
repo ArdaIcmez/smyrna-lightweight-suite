@@ -1,5 +1,10 @@
 # Smyrna Suite — instructions for developers and coding agents
 
+## Current edition boundary
+
+Read docs/CURRENT-BASELINE.md first. The installed master retains Market; this repository exports the limited edition without Market implementation. Use tools/export_public.py for intentional refreshes. Never install this snapshot over the local master or re-add Market during blanket syncing. Repository stays private; ZIPs, personal images and SavedVariables stay excluded. All edits require a complete colored diff and owner approval before application; explicit publishing instructions authorize that publication.
+
+
 Read docs/ENGINEERING.md before making changes. Update it when gameplay establishes a new fact.
 Read docs/STORAGE.md before changing data formats, ownership or caches. The 0.9.32 migrations and source-menu behavior are documented in docs/RELEASE-0.9.32.md.
 

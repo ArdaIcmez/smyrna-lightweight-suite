@@ -6,7 +6,7 @@
 ## Category: Smyrna
 ## LoadSavedVariablesFirst: 1
 ## Dependencies: Blizzard_MapCanvas
-## SavedVariables: SmyrnaChatDB, SmyrnaFieldDiaryDB, SmyrnaBestiaryDB, SmyrnaMarketDB
+## SavedVariables: SmyrnaChatDB, SmyrnaFieldDiaryDB, SmyrnaBestiaryDB
 ## SavedVariablesPerCharacter: SmyrnaSuiteDB, SmyrnaWorkshopDB, SmyrnaRemembranceDB
 Bootstrap.lua
 Compatibility.lua
@@ -36,8 +36,6 @@ BestiaryGuild.lua
 Modules/Remembrance.lua
 RemembranceActivities.lua
 Modules/Upgrader.lua
-Market.lua
-Modules/MarketUI.lua
 Modules/Journal.lua
 Modules/Quests.lua
 Modules/AggroMate.lua

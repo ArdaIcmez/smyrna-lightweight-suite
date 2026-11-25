@@ -777,70 +777,132 @@ function G.RefreshProfDialog()
     profDialog.sub:SetText(table.concat(subParts,"  ·  "))
 
     local profs=ParseProfessions(data and data.profs or "")
-    for i=1,math.max(#profs,#profCards) do
-        local p=profs[i]
-        local c=profCards[i] or MakeProfCard(i)
-        if p then
-            local col=(i-1)%2; local row=math.floor((i-1)/2)
-            c.profName=p.name
-            c:ClearAllPoints(); c:SetPoint("TOPLEFT",16+col*218,-(62+row*50))
-            c.tile.icon:SetTexture(PROF_ICONS[p.name] or "Interface\\Icons\\INV_Misc_QuestionMark")
-            local sel=(profFilterProf==p.name)
-            if sel then
-                c:SetBackdropBorderColor(.96,.80,.38,1)
-                c.tile:SetBackdropBorderColor(.96,.80,.38,1)
-            elseif p.secondary then
-                c:SetBackdropBorderColor(.28,.34,.46,.90)
-                c.tile:SetBackdropBorderColor(.48,.62,.82,.90)
-            else
-                c:SetBackdropBorderColor(.36,.52,.66,.92)
-                c.tile:SetBackdropBorderColor(.42,.80,1,.92)
-            end
-            c.name:SetText(p.name)
-            c.name:SetTextColor(p.secondary and .76 or .98,p.secondary and .84 or .94,p.secondary and .94 or .72)
-            c.skill:SetText(p.rank..(p.maxRank>0 and ("/"..p.maxRank) or ""))
-            c.skill:SetTextColor(p.secondary and .68 or .48,p.secondary and .78 or .88,1)
-            local frac=(p.maxRank>0) and math.max(.02,math.min(1,p.rank/p.maxRank)) or 1
-            c.barFill:SetWidth(math.max(2,math.floor(156*frac+.5)))
-            if p.secondary then c.barFill:SetColorTexture(.46,.68,.92,.88) else c.barFill:SetColorTexture(.92,.76,.34,.92) end
-            c:Show()
+    if not profFilterProf and #profs>0 then profFilterProf=profs[1].name end
+
+    -- Hide legacy top profession cards; use Blizzard-style right-side profession icon tabs + top skill bar
+    for i=1,#profCards do if profCards[i] then profCards[i]:Hide() end end
+
+    local activeProfObj=nil
+    for _,p in ipairs(profs) do if p.name==profFilterProf then activeProfObj=p; break end end
+    if profDialog.skillBar then
+        if activeProfObj then
+            profDialog.skillBar.icon:SetTexture(PROF_ICONS[activeProfObj.name] or "Interface\\Icons\\INV_Misc_QuestionMark")
+            profDialog.skillBar.name:SetText(activeProfObj.name)
+            profDialog.skillBar.rank:SetText(activeProfObj.rank..(activeProfObj.maxRank>0 and ("/"..activeProfObj.maxRank) or ""))
+            local frac=(activeProfObj.maxRank>0) and math.max(.02,math.min(1,activeProfObj.rank/activeProfObj.maxRank)) or 1
+            profDialog.skillBar.fill:SetWidth(math.max(2,math.floor(548*frac+.5)))
+            profDialog.skillBar:Show()
         else
-            c.profName=nil; c:Hide()
+            profDialog.skillBar:Hide()
         end
     end
 
-    local profRowsCount=math.max(1,math.ceil(#profs/2))
-    local listTop=62+profRowsCount*50+10
-    profDialog.recHeader:ClearAllPoints(); profDialog.recHeader:SetPoint("TOPLEFT",16,-listTop)
-    profDialog.recHeader:SetText(profFilterProf and ("Known Recipes — "..profFilterProf.." (click card to clear)") or "Known Recipes (click a profession above to filter)")
-    profSearchBox:ClearAllPoints(); profSearchBox:SetPoint("TOPLEFT",20,-(listTop+18))
-    profStatusText:ClearAllPoints(); profStatusText:SetPoint("LEFT",profSearchBox,"RIGHT",10,0)
-    profScroll:ClearAllPoints(); profScroll:SetPoint("TOPLEFT",16,-(listTop+46))
-    local scrollH=math.max(110,432-(listTop+46)-14)
-    profScroll:SetSize(418,scrollH)
+    -- Blizzard-style right-side profession icon tabs (click to switch profession)
+    profDialog.sideTabs=profDialog.sideTabs or {}
+    for i=1,math.max(#profs,#profDialog.sideTabs) do
+        local p=profs[i]
+        local st=profDialog.sideTabs[i]
+        if p then
+            if not st then
+                st=CreateFrame("Button",nil,profDialog,"BackdropTemplate")
+                st:SetSize(34,34)
+                Suite.StylePanel(st,false)
+                st.icon=st:CreateTexture(nil,"ARTWORK")
+                st.icon:SetPoint("TOPLEFT",4,-4); st.icon:SetPoint("BOTTOMRIGHT",-4,4)
+                st.icon:SetTexCoord(.08,.92,.08,.92)
+                st:SetScript("OnClick",function(self)
+                    profFilterProf=self.profName
+                    profDialog.selectedRec=nil
+                    G.RefreshProfDialog()
+                end)
+                st:SetScript("OnEnter",function(self)
+                    if not GameTooltip or (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then return end
+                    GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
+                    GameTooltip:SetText(self.profName or "",1,.86,.48)
+                    if self.skillTxt and self.skillTxt~="" then GameTooltip:AddLine("Skill: "..self.skillTxt,.75,.85,.95) end
+                    GameTooltip:AddLine("Click to view recipes",.65,.72,.80)
+                    GameTooltip:Show()
+                end)
+                st:SetScript("OnLeave",function() if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then GameTooltip:Hide() end end)
+                profDialog.sideTabs[i]=st
+            end
+            st.profName=p.name
+            st.skillTxt=p.rank..(p.maxRank>0 and ("/"..p.maxRank) or "")
+            st.icon:SetTexture(PROF_ICONS[p.name] or "Interface\\Icons\\INV_Misc_QuestionMark")
+            st:ClearAllPoints(); st:SetPoint("TOPLEFT",profDialog,"TOPRIGHT",-2,-(54+(i-1)*38))
+            local sel=(profFilterProf==p.name)
+            st:SetBackdropBorderColor(sel and .96 or .42,sel and .80 or .36,sel and .38 or .28,sel and 1 or .85)
+            st:Show()
+        elseif st then
+            st.profName=nil; st:Hide()
+        end
+    end
 
-    local flat={}
+    local listTop=activeProfObj and 96 or 64
+    profSearchBox:ClearAllPoints(); profSearchBox:SetPoint("TOPLEFT",18,-listTop)
+    profStatusText:ClearAllPoints(); profStatusText:SetPoint("LEFT",profSearchBox,"RIGHT",8,0)
+    profScroll:ClearAllPoints(); profScroll:SetPoint("TOPLEFT",16,-(listTop+26))
+    local scrollH=math.max(180,506-(listTop+26)-14)
+    profScroll:SetSize(274,scrollH)
+    if profDialog.detailPane then
+        profDialog.detailPane:ClearAllPoints()
+        profDialog.detailPane:SetPoint("TOPLEFT",314,-listTop)
+        profDialog.detailPane:SetPoint("BOTTOMRIGHT",-16,14)
+    end
+
+    profDialog.collapsedCats=profDialog.collapsedCats or {}
+    local byCat={}
+    local catKeys={}
+    local totalRecipes=0
     local q=string.lower((profSearchQuery or ""):gsub("^%s+",""):gsub("%s+$",""))
+    local WS=Suite.Modules and Suite.Modules.SmyrnaWorkshop
+    local getInfo=(C_Item and C_Item.GetItemInfo) or GetItemInfo
     if data and type(data.recipes)=="table" then
         for pname,list in pairs(data.recipes) do
             if not profFilterProf or profFilterProf==pname then
                 for _,rec in ipairs(list) do
                     if q=="" or string.lower(rec.name.." "..pname):find(q,1,true) then
-                        flat[#flat+1]={name=rec.name,spell=rec.spell,prof=pname}
+                        local lvl=tonumber(rec.level) or tonumber(rec.req) or 0
+                        local cat=pname
+                        local rid,ricon=nil,nil
+                        if rec.spell and WS and WS.RecipeVisual then
+                            local vIcon,_,vID=WS.RecipeVisual({spell=rec.spell,name=rec.name},{})
+                            ricon=vIcon; rid=vID
+                            if rid and getInfo then
+                                local _,_,_,_,_,_,subType=getInfo(rid)
+                                if type(subType)=="string" and subType~="" then cat=subType end
+                            end
+                        end
+                        if not byCat[cat] then byCat[cat]={}; catKeys[#catKeys+1]=cat end
+                        byCat[cat][#byCat[cat]+1]={name=rec.name,spell=rec.spell,prof=pname,lvl=lvl,cat=cat,itemID=rid,icon=ricon}
+                        totalRecipes=totalRecipes+1
                     end
                 end
             end
         end
     end
-    table.sort(flat,function(a,b)
-        if a.prof~=b.prof then return a.prof<b.prof end
-        return a.name<b.name
-    end)
+    table.sort(catKeys)
+    local flat={}
+    for _,cat in ipairs(catKeys) do
+        local grp=byCat[cat]
+        table.sort(grp,function(a,b)
+            if a.lvl~=b.lvl then return a.lvl>b.lvl end
+            return a.name<b.name
+        end)
+        local collapsed=profDialog.collapsedCats[cat]==true
+        flat[#flat+1]={isHeader=true,cat=cat,count=#grp,collapsed=collapsed}
+        if not collapsed then
+            for _,item in ipairs(grp) do
+                flat[#flat+1]=item
+                if not profDialog.selectedRec then profDialog.selectedRec=item end
+            end
+        end
+    end
 
     if #profs==0 then
         profStatusText:SetText("Guildmate needs Smyrna Suite installed")
-    elseif #flat>0 then
-        profStatusText:SetText(#flat.." known recipes")
+    elseif totalRecipes>0 then
+        profStatusText:SetText(totalRecipes.." recipes")
     elseif data and data.isSelf then
         profStatusText:SetText("Open your profession window once to scan")
     elseif data and data.isOnline then
@@ -849,19 +911,108 @@ function G.RefreshProfDialog()
         profStatusText:SetText("Recipes sync when online")
     end
 
+    local function UpdateDetailPane(rec)
+        local dp=profDialog.detailPane
+        if not dp then return end
+        if not rec then
+            dp.title:SetText("Select a recipe")
+            dp.meta:SetText("")
+            dp.costTxt:SetText("")
+            dp.tile.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+            for i=1,#dp.reagents do dp.reagents[i]:Hide() end
+            return
+        end
+        dp.tile.icon:SetTexture(rec.icon or PROF_ICONS[rec.prof] or "Interface\\Icons\\INV_Misc_QuestionMark")
+        dp.title:SetText(rec.name)
+        dp.meta:SetText(rec.prof..(rec.lvl>0 and ("  ·  Lv "..rec.lvl) or ""))
+        local mats=nil
+        if WS and SmyrnaWorkshopDB and type(SmyrnaWorkshopDB.recipes)=="table" then
+            local rtbl=SmyrnaWorkshopDB.recipes
+            local rkey=(rec.spell and rtbl[rec.spell] and rec.spell) or (rec.spell and rtbl[tostring(rec.spell)] and tostring(rec.spell)) or (rec.name and rtbl[rec.name] and rec.name)
+            local raw=rkey and rtbl[rkey]
+            local parsed=raw and WS.ReadRecipe and WS.ReadRecipe(raw,rkey)
+            if parsed and type(parsed.mats)=="table" then mats=parsed.mats end
+        end
+        local MK=Suite.Market
+        local totalCost=0
+        local nMats=mats and math.min(#mats,8) or 0
+        for i=1,8 do
+            local r=dp.reagents[i]
+            local m=mats and mats[i]
+            if m then
+                local mName,_,_,_,_,_,_,_,_,mIcon=getInfo and getInfo(m[1])
+                local have=(WS and WS.Count and WS.Count(m[1])) or 0
+                local uCost=WS and WS.MatUnitCost and WS.MatUnitCost(m[1])
+                if not uCost and MK and MK.Price then
+                    local mq=MK.Price(m[1]); if mq and type(mq.minimum)=="number" and mq.minimum>0 then uCost=mq.minimum end
+                end
+                if uCost and uCost>0 then totalCost=totalCost+uCost*(m[2] or 1) end
+                r.tile.icon:SetTexture(mIcon or "Interface\\Icons\\INV_Misc_QuestionMark")
+                r.name:SetText(mName or ("Item #"..m[1]))
+                r.qty:SetText(have.."/"..(m[2] or 1))
+                r.qty:SetTextColor(have>=(m[2] or 1) and .48 or .95,have>=(m[2] or 1) and .88 or .45,have>=(m[2] or 1) and .58 or .40)
+                r:Show()
+            else
+                r:Hide()
+            end
+        end
+        if nMats==0 then
+            dp.costTxt:SetText("|cff8892a4Reagents & profit available when cached in Workshop.|r")
+        else
+            local sellQ=rec.itemID and MK and MK.Price and MK.Price(rec.itemID)
+            local ahMin=sellQ and type(sellQ.minimum)=="number" and sellQ.minimum>0 and sellQ.minimum or nil
+            if ahMin and totalCost>0 then
+                local sellTarget=math.floor(ahMin*0.94+.5)
+                local profit=math.floor(sellTarget*0.95+.5)-totalCost
+                local pCol=profit>=0 and "|cff78d49b+" or "|cffff7a66"
+                local function Fm(c) local g=math.floor(c/10000); local s=math.floor((c%10000)/100); return g>0 and (g.."g "..s.."s") or (s.."s") end
+                dp.costTxt:SetText(string.format("Mats: %s  ·  Sell(-6%%): %s  ·  Profit: %s%s|r",Fm(totalCost),Fm(sellTarget),pCol,Fm(profit)))
+            elseif totalCost>0 then
+                local g=math.floor(totalCost/10000); local s=math.floor((totalCost%10000)/100)
+                dp.costTxt:SetText("Est. Mat Cost: "..(g>0 and (g.."g "..s.."s") or (s.."s")))
+            else
+                dp.costTxt:SetText("")
+            end
+        end
+    end
+
     for i=1,math.max(#flat,#recipeRows) do
         local item=flat[i]
         local row=recipeRows[i] or MakeRecipeRow(i)
         if item then
-            row.spellID=item.spell
+            row:SetWidth(250)
             row:ClearAllPoints(); row:SetPoint("TOPLEFT",0,-(i-1)*26)
-            row.name:SetText(item.name); row.name:SetTextColor(.92,.94,.98)
-            row.prof:SetText(item.prof)
+            if item.isHeader then
+                row.spellID=nil
+                row.catProf=item.cat
+                row:SetScript("OnClick",function(self)
+                    if self.catProf then
+                        profDialog.collapsedCats[self.catProf]=not profDialog.collapsedCats[self.catProf]
+                        G.RefreshProfDialog()
+                    end
+                end)
+                row.name:SetText((item.collapsed and "[+] " or "[-] ")..item.cat.." ("..item.count..")")
+                row.name:SetTextColor(1,.86,.48)
+                row.prof:SetText("")
+            else
+                row.catProf=nil
+                row.spellID=item.spell
+                row.recData=item
+                row:SetScript("OnClick",function(self)
+                    profDialog.selectedRec=self.recData
+                    UpdateDetailPane(self.recData)
+                end)
+                row.name:SetText("  "..item.name)
+                row.name:SetTextColor(.92,.94,.98)
+                row.prof:SetText(item.lvl>0 and ("Lv "..item.lvl) or "")
+            end
             row:Show()
         else
-            row.spellID=nil; row:Hide()
+            row.spellID=nil; row.catProf=nil; row.recData=nil; row:Hide()
         end
     end
+    UpdateDetailPane(profDialog.selectedRec)
+    profCanvas:SetWidth(254)
     profCanvas:SetHeight(math.max(scrollH,#flat*26+6))
     profScroll:UpdateScrollChildRect()
 end
@@ -875,7 +1026,7 @@ function G.OpenMemberProfessions(rawName)
     if not profDialog then
         profCards={}; recipeRows={}
         profDialog=CreateFrame("Frame","SmyrnaGuildProfFrame",UIParent,"BackdropTemplate")
-        profDialog:SetSize(460,440); profDialog:SetPoint("CENTER"); profDialog:SetFrameStrata("DIALOG")
+        profDialog:SetSize(640,510); profDialog:SetPoint("CENTER"); profDialog:SetFrameStrata("DIALOG")
         profDialog:SetClampedToScreen(true); profDialog:SetMovable(true); profDialog:EnableMouse(true)
         Suite.StylePanel(profDialog,true)
         profDialog:RegisterForDrag("LeftButton")
@@ -909,7 +1060,36 @@ function G.OpenMemberProfessions(rawName)
         end)
 
         profDialog.recHeader=profDialog:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
-        profDialog.recHeader:SetTextColor(.93,.77,.40)
+        profDialog.recHeader:SetTextColor(.93,.77,.40); profDialog.recHeader:Hide()
+
+        local sb=CreateFrame("Frame",nil,profDialog,"BackdropTemplate")
+        sb:SetSize(608,28); sb:SetPoint("TOPLEFT",16,-58); Suite.StyleCard(sb,.06,.07,.10)
+        sb.icon=sb:CreateTexture(nil,"ARTWORK"); sb.icon:SetSize(22,22); sb.icon:SetPoint("LEFT",4,0); sb.icon:SetTexCoord(.08,.92,.08,.92)
+        sb.fill=sb:CreateTexture(nil,"ARTWORK"); sb.fill:SetPoint("TOPLEFT",30,-4); sb.fill:SetPoint("BOTTOMLEFT",30,4); sb.fill:SetWidth(100); sb.fill:SetColorTexture(.82,.52,.16,.85)
+        sb.name=sb:CreateFontString(nil,"OVERLAY","GameFontNormalSmall"); sb.name:SetPoint("LEFT",36,0); sb.name:SetTextColor(1,.92,.72)
+        sb.rank=sb:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); sb.rank:SetPoint("RIGHT",-10,0); sb.rank:SetTextColor(1,.96,.86)
+        profDialog.skillBar=sb
+
+        local dp=CreateFrame("Frame",nil,profDialog,"BackdropTemplate")
+        Suite.StyleCard(dp,.055,.065,.09)
+        dp.tile=Suite.CreateIconTile(dp,36); dp.tile:SetPoint("TOPLEFT",12,-12)
+        dp.title=dp:CreateFontString(nil,"OVERLAY","GameFontNormal"); dp.title:SetPoint("TOPLEFT",56,-12); dp.title:SetWidth(236); dp.title:SetJustifyH("LEFT"); dp.title:SetTextColor(1,.86,.48)
+        dp.meta=dp:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); dp.meta:SetPoint("TOPLEFT",56,-32); dp.meta:SetWidth(236); dp.meta:SetJustifyH("LEFT"); dp.meta:SetTextColor(.72,.78,.86)
+        dp.rHdr=dp:CreateFontString(nil,"OVERLAY","GameFontNormalSmall"); dp.rHdr:SetPoint("TOPLEFT",12,-60); dp.rHdr:SetText("Reagents:"); dp.rHdr:SetTextColor(.93,.77,.40)
+        dp.reagents={}
+        for i=1,8 do
+            local r=CreateFrame("Frame",nil,dp,"BackdropTemplate")
+            r:SetSize(284,26); r:SetPoint("TOPLEFT",12,-78-(i-1)*28)
+            Suite.StyleCard(r,.075,.088,.12)
+            r.tile=Suite.CreateIconTile(r,20); r.tile:SetPoint("LEFT",4,0)
+            r.name=r:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); r.name:SetPoint("LEFT",28,0); r.name:SetWidth(196); r.name:SetJustifyH("LEFT"); r.name:SetMaxLines(1)
+            r.qty=r:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); r.qty:SetPoint("RIGHT",-8,0); r.qty:SetJustifyH("RIGHT")
+            r:Hide()
+            dp.reagents[i]=r
+        end
+        dp.costTxt=dp:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        dp.costTxt:SetPoint("BOTTOMLEFT",12,10); dp.costTxt:SetWidth(284); dp.costTxt:SetJustifyH("LEFT"); dp.costTxt:SetTextColor(.82,.88,.94)
+        profDialog.detailPane=dp
 
         profSearchBox=CreateFrame("EditBox",nil,profDialog,"InputBoxTemplate")
         profSearchBox:SetSize(185,20); profSearchBox:SetAutoFocus(false)

@@ -22,3 +22,7 @@ __pycache__/
 addons/SmyrnaSuite/Media/Taylan.tga
 addons/SmyrnaSuite/Media/TaylanFrown.tga
 addons/SmyrnaSuite/Media/TaylanSmile.tga
+
+# Master-only Market implementation
+addons/SmyrnaSuite/Market.lua
+addons/SmyrnaSuite/Modules/MarketUI.lua

@@ -43,9 +43,12 @@ function S.StylePanel(f,thick)
    g.silver={sTop,sBot,sLft,sRgt}
    -- 4 bright gold corner L-brackets
    local corners={{'TOPLEFT',0,0},{'TOPRIGHT',0,0},{'BOTTOMLEFT',0,0},{'BOTTOMRIGHT',0,0}}
+   g.corners={}
    for _,c in ipairs(corners) do
     local ch=f:CreateTexture(nil,'OVERLAY',nil,6);ch:SetPoint(c[1],f,c[1],c[2],c[3]);ch:SetSize(10,2);ch:SetColorTexture(1,.86,.48,.95)
     local cv=f:CreateTexture(nil,'OVERLAY',nil,6);cv:SetPoint(c[1],f,c[1],c[2],c[3]);cv:SetSize(2,10);cv:SetColorTexture(1,.86,.48,.95)
+    g.corners[#g.corners+1]=ch
+    g.corners[#g.corners+1]=cv
    end
    f.smyrnaGildedFrame=g
   end

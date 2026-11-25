@@ -42,6 +42,18 @@ local function EnsureMenuRow(i)
     J.OpenForItem(self.candidate.row.id,self.candidate.source and self.candidate.source.zone)
     return
    end
+  elseif menu.filter=='AH' and self.candidate and self.ahAvailable then
+   U.ChosenAH=U.ChosenAH or {}
+   U.ChosenAH[slot]=self.candidate.row.id
+   local MK=S.Modules and S.Modules.SmyrnaMarket
+   if MK and MK.SelectSlotUpgrade then MK.SelectSlotUpgrade(slot,self.candidate.row.id) end
+   if S.Market and S.Market.IsOpen and S.Market.IsOpen() and S.Market.OpenItem then
+    S.Market.OpenItem(self.candidate.row.id)
+    dock:Hide()
+    return
+   end
+   menu.populateFn(false)
+   return
   end
   U.OpenDetails(slot,nil,owner,menu.filter);dock:Hide()
  end)
@@ -50,6 +62,14 @@ local function EnsureMenuRow(i)
   if self.candidate and GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then
    GameTooltip:SetOwner(self,'ANCHOR_RIGHT')
    GameTooltip:SetHyperlink('item:'..self.candidate.row.id)
+   if menu.filter=='AH' then
+    GameTooltip:AddLine(' ')
+    if self.ahAvailable then
+     GameTooltip:AddLine('Left-click: Pick this AH Upgrade'..(S.Market and S.Market.IsOpen and S.Market.IsOpen() and ' / Search AH' or ''),.45,.95,.55)
+    else
+     GameTooltip:AddLine('Not available on AH (unavailable). Left-click for full details.',.95,.42,.36)
+    end
+   end
    local J=S.Modules and S.Modules.SmyrnaJournal
    if J and J.HasItemOrZone and J.HasItemOrZone(self.candidate.row.id,self.candidate.source and self.candidate.source.zone) then
     GameTooltip:AddLine('Right-click: Open in Smyrna Dungeon Journal',.55,.86,1)
@@ -60,23 +80,81 @@ local function EnsureMenuRow(i)
  b:SetScript('OnLeave',function() if GameTooltip and not (GameTooltip.IsForbidden and GameTooltip:IsForbidden()) then GameTooltip:Hide() end;Leave() end);menu.rows[i]=b
  return b
 end
+local function FormatAHCopper(c)
+ local v=math.max(0,math.floor((c or 0)+.5))
+ local g,s,cp=math.floor(v/10000),math.floor((v%10000)/100),v%100
+ if g>0 then return string.format('%dg %ds',g,s) elseif s>0 then return string.format('%ds %dc',s,cp) else return cp..'c' end
+end
 local function Populate(reset)
  local state=dock.state;local filter=menu.filter
- local rows=state and (filter=='AH' and state.rankedAH or state.groups[filter]) or {}
+ local rawRows=state and (filter=='AH' and state.rankedAH or state.groups[filter]) or {}
+ local rows=rawRows
+ local ahAvailMap,ahPriceMap
+ if filter=='AH' and #rawRows>0 then
+  rows={}; ahAvailMap={}; ahPriceMap={}
+  for idx=1,#rawRows do rows[idx]=rawRows[idx] end
+  if S.Market and S.Market.Price then
+   for idx=1,#rows do
+    local id=rows[idx].row.id
+    local q=S.Market.Price(id)
+    if q and type(q.minimum)=='number' and q.minimum>0 then
+     ahAvailMap[id]=true; ahPriceMap[id]=q
+    end
+   end
+  end
+  table.sort(rows,function(a,b)
+   local aa,bb=ahAvailMap[a.row.id] and true or false,ahAvailMap[b.row.id] and true or false
+   if aa~=bb then return aa end
+   return (a.score or 0)>(b.score or 0)
+  end)
+ end
+ menu.populateFn=Populate
  local count=math.min(#rows,35)
  local total=math.max(1,count,#menu.rows)
+ local pickedID=(filter=='AH' and U.ChosenAH and U.ChosenAH[slot]) or nil
  for i=1,total do
   local c=i<=count and rows[i] or nil
   local b=(c or i==1) and EnsureMenuRow(i) or menu.rows[i]
   if b then
    b.candidate=c
-   local label=c and (i..'. '..c.row.name) or (dock.status or 'No eligible upgrade found')
+   local isAH=(filter=='AH' and c~=nil)
+   local avail=(not isAH) or (ahAvailMap and ahAvailMap[c.row.id]==true)
+   b.ahAvailable=avail
+   local isPicked=isAH and pickedID==c.row.id
+   local prefix=isPicked and '|cff78d49b[Picked]|r ' or (tostring(i)..'. ')
+   local label=c and (prefix..c.row.name) or (dock.status or 'No eligible upgrade found')
    b:SetText(label)
-   b.meta:SetText(c and ((c.future and ('Next: Lv '..c.availableLevel..(c.training and ' / armor training' or '')) or ('Lv '..c.row.level))..' - '..c.row.subclass) or '')
+   if c then
+    local sub=(c.future and ('Next: Lv '..c.availableLevel..(c.training and ' / armor training' or '')) or ('Lv '..c.row.level))..' - '..c.row.subclass
+    if isAH then
+     if avail and ahPriceMap and ahPriceMap[c.row.id] then
+      b.meta:SetText('|cff78d49bAH: '..FormatAHCopper(ahPriceMap[c.row.id].minimum)..'|r - '..sub)
+     else
+      local isVend=(c.source and c.source.kind=='Vendor')
+      if not isVend and c.row and type(c.row.sources)=='table' then
+       for _,s in ipairs(c.row.sources) do if s.kind=='Vendor' then isVend=true; break end end
+      end
+      b.meta:SetText((isVend and '|cffffd36aVendor|r - ' or '|cffff6b5aNo AH|r - ')..sub)
+     end
+    else
+     b.meta:SetText(sub)
+    end
+   else
+    b.meta:SetText('')
+   end
    local icon=c and C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(c.row.id)
    b.icon:SetTexture(icon or 'Interface\\Icons\\INV_Misc_QuestionMark')
-   local color=c and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[c.row.quality]
-   local font=b.GetFontString and b:GetFontString();if font then font:SetTextColor(color and color.r or 1,color and color.g or .83,color and color.b or .43) end
+   if b.icon.SetDesaturated then b.icon:SetDesaturated(isAH and not avail) end
+   b:SetAlpha((c and isAH and not avail) and .48 or 1)
+   local font=b.GetFontString and b:GetFontString()
+   if font then
+    if isAH and not avail then
+     font:SetTextColor(.56,.60,.66)
+    else
+     local color=c and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[c.row.quality]
+     font:SetTextColor(color and color.r or 1,color and color.g or .83,color and color.b or .43)
+    end
+   end
    b:SetEnabled(c~=nil);b:SetShown(c~=nil or i==1)
   end
  end

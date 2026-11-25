@@ -13,6 +13,27 @@ NS.TabOrder=tabOrder
 local function TabLabel(tabIndex)
     return tabIndex==-2 and "Guild" or NS.Features[tabIndex][2]
 end
+local function RemoveSpecialFrame(frameName)
+    if type(frameName)~="string" or type(UISpecialFrames)~="table" then return end
+    for i=#UISpecialFrames,1,-1 do
+        if UISpecialFrames[i]==frameName then table.remove(UISpecialFrames,i) end
+    end
+end
+local function HideEmbeddedChrome(page)
+    if page.SetBackdrop then page:SetBackdrop(nil) end
+    if page.smyrnaInnerLine then page.smyrnaInnerLine:Hide() end
+    local gf=page.smyrnaGildedFrame
+    if type(gf)=="table" then
+        if type(gf.silver)=="table" then
+            for i=1,#gf.silver do if gf.silver[i] and gf.silver[i].Hide then gf.silver[i]:Hide() end end
+        end
+        if type(gf.corners)=="table" then
+            for i=1,#gf.corners do if gf.corners[i] and gf.corners[i].Hide then gf.corners[i]:Hide() end end
+        end
+    end
+    local close=page.SuiteCloseButton
+    if type(close)=="table" or type(close)=="userdata" then close:Hide() end
+end
 for i,entry in ipairs(NS.Features) do
     local module=NS.Modules[entry[1]]
     if module then
@@ -39,6 +60,8 @@ function NS.OpenTab(index)
         local navRule=hub:CreateTexture(nil,"BORDER",nil,2)
         navRule:SetPoint("TOPLEFT",navStrip,"BOTTOMLEFT",0,0);navRule:SetPoint("TOPRIGHT",navStrip,"BOTTOMRIGHT",0,0);navRule:SetHeight(1);navRule:SetColorTexture(.25,.28,.36,.75)
         content=CreateFrame("Frame",nil,hub);content:SetPoint("TOPLEFT",10,-90);content:SetSize(940,740)
+        if content.SetClipsChildren then content:SetClipsChildren(true) end
+        NS.HubFrame=hub
         hub.tabs={}
         local tutorial=CreateFrame("Button",nil,hub,"UIPanelButtonTemplate");tutorial:SetSize(88,24);tutorial:SetPoint("RIGHT",close,"LEFT",-8,0);tutorial:SetText("|TInterface\\GossipFrame\\AvailableQuestIcon:14:14|t Guide");NS.StyleButton(tutorial)
         tutorial:SetScript("OnClick",function() NS.OpenTab(-1) end);hub.tabs[-1]=tutorial;hub.tutorialButton=tutorial
@@ -102,12 +125,13 @@ function NS.OpenTab(index)
                 hub:SetScale(math.min(1,(uw-30)/width,(uh-30)/height))
             end
         end
-        if page.SetBackdrop then page:SetBackdrop(nil) end
-        if page.smyrnaInnerLine then page.smyrnaInnerLine:Hide() end
-        local close=page.SuiteCloseButton
-        if type(close)=="table" or type(close)=="userdata" then close:Hide() end
+        HideEmbeddedChrome(page)
+        if page.GetName then RemoveSpecialFrame(page:GetName()) end
         if not page.smyrnaTreeStyled then NS.StyleTree(page);page.smyrnaTreeStyled=true end
-        pages[index]=page;page:SetParent(content);page:SetScale(1);page:ClearAllPoints();page:SetPoint("TOP",content,"TOP",0,0)
+        pages[index]=page;page:SetParent(content)
+        if page.SetFrameStrata and content.GetFrameStrata then page:SetFrameStrata(content:GetFrameStrata()) end
+        if page.SetFrameLevel and content.GetFrameLevel then page:SetFrameLevel((content:GetFrameLevel() or 1)+1) end
+        page:SetScale(1);page:ClearAllPoints();page:SetPoint("TOP",content,"TOP",0,0)
         page:SetMovable(false);page:SetScript("OnDragStart",nil);page:SetScript("OnDragStop",nil);page:Show();active=page
     end
     for n,b in pairs(hub.tabs) do

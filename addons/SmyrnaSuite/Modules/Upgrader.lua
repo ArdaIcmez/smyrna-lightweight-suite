@@ -399,7 +399,7 @@ end
 local driver=CreateFrame('Frame');driver:RegisterEvent('PLAYER_LOGIN');driver:RegisterEvent('ADDON_LOADED');driver:RegisterEvent('MODIFIER_STATE_CHANGED');driver:RegisterEvent('PLAYER_EQUIPMENT_CHANGED');driver:RegisterEvent('PLAYER_LEVEL_UP');pcall(driver.RegisterEvent,driver,'CHARACTER_POINTS_CHANGED');pcall(driver.RegisterEvent,driver,'PLAYER_TALENT_UPDATE');pcall(driver.RegisterEvent,driver,'SKILL_LINES_CHANGED');pcall(driver.RegisterEvent,driver,'SPELLS_CHANGED')
 driver:SetScript('OnEvent',function(self,event,key,state)
  if event=='MODIFIER_STATE_CHANGED' then
-  if (not key or (Safe(key) and Safe(state) and (key=='LCTRL' or key=='RCTRL') and state==1)) and hoverOwner and U.ActivationDown() then Reveal(hoverOwner,hoverSlot) end
+  if (not key or (Safe(key) and Safe(state) and (key=='LCTRL' or key=='RCTRL') and (state==1 or state==true))) and hoverOwner and U.ActivationDown() then Reveal(hoverOwner,hoverSlot) end
  elseif event=='PLAYER_LOGIN' or event=='ADDON_LOADED' then
   if event=='PLAYER_LOGIN' then self:UnregisterEvent('PLAYER_LOGIN') end
   if HookSlots() then self:UnregisterEvent('ADDON_LOADED') end
@@ -576,7 +576,8 @@ local function ScoreItemLink(link,id,profile)
 end
 
 local function OnUpgradeTooltip(tip,data)
- if not cfg.enabled or not TipAllowed(tip) then return end
+ if not cfg.enabled or U.Refreshing or not TipAllowed(tip) then return end
+ if S.IsLootInteraction and tip.GetOwner and S.IsLootInteraction(tip:GetOwner()) then return end
  local link,id
  if tip.GetItem then
   local _,l=tip:GetItem()

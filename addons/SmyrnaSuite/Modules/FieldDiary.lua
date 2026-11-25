@@ -756,15 +756,30 @@ function NS.Share(channel)
     queue=batch
     local nextCursor=last==total and 1 or last+1
     -- Serialize a fixed snapshot now; no imported data is relayed.
-    for i,r in ipairs(queue) do queue[i]=C.Encode(NS.DB.origin,r) end
+    local encodedQueue={}
+    for i=1,#queue do
+        local encoded=C.Encode(NS.DB.origin,queue[i])
+        if type(encoded)=="string" and #encoded<=248 then encodedQueue[#encodedQueue+1]=encoded end
+    end
+    queue=encodedQueue
+    if #queue==0 then Stop(); NS.Say("No valid observations fit message limit."); return end
     index=1
+    local retries=0
     NS.Say("Sharing finds "..first.."-"..last.." of "..total.." with your "..(channel=="GUILD" and "guild" or "group")..". Click Share again for more.")
     ticker=C_Timer.NewTicker(.5,function()
         if (channel=="GUILD" and not IsInGuild()) or (channel~="GUILD" and not IsInGroup()) then Stop(); NS.Say("Share stopped: group/guild unavailable."); return end
         local message=queue and queue[index]
         if not message then Stop(); NS.Say("Share finished."); return end
-        C_ChatInfo.SendAddonMessage(PREFIX,message,channel)
-        index=index+1
+        local callOk,res=pcall(C_ChatInfo.SendAddonMessage,PREFIX,message,channel)
+        local succ=Enum and Enum.SendAddonMessageResult and Enum.SendAddonMessageResult.Success or 0
+        local sent=callOk and (res==nil or res==true or res==succ or res==0)
+        if sent then
+            retries=0; index=index+1
+        elseif retries<6 then
+            retries=retries+1; return
+        else
+            retries=0; index=index+1
+        end
         if index>#queue then cursors[cursorKey]=nextCursor; Stop(); NS.Say("Share finished.") end
     end)
 end

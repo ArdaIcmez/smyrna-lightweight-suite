@@ -63,7 +63,7 @@ local function Cfg()
     if not c.v2NoIdleRing then c.v2NoIdleRing=true; c.haloAlpha=0 end
     if not Num(c.haloAlpha,0,0.6) then c.haloAlpha=0 end
     if type(c.haloColor)~="string" or not c.haloColor:match("^%x%x%x%x%x%x$") then c.haloColor="ffffff" end
-    if not Num(c.warnMargin,6,25) then c.warnMargin=14 end -- start showing on halo when within aggro + 14 yd
+    if not Num(c.warnMargin,10,30) then c.warnMargin=14 end -- start showing on halo when within aggro + 14 yd
     return c
 end
 Module.Config=Cfg
@@ -963,8 +963,11 @@ local function UpdateHUD()
     -- 1c. Tiny live DPS Threat % pill on current hostile target
     UpdateDPSThreatPill(inCombat)
 
-    -- 2. Compact Aggro & Leash Tracker Card
-    -- Only shown during combat when actively moving > 5 yd away from pull; closes when standing still.
+    -- 2. Compact Aggro & Leash Tracker Card (moved to UpdateLeashCard to keep UpdateHUD upvalue count low)
+    if Suite._UpdateAggroLeash then Suite._UpdateAggroLeash(c,inCombat) end
+end
+
+Suite._UpdateAggroLeash=function(c,inCombat)
     if not inCombat then
         if aggroCount>0 then wipe(aggroMobs); aggroCount=0 end
         lastMoveMode,lastMoveMap,lastMoveX,lastMoveY,lastMoveAt=nil,nil,nil,nil,0
@@ -1020,6 +1023,8 @@ local function UpdateHUD()
         end
 
         if isMovingRecently and maxRanYards>LEASH_MIN_YARDS then
+            local pLevel=UnitLevel and UnitLevel("player")
+            if issecretvalue and issecretvalue(pLevel) or type(pLevel)~="number" then pLevel=70 end
             local idx=0
             local maxW=148
             local anyNearReset=false
@@ -1056,7 +1061,7 @@ local function UpdateHUD()
                 local remSec=math.max(0,info.leashSec-(now-(info.lastHitAt or info.pullAt)))
                 local nearReset=(remYards<=10 or remSec<=3)
                 if nearReset then anyNearReset=true end
-                local _,_,_,_,hex=ConColor(info.level,playerLvl)
+                local _,_,_,_,hex=ConColor(info.level,pLevel)
                 local shortName=(#info.name>18) and (info.name:sub(1,17)..".") or info.name
                 row.name:SetText("|cff"..hex..shortName.."|r")
                 row.stat:SetText(string.format("|cff%s%dy · %.1fs|r",nearReset and "78d49b" or "ffd670",remYards,remSec))
@@ -1306,7 +1311,7 @@ function Module.Open()
         end)
 
         local mgLbl=card:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); mgLbl:SetPoint("TOPLEFT",254,-74); mgLbl:SetTextColor(.93,.77,.40)
-        local mgSlider=Suite.CreateSlider(card,206,6,25)
+        local mgSlider=Suite.CreateSlider(card,206,10,30)
         mgSlider:SetPoint("TOPLEFT",254,-94)
         mgSlider:SetScript("OnValueChanged",function(_,v)
             local n=math.floor((v or 14)+.5); Cfg().warnMargin=n

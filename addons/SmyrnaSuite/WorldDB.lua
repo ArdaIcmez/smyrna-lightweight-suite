@@ -11,6 +11,19 @@ local LoadAddOnFn=(C_AddOns and C_AddOns.LoadAddOn) or LoadAddOn
 local IsLoadedFn=(C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
 local Enc=C_EncodingUtil
 
+local ZLIB_METHOD=(Enum and Enum.CompressionMethod and Enum.CompressionMethod.Zlib) or 1
+local warnedError=false
+
+local function RecordError(reason)
+    if type(reason)~="string" or reason=="" then return end
+    W.lastError=reason
+    Suite.lastDBError=reason
+    if not warnedError and DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+        warnedError=true
+        DEFAULT_CHAT_FRAME:AddMessage("|cffff7a66Smyrna WorldDB:|r "..reason)
+    end
+end
+
 local chunkCounts={}
 for i=1,64 do chunkCounts["~"..i.."~"]=i end
 
@@ -60,32 +73,43 @@ local function LRUClear(lru)
 end
 
 local caches={
-    N=MakeLRU(384),
-    Q=MakeLRU(384),
-    I=MakeLRU(512),
+    N=MakeLRU(768),
+    Q=MakeLRU(768),
+    I=MakeLRU(768),
     O=MakeLRU(192),
     D=MakeLRU(64),
     Z=MakeLRU(32),
 }
 local dlistCache,encCache,metaCache
-local MISSING=false -- sentinel for cached misses
+local MISSING=false -- sentinel for cached absent records only
 
 function W.Ensure()
-    if W.loaded then W.lastError=nil; return true end
+    if W.loaded then return true end
     if Suite.Config and Suite.Config.useDB==false then W.lastError='Built-in guides disabled'; return false end
-    if IsLoadedFn and IsLoadedFn(ADDON) then W.loaded=true; W.lastError=nil; return true end
-    if InCombatLockdown and InCombatLockdown() then W.lastError='cannot load during combat'; return false end
-    if not LoadAddOnFn then W.lastError='LoadAddOn unavailable'; return false end
-    local ok,reason=LoadAddOnFn(ADDON)
-    if not ok then W.lastError='LoadAddOn("'..ADDON..'") failed: '..tostring(reason); return false end
-    W.loaded=true; W.lastError=nil
+    if IsLoadedFn and IsLoadedFn(ADDON) then
+        W.loaded=true
+    else
+        if InCombatLockdown and InCombatLockdown() then W.lastError='cannot load during combat'; return false end
+        if not LoadAddOnFn then RecordError('LoadAddOn unavailable'); return false end
+        local ok,reason=LoadAddOnFn(ADDON)
+        if not ok then RecordError('LoadAddOn("'..ADDON..'") failed: '..tostring(reason)); return false end
+        W.loaded=true
+    end
+    Enc=Enc or _G.C_EncodingUtil
+    if not Enc or not Enc.DecodeBase64 or not Enc.DeserializeCBOR then
+        RecordError('C_EncodingUtil missing; WorldDB metadata cannot decode.')
+        return true
+    end
+    if GetMeta and not GetMeta(ADDON,"X-META") then
+        RecordError('SmyrnaWorldDB metadata (X-META) unavailable.')
+    end
     return true
 end
 
 local function ReadStored(key)
-    if not GetMeta then return nil end
+    if not GetMeta then return nil,"GetAddOnMetadata unavailable" end
     local val=GetMeta(ADDON,key)
-    if not val then return nil end
+    if not val then return nil,nil end
     if val:byte(1)==126 then
         local parts=chunkCounts[val] or tonumber(val:match("^~(%d+)~$"))
         if parts then
@@ -93,30 +117,35 @@ local function ReadStored(key)
             local buf={}
             for i=1,parts do
                 local part=GetMeta(ADDON,key.."-"..i)
-                if not part then return nil end
+                if not part then return nil,"Missing WorldDB chunk "..tostring(key).."-"..i end
                 buf[i]=part
             end
-            return table.concat(buf)
+            return table.concat(buf),nil
         end
     end
-    return val
+    return val,nil
 end
 
 local function DecodeKey(key,compressed)
-    if not Enc or not Enc.DecodeBase64 or not Enc.DeserializeCBOR then return nil end
-    local raw=ReadStored(key)
-    if not raw then return nil end
+    Enc=Enc or _G.C_EncodingUtil
+    if not Enc or not Enc.DecodeBase64 or not Enc.DeserializeCBOR then
+        RecordError("C_EncodingUtil unavailable for "..tostring(key))
+        return nil,true
+    end
+    local raw,readErr=ReadStored(key)
+    if readErr then RecordError(readErr); return nil,true end
+    if not raw then return nil,false end
     local ok1,bytes=pcall(Enc.DecodeBase64,raw)
-    if not ok1 or not bytes then return nil end
+    if not ok1 or not bytes then RecordError("Base64 decode failed for "..tostring(key)); return nil,true end
     if compressed then
-        if not Enc.DecompressString then return nil end
-        local ok2,unz=pcall(Enc.DecompressString,bytes,1)
-        if not ok2 or not unz then return nil end
+        if not Enc.DecompressString then RecordError("C_EncodingUtil.DecompressString unavailable"); return nil,true end
+        local ok2,unz=pcall(Enc.DecompressString,bytes,ZLIB_METHOD)
+        if not ok2 or not unz then RecordError("Zlib decompress failed for "..tostring(key)); return nil,true end
         bytes=unz
     end
     local ok3,val=pcall(Enc.DeserializeCBOR,bytes)
-    if not ok3 then return nil end
-    return val
+    if not ok3 then RecordError("CBOR deserialize failed for "..tostring(key)); return nil,true end
+    return val,false
 end
 
 local function GetEntity(kind,id,compressed)
@@ -130,8 +159,11 @@ local function GetEntity(kind,id,compressed)
     local hit=LRUGet(lru,id)
     if hit~=nil then return hit~=MISSING and hit or nil end
     if not W.Ensure() then return nil end
-    local val=DecodeKey("X-"..kind.."-"..tostring(id),compressed)
-    LRUPut(lru,id,val~=nil and val or MISSING)
+    local val,failed=DecodeKey("X-"..kind.."-"..tostring(id),compressed)
+    -- Never cache decoder/API errors as permanent misses; only cache genuine absent records.
+    if not failed then
+        LRUPut(lru,id,val~=nil and val or MISSING)
+    end
     return val
 end
 

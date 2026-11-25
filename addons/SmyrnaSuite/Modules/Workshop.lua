@@ -569,6 +569,54 @@ function NS.Refresh(preserveScroll)
     local top=heroCard:GetHeight()+12
     if NS.RenderVendors then top=NS.RenderVendors(canvas,top,id,measure,CONTENT_W) end
 
+    -- Quests section (linked to SmyrnaWorldDB & SmyrnaQuests parchment viewer)
+    NS.questSectionRows=NS.questSectionRows or {}
+    for _,qr in ipairs(NS.questSectionRows) do qr:Hide() end
+    if id and Suite.WorldDB and Suite.WorldDB.Item and Suite.WorldDB.Quest then
+        local it=Suite.WorldDB.Item(id)
+        local qids={}
+        if it then
+            for _,k in ipairs({"q","qs","qi","nq","rq"}) do
+                if type(it[k])=="table" then
+                    for _,qid in ipairs(it[k]) do if type(qid)=="number" then qids[#qids+1]=qid end end
+                elseif type(it[k])=="number" then
+                    qids[#qids+1]=it[k]
+                end
+            end
+        end
+        if #qids>0 then
+            local qIdx=0
+            for _,qid in ipairs(qids) do
+                local q=Suite.WorldDB.Quest(qid)
+                if q and q.n then
+                    qIdx=qIdx+1
+                    local qr=NS.questSectionRows[qIdx]
+                    if not qr then
+                        qr=CreateFrame("Button",nil,canvas,"BackdropTemplate")
+                        qr:SetSize(CONTENT_W,26); Suite.StyleCard(qr,.065,.078,.11)
+                        qr.txt=qr:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+                        qr.txt:SetPoint("LEFT",10,0); qr.txt:SetWidth(CONTENT_W-90); qr.txt:SetJustifyH("LEFT"); qr.txt:SetMaxLines(1)
+                        qr.tag=qr:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+                        qr.tag:SetPoint("RIGHT",-10,0); qr.tag:SetText("|cff78d49bQuest|r")
+                        qr:SetScript("OnClick",function(self)
+                            local Q=Suite.Modules and Suite.Modules.SmyrnaQuests
+                            if Q and Q.OpenParchment and self.qid then Q.OpenParchment(self.qid) end
+                        end)
+                        NS.questSectionRows[qIdx]=qr
+                    end
+                    qr.qid=qid
+                    qr:ClearAllPoints(); qr:SetPoint("TOPLEFT",0,-top)
+                    local ql=q.ql or q.rl or 0
+                    qr.txt:SetText((ql>0 and ("|cffffd670["..ql.."]|r ") or "")..q.n)
+                    qr:Show()
+                    top=top+30
+                    if qIdx>=10 then break end
+                end
+            end
+            if qIdx>0 then top=top+6 end
+        end
+    end
+
     local groups={}
     for _,r in ipairs(rows) do
         local group=groups[#groups]

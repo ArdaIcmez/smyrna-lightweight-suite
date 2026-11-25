@@ -167,17 +167,41 @@ function Chat.InstallDirectSelection(frame,history)
  ApplyRetention(frame)
  frame:SetResizable(true)
  if frame.SetResizeBounds then frame:SetResizeBounds(250,100,1400,1000) end
+ local function ApplySavedSize()
+  local db=Chat.GetDB()
+  local name=frame.GetName and frame:GetName()
+  local saved=db and db.frameSizes and name and db.frameSizes[name]
+  if type(saved)=='table' and type(saved.w)=='number' and type(saved.h)=='number' and saved.w>0 and saved.h>0 then
+   if InCombatLockdown and InCombatLockdown() then return end
+   if frame.SetSize then frame:SetSize(saved.w,saved.h) end
+   if frame.UpdateLayout then pcall(frame.UpdateLayout,frame) end
+   if FCF_DockUpdate then pcall(FCF_DockUpdate) end
+   if Chat.RefreshTimestampMarkers then Chat.RefreshTimestampMarkers() end
+  end
+ end
+ ApplySavedSize()
+ if C_Timer and C_Timer.After then C_Timer.After(0,ApplySavedSize) end
  local function SyncResizedChat()
   if not (InCombatLockdown and InCombatLockdown()) then
    local w,h=frame:GetSize()
    if Suite.Public(w) and Suite.Public(h) and type(w)=='number' and type(h)=='number' and w>0 and h>0 then
+    local db=Chat.GetDB()
+    if db then
+     db.frameSizes=db.frameSizes or {}
+     local name=frame.GetName and frame:GetName()
+     if name then db.frameSizes[name]={w=w,h=h} end
+    end
     local dock=GENERAL_CHAT_DOCK and GENERAL_CHAT_DOCK.DOCKED_CHAT_FRAMES
     if type(dock)=='table' then
      local isDocked=false
      for _,df in ipairs(dock) do if df==frame then isDocked=true; break end end
      if isDocked then
       for _,df in ipairs(dock) do
-       if df and df~=frame and not (df.IsForbidden and df:IsForbidden()) and df.SetSize then df:SetSize(w,h) end
+       if df and df~=frame and not (df.IsForbidden and df:IsForbidden()) and df.SetSize then
+        df:SetSize(w,h)
+        local dname=df.GetName and df:GetName()
+        if db and dname then db.frameSizes[dname]={w=w,h=h} end
+       end
       end
      end
     end

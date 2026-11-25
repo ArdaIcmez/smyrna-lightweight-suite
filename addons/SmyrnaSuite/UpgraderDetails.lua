@@ -47,6 +47,20 @@ function U.RenderDetails(state)
  status:Hide();profileButton:Hide();U.LastStatus=nil
  if S.SetButtonSelected then S.SetButtonSelected(panel.allTab,not panel.onlyAH and not panel.sourceFilter);S.SetButtonSelected(panel.ahTab,not not panel.onlyAH and not panel.sourceFilter) end
  local ranked=panel.sourceFilter=='AH' and state.rankedAH or (panel.sourceFilter and state.groups[panel.sourceFilter] or (panel.onlyAH and state.rankedAH or state.ranked))
+ local isAHView=(panel.sourceFilter=='AH' or panel.onlyAH) and #ranked>0
+ local ahPrices
+ if isAHView and S.Market and S.Market.Price then
+  local sorted={}; ahPrices={}
+  for idx=1,#ranked do sorted[idx]=ranked[idx]; ahPrices[ranked[idx].row.id]=S.Market.Price(ranked[idx].row.id) end
+  table.sort(sorted,function(a,b)
+   local pa,pb=ahPrices[a.row.id],ahPrices[b.row.id]
+   local aa=(pa and type(pa.minimum)=='number' and pa.minimum>0) and true or false
+   local bb=(pb and type(pb.minimum)=='number' and pb.minimum>0) and true or false
+   if aa~=bb then return aa end
+   return (a.score or 0)>(b.score or 0)
+  end)
+  ranked=sorted
+ end
  subtitle:SetText(state.baseName..'  -  '..state.profile.label..(panel.sourceFilter and (' / '..({Dungeon='Dungeon',Quest='Quest',AH='Auction House',Other='Profession / world drop'})[panel.sourceFilter]) or ''))
  local count=math.min(#ranked,35)
  for i=1,math.max(count,#rows) do
@@ -54,22 +68,32 @@ function U.RenderDetails(state)
   local b=c and EnsureRow(i) or rows[i]
   if b then b.candidate=c end
   if c then
+   local price=(ahPrices and ahPrices[c.row.id]) or (S.Market and S.Market.Price(c.row.id))
+   local avail=(price and type(price.minimum)=='number' and price.minimum>0) and true or false
    local color=ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[c.row.quality]
    local r,g,bl=color and color.r or 1,color and color.g or 1,color and color.b or 1
+   if isAHView and not avail then r,g,bl=.56,.60,.66 end
+   b:SetAlpha((isAHView and not avail) and .52 or 1)
+   if b.icon and b.icon.SetDesaturated then b.icon:SetDesaturated(isAHView and not avail) end
    b.name:SetText(i..'. '..c.row.name..(c.percent and string.format('  +%.1f%%',c.percent) or ''))
    b.name:SetTextColor(r,g,bl)
    local icon=C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(c.row.id)
    b.icon:SetTexture((S.Public(icon) and icon) or 'Interface\\Icons\\INV_Misc_QuestionMark')
    if b.tile then b.tile:SetBackdropBorderColor(r,g,bl,.9) end
-   if S.SetCornerGlow then S.SetCornerGlow(b,r,g,bl,(c.row.quality or 1)>=2 and .14 or .06) end
-   local src=c.source
-   b.source:SetText(U.SourceLabel(c)..' - '..(src.zone~='' and (src.zone..' / ') or '')..src.name..(src.skill>0 and (' | skill '..src.skill) or ''))
-   b.meta:SetText((c.future and ('Available around Lv '..c.availableLevel..(c.training and (' - '..c.training) or '')) or ('Lv '..c.row.level))..' | '..c.row.subclass..' | '..src.reference..(c.row.estimated and ' | Classic stats' or ''))
-   local price=S.Market and S.Market.Price(c.row.id)
-   if price then b.meta:SetText(b.meta:GetText()..' | AH price '..math.max(0,math.floor((time()-price.at)/60))..'m ago') end
-   local showAH=(c.row.bind=='Binds when equipped')
+   if S.SetCornerGlow then S.SetCornerGlow(b,r,g,bl,(not isAHView or avail) and ((c.row.quality or 1)>=2 and .14 or .06) or .02) end
+   local src=c.source or {}
+   local skillTag=(type(src.skill)=='number' and src.skill>0) and (' | skill '..src.skill) or ''
+   b.source:SetText(U.SourceLabel(c)..' - '..((src.zone and src.zone~='') and (src.zone..' / ') or '')..(src.name or '')..skillTag)
+   b.meta:SetText((c.future and ('Available around Lv '..c.availableLevel..(c.training and (' - '..c.training) or '')) or ('Lv '..c.row.level))..' | '..c.row.subclass..' | '..(src.reference or 'Source')..(c.row.estimated and ' | Classic stats' or ''))
+   local isVend=(src.kind=='Vendor')
+   if not isVend and c.row and type(c.row.sources)=='table' then
+    for _,s in ipairs(c.row.sources) do if s.kind=='Vendor' then isVend=true; break end end
+   end
+   if price then b.meta:SetText(b.meta:GetText()..' | AH price '..math.max(0,math.floor((time()-price.at)/60))..'m ago')
+   elseif isAHView then b.meta:SetText(b.meta:GetText()..' | '..(isVend and '|cffffd36aVendor|r' or '|cffff6b5aNo AH|r')) end
+   local showAH=S.Market~=nil and (c.row.bind=='Binds when equipped')
    b.ah:SetShown(showAH)
-   b.ah:SetText(price and (Money(price.minimum)..' | AH') or 'Search AH')
+   b.ah:SetText(price and (Money(price.minimum)..' | AH') or (isAHView and (isVend and 'Vendor' or 'No AH') or 'Search AH'))
    local J=S.Modules and S.Modules.SmyrnaJournal
    local canJournal=(J and J.HasItemOrZone and J.HasItemOrZone(c.row.id,src.zone)) and true or false
    if b.journal then
@@ -87,7 +111,7 @@ function U.RenderDetails(state)
  local currentShown=n-futureShown
  local breakdown=futureShown>0 and (' ('..currentShown..' usable now, '..futureShown..' upcoming)') or ''
  footer:SetText((n>0 and ('Showing '..n..' upgrades'..breakdown..'. Sorted by earliest level, then highest stat upgrade.') or 'No upgrades found for this slot.')..'\n'..(state.context and not state.context.trainingKnown and 'Using your class weapon list. ' or '')..'Check item procs, quest prerequisites, and Auction House prices.')
- scan:SetEnabled(n>0)
+ scan:SetEnabled(S.Market~=nil and n>0)
  panel.canvas:SetHeight(math.max(90,n*83));panel.scroll:UpdateScrollChildRect()
 end
 function U.RenderStatus(message,slot,id)
@@ -119,7 +143,7 @@ local function OpenPanel()
  profileButton=CreateFrame('Button',nil,canvas,'UIPanelButtonTemplate');profileButton:SetSize(180,25);profileButton:SetPoint('TOPLEFT',8,-100);profileButton:SetText('Choose scoring profile');S.StyleButton(profileButton);profileButton:Hide()
  profileButton:SetScript('OnClick',function() panel:Hide();U.Open() end)
  for i=1,10 do EnsureRow(i) end
- scan=CreateFrame('Button',nil,panel,'UIPanelButtonTemplate');scan:SetSize(185,25);scan:SetPoint('TOPLEFT',18,-492);scan:SetText('Scan AH for these upgrades');S.StyleButton(scan)
+ scan=CreateFrame('Button',nil,panel,'UIPanelButtonTemplate');scan:SetSize(185,25);scan:SetPoint('TOPLEFT',18,-492);scan:SetText('Scan AH for these upgrades');S.StyleButton(scan);scan:Hide()
  scan:SetScript('OnClick',function()
   if not S.Market or not panel.result then return end
   local ids={};for _,c in ipairs(panel.result.rankedAH or {}) do if c.row.bind=='Binds when equipped' then ids[#ids+1]=c.row.id end end
